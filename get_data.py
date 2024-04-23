@@ -20,8 +20,11 @@ def get_data(path = "ventil_lstm\save_data_test.csv"):
     #df=(df-df.mean())/df.std()
 
     #min max normalization
+    #normalize only a part of the data(??)
     df[sb_cols+wb_cols]=(df[sb_cols+wb_cols]-df[sb_cols+wb_cols].min())/(df[sb_cols+wb_cols].max()-df[sb_cols+wb_cols].min())
+    
     #Can't normalize p_b because then a[i]*X+b[i] becomes cX+d for all i.. same with mean normal. 
+    
     df[pb_cols] = df[pb_cols] / 1e5
 
     tensor = torch.tensor(df.values)

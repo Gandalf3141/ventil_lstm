@@ -107,6 +107,8 @@ def train(input_data, model, ws=1):
 
             output, _ = model(inp)
 
+            #reconsider this part :
+            #maybe | out = inp[-1, 1:] + output[-1] | works better
             out = inp[:, 1:] + output
 
             optimizer.zero_grad(set_to_none=True)
@@ -121,30 +123,18 @@ def train(input_data, model, ws=1):
     return np.mean(total_loss)
 
 
-def test(test_data, time, model, plot_opt=False, ws=1, steps=200, odestep=False, use_autograd=False):
-    """
-    Test the trained LSTM model using test data.
+def test(test_data, model, steps=600, ws=10):
 
-    Args:
-    - test_data: Test data
-    - time: Time data
-    - model: Trained LSTM model
-    - plot_opt: Option for plotting results
-    - ws: Window size
-    - steps: Number of steps
-    - odestep: Option for using ODE steps
-    - use_autograd: Option for using autograd
-
-    Returns:
-    - Mean test loss
-    - Mean derivative test loss
-    """
     model.eval()
     loss_fn = nn.MSELoss()
     test_loss = 0
     test_loss_deriv = 0
 
-    for x in test_data:
+    for i, x in enumerate(test_data):
+        
+        if i > 3:
+            break
+
         with torch.inference_mode():
 
             pred = torch.zeros((steps, 3))
@@ -164,34 +154,25 @@ def test(test_data, time, model, plot_opt=False, ws=1, steps=200, odestep=False,
             for i in range(len(x) - ws):
                 out, _ = model(pred[i:i+ws, :])
 
-                if odestep:
-                    pred[i+ws, 1:] = pred[i+ws-1, 1:] + out[-1, :]
-                    pred_next_step[i+ws, 1:] = x[i+ws-1, 1:] + out[-1, :]
-                else:
-                    pred[i+ws, 1:] = out[-1]
-                    outt, _ = model(x[i:i+ws, :])
-                    pred_next_step[i+ws, 1:] = outt[-1]
+                pred[i+ws, 1:] = pred[i+ws-1, 1:] + out[-1, :]
+                pred_next_step[i+ws, 1:] = x[i+ws-1, 1:] + out[-1, :]
 
-                if use_autograd:
-                    print("not implemented yet")
 
             test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().numpy()
             test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().numpy()
 
-            if plot_opt:
-                plt.plot(time, pred.detach().numpy()[
-                         :, 1], color="red", label="pred")
-                plt.plot(time, pred_next_step.detach().numpy()[
-                         :, 1], color="green", label="next step from data")
-                plt.plot(time, x.detach().numpy()[
-                         :, 1], color="blue", label="true", linestyle="dashed")
+            plt.plot(np.linspace(0,1,steps), pred.detach().numpy()[
+                        :, 1], color="red", label="pred")
+            plt.plot(np.linspace(0,1,steps), pred_next_step.detach().numpy()[
+                        :, 1], color="green", label="next step from data")
+            plt.plot(np.linspace(0,1,steps), x.detach().numpy()[
+                        :, 1], color="blue", label="true", linestyle="dashed")
 
-                plt.grid()
-                plt.legend()
-                plt.show()
+            plt.grid()
+            plt.legend()
+            plt.show()
 
     return np.mean(test_loss), np.mean(test_loss_deriv)
-
 
 def main():
 
@@ -202,7 +183,7 @@ def main():
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Define parameters
-    window_size = 10
+    window_size = 16
 
     losses = []
 
@@ -210,12 +191,12 @@ def main():
     input_data = get_data(path="save_data_test.csv")
 
     # Split data into train and test sets
-    train_size = int(0.9 * len(input_data))
+    train_size = int(0.5 * len(input_data))
     test_size = len(input_data) - train_size
     train_dataset, test_dataset = torch.utils.data.random_split(input_data, [train_size, test_size])
 
-    # Take a slice of data for training
-    slice_of_data = 100
+    # Take a slice of data for training (only slice_of_data many timesteps)
+    slice_of_data = 300
 
     train_dataset = train_dataset[:][:, 0:slice_of_data, :]
 
@@ -224,28 +205,33 @@ def main():
 
     trained=False
     if trained:
-     path = "trained_NNs\lstm_ws4.pth"
+     path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
      
      model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
     else:
         model = LSTMmodel(input_size=3, hidden_size=5, out_size=2, layers=1).to(device)
     
-    epochs = 3
-
+    #Train
+    epochs = 100
     for e in tqdm(range(epochs)):
         loss_epoch = train(train_dataset, model, ws=window_size)
         losses.append(loss_epoch)
-        if e % 2 == 0:
+        if e % 2 == 0 or 1:
             print(f"Epoch {e}: Loss: {loss_epoch}")
+   
     # Plot losses
     plt.plot(losses[1:])
     plt.show()
 
     # Save trained model
-    torch.save(model.state_dict(), "trained_NNs/lstm_ws4.pth")
+    path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
+    torch.save(model.state_dict(), path)
+
+    #test the model
+    test(test_dataset, model, steps=600, ws=10)
 
     # Log parameters
-    logging.info(f"Epochs: {epochs}, Window Size: {window_size},\n Start Time: {start_time}, Stop Time: {stop_time}, Timesteps: {timesteps}, Number of Inits: {num_of_inits},\n Option for ODE Step: {option_odestep}")
+    logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
     logging.info(f"final loss {losses[-1]}")
     logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
