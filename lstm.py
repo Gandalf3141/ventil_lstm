@@ -161,12 +161,9 @@ def test(test_data, model, steps=600, ws=10):
             test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().numpy()
             test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().numpy()
 
-            plt.plot(np.linspace(0,1,steps), pred.detach().numpy()[
-                        :, 1], color="red", label="pred")
-            plt.plot(np.linspace(0,1,steps), pred_next_step.detach().numpy()[
-                        :, 1], color="green", label="next step from data")
-            plt.plot(np.linspace(0,1,steps), x.detach().numpy()[
-                        :, 1], color="blue", label="true", linestyle="dashed")
+            plt.plot(np.linspace(0,1,steps), pred.detach().numpy()[:, 1], color="red", label="pred")
+            plt.plot(np.linspace(0,1,steps), pred_next_step.detach().numpy()[:, 1], color="green", label="next step from data")
+            plt.plot(np.linspace(0,1,steps), x.detach().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
 
             plt.grid()
             plt.legend()
