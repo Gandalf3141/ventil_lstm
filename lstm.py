@@ -12,10 +12,13 @@ from itertools import chain
 from get_data import get_data
 import logging
 import os
+import cProfile
+import pstats
 
 # Define the LSTM model with two hidden layers
 torch.set_default_dtype(torch.float64)
-device = "cpu"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(device)
 
 class LSTMmodel(nn.Module):
     """
@@ -109,10 +112,11 @@ def train(input_data, model, ws=1):
 
             #reconsider this part :
             #maybe | out = inp[-1, 1:] + output[-1] | works better
-            out = inp[:, 1:] + output
+            #out = inp[:, 1:] + output
+            out = inp[-1, 1:] + output[-1]
 
             optimizer.zero_grad(set_to_none=True)
-            loss = loss_fn(out, label)
+            loss = loss_fn(out, label[-1])
             loss.backward()
             optimizer.step()
 
@@ -184,39 +188,41 @@ def main():
 
     # Define parameters
     window_size = 16
-
+    h_size=8
+    l_num=2
     losses = []
 
     # Generate input data
     input_data = get_data(path="save_data_test.csv")
 
     # Split data into train and test sets
-    train_size = int(0.5 * len(input_data))
+    train_size = int(0.15 * len(input_data))
     test_size = len(input_data) - train_size
     train_dataset, test_dataset = torch.utils.data.random_split(input_data, [train_size, test_size])
 
     # Take a slice of data for training (only slice_of_data many timesteps)
-    slice_of_data = 300
+    slice_of_data = 50
 
     train_dataset = train_dataset[:][:, 0:slice_of_data, :]
 
     # Initialize the LSTM model
-    model = LSTMmodel(input_size=3, hidden_size=5, out_size=2, layers=1).to(device)
 
+    model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
     trained=False
     if trained:
      path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
      
      model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
-    else:
-        model = LSTMmodel(input_size=3, hidden_size=5, out_size=2, layers=1).to(device)
+
     
     #Train
-    epochs = 100
+    epochs = 2
+
     for e in tqdm(range(epochs)):
         loss_epoch = train(train_dataset, model, ws=window_size)
         losses.append(loss_epoch)
-        if e % 2 == 0 or 1:
+        if e % 5 == 0:
+
             print(f"Epoch {e}: Loss: {loss_epoch}")
    
     # Plot losses
@@ -224,11 +230,11 @@ def main():
     plt.show()
 
     # Save trained model
-    path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
-    torch.save(model.state_dict(), path)
+    path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}.pth"
+    #torch.save(model.state_dict(), path)
 
     #test the model
-    test(test_dataset, model, steps=600, ws=10)
+    test(test_dataset, model, steps=300, ws=4)
 
     # Log parameters
     logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
@@ -242,7 +248,17 @@ def main():
 
 
 if __name__ == "__main__":
+
+    profiler = cProfile.Profile()
+    profiler.enable()
     main()
+    profiler.disable()
+    
+    stats = pstats.Stats(profiler)
+    # Sort the statistics by cumulative time
+    stats.sort_stats("cumulative")
+    # Print the top 10 functions with the highest cumulative time
+    stats.print_stats(10)
 
 # chat gpt instructions
 # Add short and precise comments to the following python code. Describe functions, classes, loops similar things. The code:

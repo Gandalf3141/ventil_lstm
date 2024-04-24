@@ -5,6 +5,9 @@ def get_data(path = "ventil_lstm\save_data_test.csv"):
     
     df = pd.read_csv(path, header=0, nrows=600, skiprows=[x for x in range(1,100)])
 
+    #drop even more timesteps
+    df = df.iloc[::2]
+
     #Reorder columns for familiar setup (t,u,x) here (t, p_b, s_b, w_b)
     L = df.columns.to_list()
     time_cols = L[0::4]
@@ -30,7 +33,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv"):
     tensor = torch.tensor(df.values)
 
     #tensor with t=0:600, 500 different input and the 4 outputs [time, s_b, p_b, w_b]
-    tensor = tensor.view(600,500,3).permute(1,0,2)
+    tensor = tensor.view(len(df),500,3).permute(1,0,2)
 
 
     return tensor
