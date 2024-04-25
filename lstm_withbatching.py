@@ -14,6 +14,8 @@ import logging
 import os
 import cProfile
 import pstats
+from dataloader import *
+
 
 # Define the LSTM model with two hidden layers
 torch.set_default_dtype(torch.float64)
@@ -41,7 +43,7 @@ class LSTMmodel(nn.Module):
         self.input_size = input_size
 
         # Define LSTM layer
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
 
         # Define linear layer
         self.linear = nn.Linear(hidden_size, out_size)
@@ -58,7 +60,7 @@ class LSTMmodel(nn.Module):
         - hidden: Hidden state
         """
         lstm_out, hidden = self.lstm(seq)
-        pred = self.linear(lstm_out.view(len(seq), -1))
+        pred = self.linear(lstm_out)#.view(len(seq), -1))
 
         return pred, hidden
 
@@ -80,7 +82,7 @@ def slice_batch(batch, window_size=1):
     return l
 
 
-def train(input_data, model, ws=1):
+def train(input_data, model):
     """
     Train the LSTM model using input data.
 
@@ -98,31 +100,30 @@ def train(input_data, model, ws=1):
     optimizer = torch.optim.Adam(model.parameters())
 
     model.train()
-
     total_loss = []
 
-    for batch in input_data:
+    for inp, label in input_data:  # inp = (u, x) label = x
 
-        input = slice_batch(batch, ws)
         batch_loss = 0
 
-        for inp, label in input:  # inp = (u, x) label = x
+        #print("inp",inp.size())
+        #print("label",label.size())
+        output, _ = model(inp)
+        #print("output", output.size())
 
-            output, _ = model(inp)
+        #reconsider this part :
+        #maybe | out = inp[-1, 1:] + output[-1] | works better
+        #out = inp[:, 1:] + output
+        out = inp[:,-1, 1:] + output[:,-1,:]
 
-            #reconsider this part :
-            #maybe | out = inp[-1, 1:] + output[-1] | works better
-            #out = inp[:, 1:] + output
-            out = inp[-1, 1:] + output[-1]
+        #print("out",out.size())
 
-            optimizer.zero_grad(set_to_none=True)
-            loss = loss_fn(out, label[-1])
-            loss.backward()
-            optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        loss = loss_fn(out, label[:, 1:])
+        loss.backward()
+        optimizer.step()
 
-            batch_loss += loss.detach().numpy()
-
-        total_loss.append(batch_loss/len(batch))
+        total_loss.append(loss.detach().numpy())
 
     return np.mean(total_loss)
 
@@ -187,27 +188,32 @@ def main():
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Define parameters
-    window_size = 16
-    h_size=8
-    l_num=2
+    window_size =16
+    h_size=5
+    l_num=1
     losses = []
 
     # Generate input data
     input_data = get_data(path="save_data_test.csv")
 
+    data  = CustomDataset(input_data, window_size=window_size)
+
     # Split data into train and test sets
-    train_size = int(0.15 * len(input_data))
-    test_size = len(input_data) - train_size
-    train_dataset, test_dataset = torch.utils.data.random_split(input_data, [train_size, test_size])
+    train_size = int(0.5 * len(data))
+    test_size = len(data) - train_size
+    train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
 
+    train_dataloader = DataLoader(train_dataset, batch_size=10)
+    test_dataloader = DataLoader(test_dataset, batch_size=1)
+
+
+    
     # Take a slice of data for training (only slice_of_data many timesteps)
-    slice_of_data = 50
-
-    train_dataset = train_dataset[:][:, 0:slice_of_data, :]
+    slice_of_data = 10
 
     # Initialize the LSTM model
-
     model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
+
     trained=False
     if trained:
      path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
@@ -216,10 +222,11 @@ def main():
 
     
     #Train
-    epochs = 2
+    epochs = 15
 
     for e in tqdm(range(epochs)):
-        loss_epoch = train(train_dataset, model, ws=window_size)
+        loss_epoch = train(train_dataloader, model)
+
         losses.append(loss_epoch)
         if e % 5 == 0:
 
@@ -231,10 +238,10 @@ def main():
 
     # Save trained model
     path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}.pth"
-    #torch.save(model.state_dict(), path)
+    torch.save(model.state_dict(), path)
 
     #test the model
-    test(test_dataset, model, steps=300, ws=4)
+    test(data.get_all_data(), model, steps=300, ws=4)
 
     # Log parameters
     logging.info(f"Epochs: {epochs}, Window Size: {window_size}")

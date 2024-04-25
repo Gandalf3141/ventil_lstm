@@ -1,5 +1,7 @@
 import pandas as pd
 import torch
+import matplotlib.pyplot as plt
+import numpy as np
 
 def get_data(path = "ventil_lstm\save_data_test.csv"):
     
@@ -24,7 +26,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv"):
 
     #min max normalization
     #normalize only a part of the data(??)
-    df[sb_cols+wb_cols]=(df[sb_cols+wb_cols]-df[sb_cols+wb_cols].min())/(df[sb_cols+wb_cols].max()-df[sb_cols+wb_cols].min())
+    ##df[sb_cols+wb_cols]=(df[sb_cols+wb_cols]-df[sb_cols+wb_cols].min())/(df[sb_cols+wb_cols].max()-df[sb_cols+wb_cols].min())
     
     #Can't normalize p_b because then a[i]*X+b[i] becomes cX+d for all i.. same with mean normal. 
     
@@ -35,5 +37,37 @@ def get_data(path = "ventil_lstm\save_data_test.csv"):
     #tensor with t=0:600, 500 different input and the 4 outputs [time, s_b, p_b, w_b]
     tensor = tensor.view(len(df),500,3).permute(1,0,2)
 
-
     return tensor
+
+
+def visualise(data):
+ 
+    steps=data.size(dim=1) 
+    
+    ids = np.random.randint(0,400,2)
+
+    figure , axs = plt.subplots(1, len(ids))
+    for j, id in enumerate(ids):
+        axs[j].plot(np.linspace(0,1,steps), data[id,:,0], label="pressure")
+        axs[j].plot(np.linspace(0,1,steps), data[id,:,1], label="position")
+        axs[j].plot(np.linspace(0,1,steps), data[id,:,2], label="speed")
+        axs[j].grid(True)
+        axs[j].legend()
+        axs[j].set_title("Ventil Sim-daten")
+    
+    # ids = np.random.randint(0,400,2)
+
+    # figure2 , axs = plt.subplots(1, len(ids))
+    # for j, id in enumerate(ids):
+    #     axs[j].plot(np.linspace(0,1,steps), data[id,:,0], label="pressure")
+    #     axs[j].plot(np.linspace(0,1,steps), data[id,:,1], label="position")
+    #     axs[j].plot(np.linspace(0,1,steps), data[id,:,2], label="speed")
+    #     axs[j].grid(True)
+    #     axs[j].legend()
+    #     axs[j].set_title("Ventil Sim-daten")
+
+    plt.show()
+
+
+#visualise(get_data(path = "save_data_test.csv"))
+
