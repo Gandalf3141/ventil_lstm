@@ -15,6 +15,10 @@ import os
 import cProfile
 import pstats
 from dataloader import *
+<<<<<<< HEAD:lstm.py
+=======
+
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
 
 # Define the LSTM model with two hidden layers
 torch.set_default_dtype(torch.float64)
@@ -103,8 +107,11 @@ def train(input_data, model):
 
     for inp, label in input_data:  # inp = (u, x) label = x
 
+<<<<<<< HEAD:lstm.py
         inp=inp.to(device)
         label=label.to(device)
+=======
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
         batch_loss = 0
 
         #print("inp",inp.size())
@@ -124,7 +131,11 @@ def train(input_data, model):
         loss.backward()
         optimizer.step()
 
+<<<<<<< HEAD:lstm.py
         total_loss.append(loss.detach().cpu().numpy())
+=======
+        total_loss.append(loss.detach().numpy())
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
 
     return np.mean(total_loss)
 
@@ -206,12 +217,21 @@ def main():
                         [16, 5, 1, 400, 60], #längeres fenser
                         [4, 32, 1, 400, 150],# many neurons
 
+<<<<<<< HEAD:lstm.py
                       ]
+=======
+    # Define parameters
+    window_size =16
+    h_size=5
+    l_num=1
+    losses = []
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
 
     for set in parameter_sets:
         window_size, h_size, l_num, epochs, slice_of_data = set
         
 
+<<<<<<< HEAD:lstm.py
 
         log_file = 'training.log'
         filemode = 'a' if os.path.exists(log_file) else 'w'
@@ -227,6 +247,31 @@ def main():
 
         # Generate input data
         input_data = get_data(path="save_data_test.csv")
+=======
+    data  = CustomDataset(input_data, window_size=window_size)
+
+    # Split data into train and test sets
+    train_size = int(0.5 * len(data))
+    test_size = len(data) - train_size
+    train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
+
+    train_dataloader = DataLoader(train_dataset, batch_size=10)
+    test_dataloader = DataLoader(test_dataset, batch_size=1)
+
+
+    
+    # Take a slice of data for training (only slice_of_data many timesteps)
+    slice_of_data = 10
+
+    # Initialize the LSTM model
+    model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
+
+    trained=False
+    if trained:
+     path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
+     
+     model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
 
         data  = CustomDataset(input_data[:,0:slice_of_data,:], window_size=window_size)
 
@@ -261,6 +306,7 @@ def main():
                 print(f"Epoch {e}: Loss: {loss_epoch}")
                 #print(test(input_data, model, steps=300, ws=window_size, plot_opt=False))
     
+<<<<<<< HEAD:lstm.py
         # Plot losses
         #plt.plot(losses[1:])
         #plt.show()
@@ -268,10 +314,21 @@ def main():
         # Save trained model
         path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}.pth"
         torch.save(model.state_dict(), path)
+=======
+    #Train
+    epochs = 15
+
+    for e in tqdm(range(epochs)):
+        loss_epoch = train(train_dataloader, model)
+
+        losses.append(loss_epoch)
+        if e % 5 == 0:
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
 
         #test the model
         #test(input_data, model, steps=300, ws=window_size, plot_opt=True)
 
+<<<<<<< HEAD:lstm.py
         # Log parameters
         logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
         logging.info(f"final loss {losses[-1]}")
@@ -280,6 +337,14 @@ def main():
         logging.info("\n")
         logging.info("\n")
 
+=======
+    # Save trained model
+    path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}.pth"
+    torch.save(model.state_dict(), path)
+
+    #test the model
+    test(data.get_all_data(), model, steps=300, ws=4)
+>>>>>>> 15b83f09da9d129abd6807b733b4956ccd6597ba:lstm_withbatching.py
 
 
 
