@@ -16,7 +16,6 @@ import cProfile
 import pstats
 from dataloader import *
 
-
 # Define the LSTM model with two hidden layers
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -104,6 +103,8 @@ def train(input_data, model):
 
     for inp, label in input_data:  # inp = (u, x) label = x
 
+        inp=inp.to(device)
+        label=label.to(device)
         batch_loss = 0
 
         #print("inp",inp.size())
@@ -123,27 +124,28 @@ def train(input_data, model):
         loss.backward()
         optimizer.step()
 
-        total_loss.append(loss.detach().numpy())
+        total_loss.append(loss.detach().cpu().numpy())
 
     return np.mean(total_loss)
 
 
-def test(test_data, model, steps=600, ws=10):
+def test(test_data, model, steps=600, ws=10, plot_opt=False):
 
+    #test_data = test_dataloader.get_all_data() 
     model.eval()
     loss_fn = nn.MSELoss()
     test_loss = 0
     test_loss_deriv = 0
 
     for i, x in enumerate(test_data):
-        
-        if i > 3:
+        x=x.to(device)
+        if i > 2:
             break
 
         with torch.inference_mode():
 
-            pred = torch.zeros((steps, 3))
-            pred_next_step = torch.zeros((steps, 3))
+            pred = torch.zeros((steps, 3), device=device)
+            pred_next_step = torch.zeros((steps, 3), device=device)
 
             if ws > 1:
                 pred[0:ws, :] = x[0:ws, :]
@@ -161,108 +163,140 @@ def test(test_data, model, steps=600, ws=10):
 
                 pred[i+ws, 1:] = pred[i+ws-1, 1:] + out[-1, :]
                 pred_next_step[i+ws, 1:] = x[i+ws-1, 1:] + out[-1, :]
+            
+            test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().cpu().numpy()
+            test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().cpu().numpy()
 
+            if plot_opt:
+                figure , axs = plt.subplots(1,3,figsize=(16,9))
+            
+                axs[0].plot(np.linspace(0,1,steps), pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
+                axs[0].plot(np.linspace(0,1,steps), pred_next_step.detach().cpu().numpy()[:, 1], color="green", label="next step from data")
+                axs[0].plot(np.linspace(0,1,steps), x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
 
-            test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().numpy()
-            test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().numpy()
+                axs[0].grid()
+                axs[0].legend()
 
-            plt.plot(np.linspace(0,1,steps), pred.detach().numpy()[:, 1], color="red", label="pred")
-            plt.plot(np.linspace(0,1,steps), pred_next_step.detach().numpy()[:, 1], color="green", label="next step from data")
-            plt.plot(np.linspace(0,1,steps), x.detach().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
+                axs[1].plot(np.linspace(0,1,steps), pred.detach().cpu().numpy()[
+                :, 2], color="red", label="pred")
+                axs[1].plot(np.linspace(0,1,steps), pred_next_step.detach().cpu().numpy()[:, 2], color="green", label="next step from data")
+                axs[1].plot(np.linspace(0,1,steps), x.detach().cpu().numpy()[:, 2], color="blue", label="true", linestyle="dashed")
 
-            plt.grid()
-            plt.legend()
-            plt.show()
+                axs[1].grid()
+                axs[1].legend()
+                axs[2].plot(np.linspace(0,1,steps), x.detach().cpu().numpy()[:,0], label="pressure")
 
+                axs[2].grid()
+                axs[2].legend()
+
+                plt.grid()
+                plt.legend()
+                plt.show()
+            
     return np.mean(test_loss), np.mean(test_loss_deriv)
 
 def main():
 
-    log_file = 'training.log'
-    filemode = 'a' if os.path.exists(log_file) else 'w'
+    parameter_sets  = [
+                       # [16, 8, 2, 400, 20],
+                       # [16, 8, 2, 400, 40],
 
-    # Configure logging
-    logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+                        [4, 5, 1, 200, 250], #Pendel hat funktioniert
+                        [4, 5, 1, 400, 60], #long slice
+                        [16, 5, 1, 400, 60], #längeres fenser
+                        [4, 32, 1, 400, 150],# many neurons
 
-    # Define parameters
-    window_size =16
-    h_size=5
-    l_num=1
-    losses = []
+                      ]
 
-    # Generate input data
-    input_data = get_data(path="save_data_test.csv")
-
-    data  = CustomDataset(input_data, window_size=window_size)
-
-    # Split data into train and test sets
-    train_size = int(0.5 * len(data))
-    test_size = len(data) - train_size
-    train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
-
-    train_dataloader = DataLoader(train_dataset, batch_size=10)
-    test_dataloader = DataLoader(test_dataset, batch_size=1)
+    for set in parameter_sets:
+        window_size, h_size, l_num, epochs, slice_of_data = set
+        
 
 
+        log_file = 'training.log'
+        filemode = 'a' if os.path.exists(log_file) else 'w'
+
+        # Configure logging
+        logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+        # Define parameters
+        # window_size =4 
+        # h_size=5
+        # l_num=1
+        losses = []
+
+        # Generate input data
+        input_data = get_data(path="save_data_test.csv")
+
+        data  = CustomDataset(input_data[:,0:slice_of_data,:], window_size=window_size)
+
+        # Split data into train and test sets
+        # train_size = int(0.8 * len(data))
+        # test_size = len(data) - train_size
+        # train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
+
+        train_dataloader = DataLoader(data, batch_size=10,pin_memory=True)
+        test_dataloader = DataLoader(data, batch_size=1)
+  
+        # Take a slice of data for training (only slice_of_data many timesteps)
+        #slice_of_data = 10
+
+        # Initialize the LSTM model
+        model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
+
+        trained=False
+        if trained:
+            path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
+            model.load_state_dict(torch.load(path, map_location=torch.device(device)))
+
+        
+        #Train
+
+        for e in tqdm(range(epochs)):
+            loss_epoch = train(train_dataloader, model)
+
+            losses.append(loss_epoch)
+            if e % 5 == 0:
+
+                print(f"Epoch {e}: Loss: {loss_epoch}")
+                #print(test(input_data, model, steps=300, ws=window_size, plot_opt=False))
     
-    # Take a slice of data for training (only slice_of_data many timesteps)
-    slice_of_data = 10
+        # Plot losses
+        #plt.plot(losses[1:])
+        #plt.show()
 
-    # Initialize the LSTM model
-    model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
+        # Save trained model
+        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}.pth"
+        torch.save(model.state_dict(), path)
 
-    trained=False
-    if trained:
-     path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
-     
-     model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        #test the model
+        #test(input_data, model, steps=300, ws=window_size, plot_opt=True)
 
-    
-    #Train
-    epochs = 15
+        # Log parameters
+        logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
+        logging.info(f"final loss {losses[-1]}")
+        logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        logging.info("\n")
+        logging.info("\n")
 
-    for e in tqdm(range(epochs)):
-        loss_epoch = train(train_dataloader, model)
 
-        losses.append(loss_epoch)
-        if e % 5 == 0:
-
-            print(f"Epoch {e}: Loss: {loss_epoch}")
-   
-    # Plot losses
-    plt.plot(losses[1:])
-    plt.show()
-
-    # Save trained model
-    path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}.pth"
-    torch.save(model.state_dict(), path)
-
-    #test the model
-    test(data.get_all_data(), model, steps=300, ws=4)
-
-    # Log parameters
-    logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
-    logging.info(f"final loss {losses[-1]}")
-    logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-    logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-    logging.info("\n")
-    logging.info("\n")
-
-    return None
 
 
 if __name__ == "__main__":
 
-    profiler = cProfile.Profile()
-    profiler.enable()
     main()
-    profiler.disable()
+
+    # profiler = cProfile.Profile()
+    # profiler.enable()
+    # main(window_size=16, h_size=8, l_num=2, epochs=100, slice_of_data=50)
+    # profiler.disable()
     
-    stats = pstats.Stats(profiler)
-    # Sort the statistics by cumulative time
-    stats.sort_stats("cumulative")
-    # Print the top 10 functions with the highest cumulative time
-    stats.print_stats(10)
+    # stats = pstats.Stats(profiler)
+    # # Sort the statistics by cumulative time
+    # stats.sort_stats("cumulative")
+    # # Print the top 10 functions with the highest cumulative time
+    # stats.print_stats(10)
 
 # chat gpt instructions
 # Add short and precise comments to the following python code. Describe functions, classes, loops similar things. The code:
