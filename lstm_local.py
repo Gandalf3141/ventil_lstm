@@ -97,7 +97,7 @@ def train(input_data, model):
     - Mean loss over all batches
     """
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
     model.train()
     total_loss = []
