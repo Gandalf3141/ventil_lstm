@@ -46,6 +46,8 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
 
     #tensor with t=0:600, 500 different input and the 3 outputs [s_b, p_b, w_b]
     a = num_inits if num_inits>0 else 500
+    a=int(len(df.columns.to_list())/3)
+
     tensor = tensor.view(len(df),a,3).permute(1,0,2)
 
     return tensor
@@ -87,5 +89,6 @@ def visualise(data, num_inits=499):
     plt.show()
 
 
-#visualise(get_data(path = "save_data_test.csv", timesteps_from_data=0, skip_steps_start = 0, skip_steps_end = 0, drop_half_timesteps = False, normalise_s_w=False, rescale_p=True, num_inits=0))
+visualise(get_data(path = "save_data_validate.csv", timesteps_from_data=0, skip_steps_start = 0, skip_steps_end = 0, drop_half_timesteps = False, normalise_s_w=False, rescale_p=True, num_inits=0), num_inits=20)
+
 

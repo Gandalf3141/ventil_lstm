@@ -203,22 +203,10 @@ def main():
                        # [16, 8, 2, 400, 40],
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     500,        150,           100,           100,               0.1], 
+                        [1,           128 ,     3,     100,        150,           0,           0,               0.7], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     300,        150,           0,           0,                   0.8],  
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     500,        150,           0,           100,                   0.5],  
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           128 ,     3,     400,        150,           0,           0,                  0.8], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           128 ,     3,     800,        150,           0,           0,                  0.1], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     800,        150,           100,           0,                  0.1], 
+                        [2,           128 ,     3,     100,        150,           0,           0,               0.7],  
 
 
                       ]
@@ -249,6 +237,7 @@ def main():
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_data)
+        
         input_data_old = get_data(path = "save_data_test.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
@@ -260,7 +249,7 @@ def main():
         if part_of_old_data>0:
          input_data=torch.cat((input_data, input_data_old))
          
-        input_data2 = get_data(path = "save_data_validate.csv", 
+        input_test = get_data(path = "save_data_validate.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -292,7 +281,7 @@ def main():
 
         
         #Train
-        epochs=1
+        #epochs=1
         for e in tqdm(range(epochs)):
             loss_epoch = train(train_dataloader, model)
 
