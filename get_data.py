@@ -3,13 +3,22 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 
-def get_data(path = "ventil_lstm\save_data_test.csv"):
+def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, skip_steps_start = 1, skip_steps_end = 1, drop_half_timesteps = True, normalise_s_w=False, rescale_p=False, num_inits=0):
     
-    df = pd.read_csv(path, header=0, nrows=600, skiprows=[x for x in range(1,100)])
+    if timesteps_from_data>1:
+     df = pd.read_csv(path, header=0, nrows=timesteps_from_data, skiprows=skip_steps_start)
+    else:
+     df = pd.read_csv(path, header=0, skiprows=skip_steps_start)
+
+    if skip_steps_end>1:
+       df = df.iloc[0:len(df)-skip_steps_end]
 
     #drop even more timesteps
-    df = df.iloc[::2]
+    if drop_half_timesteps:
+     df = df.iloc[::2]
 
+    if num_inits>1:
+       df = df.iloc[:,0:4*num_inits]
     #Reorder columns for familiar setup (t,u,x) here (t, p_b, s_b, w_b)
     L = df.columns.to_list()
     time_cols = L[0::4]
@@ -23,38 +32,47 @@ def get_data(path = "ventil_lstm\save_data_test.csv"):
     #normalise each column of the dataframe
     #mean normalization
     #df=(df-df.mean())/df.std()
-
-    #min max normalization
-    #normalize only a part of the data(??)
-    ##df[sb_cols+wb_cols]=(df[sb_cols+wb_cols]-df[sb_cols+wb_cols].min())/(df[sb_cols+wb_cols].max()-df[sb_cols+wb_cols].min())
     
     #Can't normalize p_b because then a[i]*X+b[i] becomes cX+d for all i.. same with mean normal. 
     
-    df[pb_cols] = df[pb_cols] / 1e5
+    # Normalise / Rescale
+    if normalise_s_w:
+        tmp=pb_cols+sb_cols+wb_cols
+        df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
+    if rescale_p:
+        df[pb_cols] = df[pb_cols] / 1e5
 
     tensor = torch.tensor(df.values)
 
-    #tensor with t=0:600, 500 different input and the 4 outputs [time, s_b, p_b, w_b]
-    tensor = tensor.view(len(df),500,3).permute(1,0,2)
+    #tensor with t=0:600, 500 different input and the 3 outputs [s_b, p_b, w_b]
+    a = num_inits if num_inits>0 else 500
+    tensor = tensor.view(len(df),a,3).permute(1,0,2)
 
     return tensor
 
 
-def visualise(data):
+def visualise(data, num_inits=499):
  
     steps=data.size(dim=1) 
     
-    ids = np.random.randint(0,400,2)
-
-    figure , axs = plt.subplots(1, len(ids))
-    for j, id in enumerate(ids):
-        axs[j].plot(np.linspace(0,1,steps), data[id,:,0], label="pressure")
-        axs[j].plot(np.linspace(0,1,steps), data[id,:,1], label="position")
-        axs[j].plot(np.linspace(0,1,steps), data[id,:,2], label="speed")
-        axs[j].grid(True)
-        axs[j].legend()
-        axs[j].set_title("Ventil Sim-daten")
+    ids = np.random.randint(0,num_inits,1)
     
+    figure , axs = plt.subplots(1, 3, figsize=(16,9))
+    colors=["r","b","g","yellow", "purple"]
+    for k, id in enumerate(ids):
+        axs[0].plot(data[id,:,0], label="pressure", color=colors[k], linewidth=3, alpha=0.7)
+        axs[1].plot(data[id,:,1], label="position", color=colors[k+1], linewidth=3, alpha=0.7)
+        axs[2].plot(data[id,:,2], label="speed", color=colors[k+2], linewidth=3, alpha=0.7)
+        axs[0].grid(True)
+        #axs[0].legend()
+        axs[0].set_title("pressure")
+        axs[1].grid(True)
+        #axs[1].legend()
+        axs[1].set_title("position")
+        axs[2].grid(True)
+       #axs[2].legend()
+        axs[2].set_title("speed")
+
     # ids = np.random.randint(0,400,2)
 
     # figure2 , axs = plt.subplots(1, len(ids))
@@ -69,5 +87,5 @@ def visualise(data):
     plt.show()
 
 
-#visualise(get_data(path = "save_data_test.csv"))
+#visualise(get_data(path = "save_data_test.csv", timesteps_from_data=0, skip_steps_start = 0, skip_steps_end = 0, drop_half_timesteps = False, normalise_s_w=False, rescale_p=True, num_inits=0))
 
