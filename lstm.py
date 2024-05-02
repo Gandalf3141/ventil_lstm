@@ -43,7 +43,7 @@ class LSTMmodel(nn.Module):
 
         # Define LSTM layer
         #self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-        self.lstm = nn.GRU(input_size, hidden_size, num_layers=layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
 
         # Define linear layer
         self.linear = nn.Linear(hidden_size, out_size)
@@ -201,22 +201,25 @@ def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     5,        150,           0,           0,               0.5], 
+                        [1,           64 ,     3,     200,        150,           0,           0,               0.5], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [32,           128 ,     3,     2000,        150,           0,           0,               0.9], 
-                        #[2,           128 ,     3,     100,        150,           0,           0,               0.7],  
+                        [2,           64 ,     3,     200,        150,           0,           0,               0.5], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [16,           128 ,     3,     2000,        150,           0,           0,               0.9],   
+                        [4,           64 ,     3,     200,        150,           0,           0,               0.5], 
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
+                        [8,           64 ,     3,     200,        150,           0,           0,               0.5], 
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
+                        [16,           64 ,     3,     200,        150,           0,           0,               0.5], 
 
                       ]
 
     for k,set in enumerate(parameter_sets):
         window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data = set
         
-
-
         log_file = 'training.log'
         filemode = 'a' if os.path.exists(log_file) else 'w'
 
@@ -233,7 +236,7 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 900, 
+                                skip_steps_end = 0, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
@@ -287,7 +290,7 @@ def main():
             loss_epoch = train(train_dataloader, model)
 
             losses.append(loss_epoch)
-            if e % 5 == 0:
+            if e % 20 == 0:
 
                 print(f"Epoch {e}: Loss: {loss_epoch}")
                 #print(test(input_data, model, steps=300, ws=window_size, plot_opt=False))
