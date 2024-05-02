@@ -42,7 +42,8 @@ class LSTMmodel(nn.Module):
         self.input_size = input_size
 
         # Define LSTM layer
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
+        #self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
+        self.lstm = nn.GRU(input_size, hidden_size, num_layers=layers, batch_first=True)
 
         # Define linear layer
         self.linear = nn.Linear(hidden_size, out_size)
@@ -199,14 +200,11 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
 def main():
 
     parameter_sets  = [
-                       # [16, 8, 2, 400, 20],
-                       # [16, 8, 2, 400, 40],
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
+                        [1,           64 ,     3,     5,        150,           0,           0,               0.5], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           128 ,     3,     100,        150,           0,           0,               0.7], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [2,           128 ,     3,     100,        150,           0,           0,               0.7],  
+                        #[2,           128 ,     3,     100,        150,           0,           0,               0.7],  
 
 
                       ]
@@ -229,10 +227,10 @@ def main():
         losses = []
 
         # Generate input data
-        input_data = get_data(path = "save_data_test2.csv", 
+        input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 0, 
+                                skip_steps_end = 900, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
@@ -265,7 +263,7 @@ def main():
         test_size = len(data) - train_size
         train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
 
-        train_dataloader = DataLoader(train_dataset, batch_size=128,pin_memory=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=64,pin_memory=True)
         test_dataloader = DataLoader(test_dataset, batch_size=1)
   
         # Take a slice of data for training (only slice_of_data many timesteps)
