@@ -199,15 +199,18 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
 def main():
 
     parameter_sets  = [
-                       # [16, 8, 2, 400, 20],
-                       # [16, 8, 2, 400, 40],
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           128 ,     3,     100,        150,           0,           0,               0.7], 
+                        #[1,           128 ,     3,     1000,        150,           0,           0,               0.5], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [2,           128 ,     3,     100,        150,           0,           0,               0.7],  
+                        #[2,           128 ,     3,     100,        150,           0,           0,               0.5],  
 
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
+                        [32,           128 ,     3,     2000,        150,           0,           0,               0.9], 
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
+                        [16,           128 ,     3,     2000,        150,           0,           0,               0.9],   
 
                       ]
 
@@ -232,8 +235,8 @@ def main():
         input_data = get_data(path = "save_data_test2.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 0, 
-                                drop_half_timesteps = True,
+                                skip_steps_end = 600, 
+                                drop_half_timesteps = False,
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_data)
@@ -242,7 +245,7 @@ def main():
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
-                                drop_half_timesteps = True,
+                                drop_half_timesteps = False,
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_old_data)
