@@ -201,19 +201,13 @@ def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     200,        150,           0,           0,               0.5], 
+                        [1,           64 ,     3,     800,        150,           0,           0,               0.2], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [2,           64 ,     3,     200,        150,           0,           0,               0.5], 
+                        #[4,           8 ,      1,     100,        150,           0,           0,               0.5], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [4,           64 ,     3,     200,        150,           0,           0,               0.5], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [8,           64 ,     3,     200,        150,           0,           0,               0.5], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [16,           64 ,     3,     200,        150,           0,           0,               0.5], 
+                        #[4,           64 ,     3,     100,        150,           0,           0,               0.5], 
 
                       ]
 
@@ -236,7 +230,7 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 0, 
+                                skip_steps_end = 800, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
@@ -269,7 +263,7 @@ def main():
         test_size = len(data) - train_size
         train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
 
-        train_dataloader = DataLoader(train_dataset, batch_size=64,pin_memory=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=32, pin_memory=True)
         test_dataloader = DataLoader(test_dataset, batch_size=1)
   
         # Take a slice of data for training (only slice_of_data many timesteps)
@@ -285,12 +279,12 @@ def main():
 
         
         #Train
-        #epochs=1
+        
         for e in tqdm(range(epochs)):
             loss_epoch = train(train_dataloader, model)
 
             losses.append(loss_epoch)
-            if e % 20 == 0:
+            if e % 5 == 0:
 
                 print(f"Epoch {e}: Loss: {loss_epoch}")
                 #print(test(input_data, model, steps=300, ws=window_size, plot_opt=False))
@@ -298,10 +292,12 @@ def main():
         # Plot losses
         #plt.plot(losses[1:])
         #plt.show()
-
+        
         # Save trained model
-        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{k}.pth"
+        a = np.random.randint(0,200,1)[0]
+        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{a}.pth"
         torch.save(model.state_dict(), path)
+        print("Run compleze saved file!\n", path)
 
         #test the model
         #test(input_data2, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=True)
@@ -311,6 +307,7 @@ def main():
         logging.info(f"hyperparams: h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data")
         logging.info(f"hyperparams: {h_size,      l_num,     epochs,    slice_of_data,    part_of_data,    part_of_old_data,    percentage_of_data}")
         logging.info(f"final loss {losses[-1]}")
+        logging.info(f"saved at {path}")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("\n")
