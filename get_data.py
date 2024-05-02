@@ -53,7 +53,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     return tensor
 
 
-def visualise(data, num_inits=499):
+def visualise(data, num_inits=499,set_ylim=False):
  
     steps=data.size(dim=1) 
     
@@ -62,18 +62,23 @@ def visualise(data, num_inits=499):
     figure , axs = plt.subplots(1, 3, figsize=(16,9))
     colors=["r","b","g","yellow", "purple"]
     for k, id in enumerate(ids):
+        if set_ylim:
+            axs[0].set_ylim(0, 3.6*1e5)
+            axs[1].set_ylim(0, 0.7*1e-3)
+            axs[2].set_ylim(-1, 1)
+
         axs[0].plot(data[id,:,0], label="pressure", color=colors[k], linewidth=3, alpha=0.7)
         axs[1].plot(data[id,:,1], label="position", color=colors[k+1], linewidth=3, alpha=0.7)
         axs[2].plot(data[id,:,2], label="speed", color=colors[k+2], linewidth=3, alpha=0.7)
         axs[0].grid(True)
         #axs[0].legend()
-        axs[0].set_title("pressure")
+        axs[0].set_title("pressure [Pa]")
         axs[1].grid(True)
         #axs[1].legend()
-        axs[1].set_title("position")
+        axs[1].set_title("position [m]")
         axs[2].grid(True)
        #axs[2].legend()
-        axs[2].set_title("speed")
+        axs[2].set_title("speed [m/s]")
 
     # ids = np.random.randint(0,400,2)
 

@@ -43,7 +43,7 @@ class LSTMmodel(nn.Module):
 
         # Define LSTM layer
         #self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-        self.lstm = nn.GRU(input_size, hidden_size, num_layers=layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
 
         # Define linear layer
         self.linear = nn.Linear(hidden_size, out_size)
@@ -102,8 +102,12 @@ def train(input_data, model):
     model.train()
     total_loss = []
 
-    for inp, label in input_data:  # inp = (u, x) label = x
+    iterator = iter(input_data)
 
+    for k, (inp, label) in enumerate(input_data):  # inp = (u, x) label = x
+
+        a, b = next(iterator)
+        
         inp=inp.to(device)
         label=label.to(device)
         batch_loss = 0
@@ -113,17 +117,25 @@ def train(input_data, model):
         output, _ = model(inp)
         #print("output", output.size())
 
-        #reconsider this part :
+        #reconsider this part :        
         #maybe | out = inp[-1, 1:] + output[-1] | works better
         #out = inp[:, 1:] + output
         #out = inp[:,-1, 1:] + output[:,-1,:]
         out = inp[:, :, 1:] + output
 
+        next_inp = inp.clone()
+        tmp = output.clone()
+        next_inp[:, :, 1:] += tmp
+
+        output2, _ = model(next_inp)
+        out2 = inp[:, :, 1:] + output2
         #print("out",out.size())
 
         optimizer.zero_grad(set_to_none=True)
         loss = loss_fn(out[:,-1,:], label[:, 1:])
-        loss.backward()
+        loss2 = loss_fn(out2[:,-1,:], b[:, 1:])
+        loss2.backward(retain_graph=True)
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         total_loss.append(loss.detach().cpu().numpy())
@@ -201,7 +213,7 @@ def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     5,        150,           0,           0,               0.5], 
+                        [1,           64 ,     3,     2,        150,           0,           0,               0.1], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
                         #[2,           128 ,     3,     100,        150,           0,           0,               0.7],  
@@ -230,7 +242,7 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 900, 
+                                skip_steps_end = 800, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
