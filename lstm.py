@@ -64,24 +64,6 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-
-def slice_batch(batch, window_size=1):
-    """
-    Slice the input data into batches for training.
-
-    Args:
-    - batch: Input data batch
-    - window_size: Size of the sliding window
-
-    Returns:
-    - List of sliced batches
-    """
-    l = []
-    for i in range(len(batch) - window_size):
-        l.append((batch[i:i+window_size, :], batch[i+1:i+window_size+1, 1:]))
-    return l
-
-
 def train(input_data, model):
     """
     Train the LSTM model using input data.
@@ -105,36 +87,47 @@ def train(input_data, model):
     iterator = iter(input_data)
 
     for k, (inp, label) in enumerate(input_data):  # inp = (u, x) label = x
-
-        a, b = next(iterator)
         
+        try:
+            a,b = next(iterator)
+            inp2 , label2 = next(iterator)
+            inp3 , label3 = next(iterator)
+        except StopIteration:
+            break
+
         inp=inp.to(device)
         label=label.to(device)
         batch_loss = 0
 
-        #print("inp",inp.size())
-        #print("label",label.size())
+        # Predict one timestep :
         output, _ = model(inp)
-        #print("output", output.size())
-
-        #reconsider this part :        
-        #maybe | out = inp[-1, 1:] + output[-1] | works better
-        #out = inp[:, 1:] + output
-        #out = inp[:,-1, 1:] + output[:,-1,:]
         out = inp[:, :, 1:] + output
 
+        # Predict next 2 timesteps:
+        #inp2 , label2 = next(iterator)
         next_inp = inp.clone()
         tmp = output.clone()
         next_inp[:, :, 1:] += tmp
 
         output2, _ = model(next_inp)
-        out2 = inp[:, :, 1:] + output2
-        #print("out",out.size())
+        out2 = inp2[:, :, 1:] + output2
+
+        #inp3 , label3 = next(iterator)
+        next_inp2 = next_inp.clone()
+        tmp = output2.clone()
+        next_inp2[:, :, 1:] += tmp
+
+        output3, _ = model(next_inp2)
+        out3 = inp3[:, :, 1:] + output3
+        
+
 
         optimizer.zero_grad(set_to_none=True)
+
+        future_loss = loss_fn(out2[:,-1,:], label2[:, 1:]) +  loss_fn(out3[:,-1,:], label3[:, 1:])
+        future_loss.backward(retain_graph=True)
+
         loss = loss_fn(out[:,-1,:], label[:, 1:])
-        loss2 = loss_fn(out2[:,-1,:], b[:, 1:])
-        loss2.backward(retain_graph=True)
         loss.backward(retain_graph=True)
         optimizer.step()
 
@@ -213,7 +206,7 @@ def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     2,        150,           0,           0,               0.1], 
+                        [4,           64 ,     3,     50,        150,           0,           0,               0.2], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
                         #[2,           128 ,     3,     100,        150,           0,           0,               0.7],  
@@ -242,13 +235,13 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 800, 
+                                skip_steps_end = 400, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_data)
         
-        input_data_old = get_data(path = "save_data_test.csv", 
+        input_data_old = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -306,6 +299,7 @@ def main():
         #plt.show()
 
         # Save trained model
+        k=np.random.randint(0,500,1)[0]
         path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{k}.pth"
         torch.save(model.state_dict(), path)
 

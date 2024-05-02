@@ -11,13 +11,14 @@ import torch.utils
 from torch.utils.data import Dataset, DataLoader
 
 class CustomDataset(Dataset):
-    def __init__(self, data, window_size):
+    def __init__(self, data, window_size, future=1):
 
         self.data = data
         self.ws = window_size
+        self.future = future
 
     def __len__(self):
-        return self.data.size(0)*self.data.size(1) - (self.ws + 1) 
+        return self.data.size(0)*self.data.size(1) - (self.ws + 1) - (self.future-1)
 
     def __getitem__(self, idx):
 
@@ -33,13 +34,19 @@ class CustomDataset(Dataset):
 
             inp=torch.cat((self.data[j, index : self.data.size(1) , :],
                           self.data[j, self.data.size(1) - 1, :].repeat(m, 1)))
-            
-            label = self.data[j,(k * self.data.size(1))%self.data.size(1) - 1 , :]
+            if self.future>1:
+                label = self.data[j, (k * self.data.size(1))%self.data.size(1) - 1 : (k * self.data.size(1))%self.data.size(1) + self.future, :]         
+            else:
+                label = self.data[j,(k * self.data.size(1))%self.data.size(1) - 1 , :]
             
         else:
 
             inp = self.data[j, index : index + self.ws, :]
-            label = self.data[j, index + self.ws, :]
+
+            if self.future>1:
+                label = self.data[j, index + self.ws : index + self.ws + self.future  , :]
+            else:
+                label = self.data[j, index + self.ws, :]
 
         return inp, label
 
