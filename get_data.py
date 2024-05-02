@@ -89,6 +89,7 @@ def visualise(data, num_inits=499):
     plt.show()
 
 
-#visualise(get_data(path = "save_data_validate.csv", timesteps_from_data=0, skip_steps_start = 0, skip_steps_end = 0, drop_half_timesteps = False, normalise_s_w=False, rescale_p=True, num_inits=0), num_inits=20)
+#visualise(get_data(path = "save_data_test3.csv", timesteps_from_data=0, skip_steps_start = 0, skip_steps_end = 0, drop_half_timesteps = False, normalise_s_w=False, rescale_p=True, num_inits=0), num_inits=20)
+
 
 
