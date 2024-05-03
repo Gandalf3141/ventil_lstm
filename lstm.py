@@ -64,7 +64,7 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-def train(input_data, model):
+def train(input_data, model, future_decay):
     """
     Train the LSTM model using input data.
 
@@ -79,7 +79,7 @@ def train(input_data, model):
     - Mean loss over all batches
     """
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters())#, lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     model.train()
     total_loss = []
@@ -91,7 +91,12 @@ def train(input_data, model):
         try:
             a,b = next(iterator)
             inp2 , label2 = next(iterator)
+            inp2 , label2 = inp2.to(device) , label2.to(device)
             inp3 , label3 = next(iterator)
+            inp3 , label3 = inp3.to(device) , label3.to(device)
+            inp4 , label4 = next(iterator)
+            inp4 , label4 = inp4.to(device) , label4.to(device)
+
         except StopIteration:
             break
 
@@ -119,12 +124,20 @@ def train(input_data, model):
 
         output3, _ = model(next_inp2)
         out3 = inp3[:, :, 1:] + output3
+
+        #inp4 , label4 = next(iterator)
+        next_inp3 = next_inp2.clone()
+        tmp = output3.clone()
+        next_inp3[:, :, 1:] += tmp
+
+        output4, _ = model(next_inp3)
+        out4 = inp4[:, :, 1:] + output4
         
 
 
         optimizer.zero_grad(set_to_none=True)
 
-        future_loss = loss_fn(out2[:,-1,:], label2[:, 1:]) +  loss_fn(out3[:,-1,:], label3[:, 1:])
+        future_loss = future_decay * (loss_fn(out2[:,-1,:], label2[:, 1:]) +  loss_fn(out3[:,-1,:], label3[:, 1:]) +  loss_fn(out4[:,-1,:], label4[:, 1:]))
         future_loss.backward(retain_graph=True)
 
         loss = loss_fn(out[:,-1,:], label[:, 1:])
@@ -205,17 +218,22 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
 def main():
 
     parameter_sets  = [
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [4,           64 ,     3,     50,        150,           0,           0,               0.2], 
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
+                        [4,           5 ,     1,     1000,        150,           0,           0,               0.9,                   0.3], 
 
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        #[2,           128 ,     3,     100,        150,           0,           0,               0.7],  
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
+                       # [4,           64 ,     3,     1000,        150,           0,           0,                0.9,                   0.2], 
 
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
+                        #[4,           64 ,     3,     1000,        150,           0,           0,               0.9,                   0.5], 
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
+                        #[16,           128 ,     3,     1000,        150,           0,           0,               0.9,                   0.5], 
 
                       ]
 
     for k,set in enumerate(parameter_sets):
-        window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data = set
+        window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data, future_decay = set
         
 
 
@@ -235,7 +253,7 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 700, 
+                                skip_steps_end = 0, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
@@ -264,7 +282,7 @@ def main():
         data  = CustomDataset(input_data, window_size=window_size)
 
        #Split data into train and test sets
-        train_size = int(percentage_of_data * len(data))
+        train_size = int(percentage_of_data * len(data) / 64) * 64
         test_size = len(data) - train_size
         train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
 
@@ -286,7 +304,7 @@ def main():
         #Train
         #epochs=1
         for e in tqdm(range(epochs)):
-            loss_epoch = train(train_dataloader, model)
+            loss_epoch = train(train_dataloader, model, future_decay)
 
             losses.append(loss_epoch)
             if e % 5 == 0:
@@ -300,8 +318,9 @@ def main():
 
         # Save trained model
         k=np.random.randint(0,500,1)[0]
-        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{k}.pth"
+        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{k}_decay{future_decay}.pth"
         torch.save(model.state_dict(), path)
+        print(f"Run finished, file saved as: \n {path}")
 
         #test the model
         #test(input_data2, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=True)
