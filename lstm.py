@@ -156,10 +156,11 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
     loss_fn = nn.MSELoss()
     test_loss = 0
     test_loss_deriv = 0
+    total_loss = 0
 
     for i, x in enumerate(test_data):
         x=x.to(device)
-        if i > 2:
+        if i > 2 and plot_opt:
             break
 
         with torch.inference_mode():
@@ -187,6 +188,8 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
             test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().cpu().numpy()
             test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().cpu().numpy()
 
+            total_loss += loss_fn(pred[:, 1:], x[:, 1:]).detach().cpu().numpy()
+
             if plot_opt:
                 figure , axs = plt.subplots(1,3,figsize=(16,9))
             
@@ -213,13 +216,13 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
                 plt.legend()
                 plt.show()
             
-    return np.mean(test_loss), np.mean(test_loss_deriv)
+    return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
 
 def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
-                        [4,           5 ,     1,     1000,        150,           0,           0,               0.9,                   0.3], 
+                        [4,           5 ,     1,     100,        150,           0,           0,               0.7,                   0.3], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
                        # [4,           64 ,     3,     1000,        150,           0,           0,                0.9,                   0.2], 
@@ -258,39 +261,31 @@ def main():
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_data)
-        
-        input_data_old = get_data(path = "save_data_test3.csv", 
-                                timesteps_from_data=0, 
-                                skip_steps_start = 0,
-                                skip_steps_end = 0, 
-                                drop_half_timesteps = True,
-                                normalise_s_w=True,
-                                rescale_p=False,
-                                num_inits=part_of_old_data)
-        if part_of_old_data>0:
-         input_data=torch.cat((input_data, input_data_old))
-         
-        input_test = get_data(path = "save_data_validate.csv", 
-                                timesteps_from_data=0, 
-                                skip_steps_start = 0,
-                                skip_steps_end = 0, 
-                                drop_half_timesteps = True,
-                                normalise_s_w=True,
-                                rescale_p=False,
-                                num_inits=10)
-        
-        data  = CustomDataset(input_data, window_size=window_size)
 
-       #Split data into train and test sets
-        train_size = int(percentage_of_data * len(data) / 64) * 64
-        test_size = len(data) - train_size
-        train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
 
-        train_dataloader = DataLoader(train_dataset, batch_size=64,pin_memory=True)
-        test_dataloader = DataLoader(test_dataset, batch_size=1)
-  
-        # Take a slice of data for training (only slice_of_data many timesteps)
-        #slice_of_data = 10
+        #Split data into train and test sets
+
+        num_of_inits_train = int(len(input_data)*percentage_of_data)
+
+        train_inits = np.random.randint(0,len(input_data), num_of_inits_train)
+        train_inits = np.unique(train_inits)
+        test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
+
+        # make sure we really get the specified percentage of training data..
+        if percentage_of_data < 0.99: 
+             while len(train_inits) < num_of_inits_train * percentage_of_data:
+                i = np.random.randint(0,len(test_inits),1)[0]
+                train_inits = np.append(train_inits,test_inits[i])
+                test_inits = np.delete(test_inits, i)
+    
+
+        train_data = input_data[train_inits,:,:]
+        test_data = input_data[test_inits,:,:]
+
+        data_set  = CustomDataset(train_data, window_size=4)
+
+        train_dataloader = DataLoader(data_set, batch_size=64,pin_memory=True)
+        
 
         # Initialize the LSTM model
         model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
@@ -303,15 +298,28 @@ def main():
         
         #Train
         #epochs=1
+
+        average_traj_err_train = []
+        average_traj_err_test = []
+
         for e in tqdm(range(epochs)):
             loss_epoch = train(train_dataloader, model, future_decay)
 
             losses.append(loss_epoch)
             if e % 5 == 0:
-
                 print(f"Epoch {e}: Loss: {loss_epoch}")
-                #print(test(input_data, model, steps=300, ws=window_size, plot_opt=False))
-    
+
+            if e%2 == 0:
+                _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
+                _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
+                average_traj_err_train.append(err_train)
+                average_traj_err_test.append(err_test)
+
+        plt.plot(average_traj_err_train[1:], label="inits from training data")
+        plt.plot(average_traj_err_test[1:], label="inits from testing data")
+        plt.title("Full trajectory prediction errors from initial value")
+        plt.legend()
+        plt.show()
         # Plot losses
         #plt.plot(losses[1:])
         #plt.show()
