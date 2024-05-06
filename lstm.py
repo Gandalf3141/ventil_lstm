@@ -160,7 +160,7 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
 
     for i, x in enumerate(test_data):
         x=x.to(device)
-        if i > 2 and plot_opt:
+        if i > 5:
             break
 
         with torch.inference_mode():
@@ -222,16 +222,11 @@ def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
-                        [4,           5 ,     1,     100,        150,           0,           0,               0.7,                   0.3], 
+                        [4,           5 ,     1,     10,        150,           0,           0,               0.7,                   0.3], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
                        # [4,           64 ,     3,     1000,        150,           0,           0,                0.9,                   0.2], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
-                        #[4,           64 ,     3,     1000,        150,           0,           0,               0.9,                   0.5], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
-                        #[16,           128 ,     3,     1000,        150,           0,           0,               0.9,                   0.5], 
+ 
 
                       ]
 
