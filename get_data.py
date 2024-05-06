@@ -10,12 +10,13 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     else:
      df = pd.read_csv(path, header=0, skiprows=skip_steps_start)
 
-    if skip_steps_end>1:
-       df = df.iloc[0:len(df)-skip_steps_end]
 
     #drop even more timesteps
     if drop_half_timesteps:
      df = df.iloc[::2]
+
+    if skip_steps_end>1:
+       df = df.iloc[0:len(df)-skip_steps_end]
 
     if num_inits>1:
        df = df.iloc[:,0:4*num_inits]
