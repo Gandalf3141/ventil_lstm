@@ -64,7 +64,7 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-def train(input_data, model, future_decay):
+def train(input_data, model, weight_decay, future_decay):
     """
     Train the LSTM model using input data.
 
@@ -79,7 +79,7 @@ def train(input_data, model, future_decay):
     - Mean loss over all batches
     """
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=weight_decay)
 
     model.train()
     total_loss = []
@@ -133,12 +133,20 @@ def train(input_data, model, future_decay):
         output4, _ = model(next_inp3)
         out4 = inp4[:, :, 1:] + output4
         
-
-
         optimizer.zero_grad(set_to_none=True)
 
         future_loss = future_decay * (loss_fn(out2[:,-1,:], label2[:, 1:]) +  loss_fn(out3[:,-1,:], label3[:, 1:]) +  loss_fn(out4[:,-1,:], label4[:, 1:]))
-        future_loss.backward(retain_graph=True)
+        if future_decay>0:
+         future_loss.backward(retain_graph=True)
+
+        # future_loss1 = future_decay * loss_fn(out2[:,-1,:], label2[:, 1:])
+        # future_loss2 = future_decay *  loss_fn(out3[:,-1,:], label3[:, 1:])
+        # future_loss3 = future_decay * loss_fn(out4[:,-1,:], label4[:, 1:])
+
+        # if future_decay>0:
+        #  future_loss1.backward(retain_graph=True)
+        #  future_loss2.backward(retain_graph=True)
+        #  future_loss3.backward(retain_graph=True)
 
         loss = loss_fn(out[:,-1,:], label[:, 1:])
         loss.backward(retain_graph=True)
@@ -147,7 +155,6 @@ def train(input_data, model, future_decay):
         total_loss.append(loss.detach().cpu().numpy())
 
     return np.mean(total_loss)
-
 
 def test(test_data, model, steps=600, ws=10, plot_opt=False):
 
@@ -160,7 +167,7 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
 
     for i, x in enumerate(test_data):
         x=x.to(device)
-        if i > 5:
+        if i > 20:
             break
 
         with torch.inference_mode():
@@ -221,37 +228,36 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
 def main():
 
     parameter_sets  = [
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
-                        [4,           5 ,     1,     10,        150,           0,           0,               0.7,                   0.3], 
 
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data     future_decay
-                       # [4,           64 ,     3,     1000,        150,           0,           0,                0.9,                   0.2], 
- 
 
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           128 ,     3,    1000,        150,           0,           0,               0.8,                   0.3 ,             128],  
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           128 ,     3,    1000,        150,           0,           0,               0.8,                   0.8 ,             128], 
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           128 ,     3,    1000,        150,           0,           1e-5,               0.8,                 0.3 ,          128], 
+
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           128 ,     3,    1000,        150,           0,          1e-5,               0.8,                  0.8 ,           128] 
                       ]
 
+
     for k,set in enumerate(parameter_sets):
-        window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data, future_decay = set
+        window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data, future_decay, batch_size = set
         
-
-
+        # Configure logging
         log_file = 'training.log'
         filemode = 'a' if os.path.exists(log_file) else 'w'
-
-        # Configure logging
         logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-        # Define parameters
-        # window_size =4 
-        # h_size=5
-        # l_num=1
-        losses = []
 
         # Generate input data
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 0, 
+                                skip_steps_end = 200, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
@@ -261,61 +267,56 @@ def main():
         #Split data into train and test sets
 
         num_of_inits_train = int(len(input_data)*percentage_of_data)
-
         train_inits = np.random.randint(0,len(input_data), num_of_inits_train)
         train_inits = np.unique(train_inits)
         test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
 
         # make sure we really get the specified percentage of training data..
         if percentage_of_data < 0.99: 
-             while len(train_inits) < num_of_inits_train * percentage_of_data:
-                i = np.random.randint(0,len(test_inits),1)[0]
-                train_inits = np.append(train_inits,test_inits[i])
-                test_inits = np.delete(test_inits, i)
-    
+                while len(train_inits) < num_of_inits_train * percentage_of_data:
+                    i = np.random.randint(0,len(test_inits),1)[0]
+                    train_inits = np.append(train_inits,test_inits[i])
+                    test_inits = np.delete(test_inits, i)
+
 
         train_data = input_data[train_inits,:,:]
         test_data = input_data[test_inits,:,:]
 
-        data_set  = CustomDataset(train_data, window_size=4)
-
-        train_dataloader = DataLoader(data_set, batch_size=64,pin_memory=True)
+        data_set  = CustomDataset(train_data, window_size=window_size)
+        train_dataloader = DataLoader(data_set, batch_size=batch_size, pin_memory=True, drop_last=True)
         
-
         # Initialize the LSTM model
         model = LSTMmodel(input_size=3, hidden_size=h_size, out_size=2, layers=l_num).to(device)
 
         trained=False
         if trained:
             path = f"Ventil_trained_NNs\lstm_ws{window_size}.pth"
-            model.load_state_dict(torch.load(path, map_location=torch.device(device)))
-
+            model.load_state_dict(torch.load(path, map_location=torch.device(device)))    
         
         #Train
-        #epochs=1
-
+        epochs=1
+        losses = []
         average_traj_err_train = []
         average_traj_err_test = []
 
         for e in tqdm(range(epochs)):
-            loss_epoch = train(train_dataloader, model, future_decay)
+            loss_epoch = train(train_dataloader, model, weight_decay, future_decay)
 
             losses.append(loss_epoch)
-            if e % 5 == 0:
-                print(f"Epoch {e}: Loss: {loss_epoch}")
+            #if e % 10 == 0:
+            #    print(f"Epoch {e}: Loss: {loss_epoch}")
 
-            if e%2 == 0:
+            if e%25 == 0:
                 _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_test)
 
-        plt.plot(average_traj_err_train[1:], label="inits from training data")
-        plt.plot(average_traj_err_test[1:], label="inits from testing data")
-        plt.title("Full trajectory prediction errors from initial value")
-        plt.legend()
-        plt.show()
         # Plot losses
+        #plt.plot(average_traj_err_train[1:], label="inits from training data")
+        #plt.plot(average_traj_err_test[1:], label="inits from testing data")
+        #plt.title("Full trajectory prediction errors from initial value")
+        #plt.legend()
         #plt.plot(losses[1:])
         #plt.show()
 
@@ -325,18 +326,31 @@ def main():
         torch.save(model.state_dict(), path)
         print(f"Run finished, file saved as: \n {path}")
 
-        #test the model
-        #test(input_data2, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=True)
 
         # Log parameters
         logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
-        logging.info(f"hyperparams: h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data")
-        logging.info(f"hyperparams: {h_size,      l_num,     epochs,    slice_of_data,    part_of_data,    part_of_old_data,    percentage_of_data}")
+        logging.info(f"hyperparams: h_size {h_size}, l_num {l_num}, epochs {epochs}, \n slice_of_data {slice_of_data},part_of_data {part_of_data}")
+        logging.info(f"percentage_of_data {percentage_of_data}, weight_decay {weight_decay}, future_decay {future_decay}, batchsize {batch_size}")
         logging.info(f"final loss {losses[-1]}")
+        logging.info(f"average training error every 40 epochs {average_traj_err_train}")
+        logging.info(f"average test error every 40 epochs {average_traj_err_test}")
+
+        logging.info(f"Final error over whole traj (average over some inits) {average_traj_err_train[-1]}")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("\n")
         logging.info("\n")
+
+
+
+
+
+
+
+
+
+
+
 
 
 
