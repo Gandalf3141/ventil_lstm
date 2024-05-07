@@ -64,7 +64,7 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-def train(input_data, model, weight_decay, future_decay):
+def OR_train(input_data, model, weight_decay, future_decay, learning_rate=0.001):
     """
     Train the LSTM model using input data.
 
@@ -79,7 +79,102 @@ def train(input_data, model, weight_decay, future_decay):
     - Mean loss over all batches
     """
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
+
+    model.train()
+    total_loss = []
+
+    iterator2 = iter(input_data)
+    next(iterator2)
+    iterator3 = iter(input_data)
+    next(iterator3), next(iterator3)
+    iterator4 = iter(input_data)
+    next(iterator4), next(iterator4),next(iterator4)
+
+
+    for k, (inp, label) in enumerate(input_data):  # inp = (u, x) label = x
+        
+
+        inp=inp.to(device)
+        label=label.to(device)
+        batch_loss = 0
+
+        # Predict one timestep :
+        output, _ = model(inp)
+        out = inp[:, :, 1:] + output
+
+        #--------------------------------------------------------------------------------------------
+        future_batches=0
+        if future_batches:
+            try:
+                
+                inp2 , label2 = next(iterator2)
+                inp2 , label2 = inp2.to(device) , label2.to(device)
+                inp3 , label3 = next(iterator3)
+                inp3 , label3 = inp3.to(device) , label3.to(device)
+                inp4 , label4 = next(iterator4)
+                inp4 , label4 = inp4.to(device) , label4.to(device)
+
+            except StopIteration:
+                break
+
+            # Predict next 2 timesteps:
+            #inp2 , label2 = next(iterator)
+            next_inp = inp.clone()
+            tmp = output.clone()
+            next_inp[:, :, 1:] += tmp
+
+            output2, _ = model(next_inp)
+            out2 = inp2[:, :, 1:] + output2
+
+            #inp3 , label3 = next(iterator)
+            next_inp2 = next_inp.clone()
+            tmp = output2.clone()
+            next_inp2[:, :, 1:] += tmp
+
+            output3, _ = model(next_inp2)
+            out3 = inp3[:, :, 1:] + output3
+
+            #inp4 , label4 = next(iterator)
+            next_inp3 = next_inp2.clone()
+            tmp = output3.clone()
+            next_inp3[:, :, 1:] += tmp
+
+            output4, _ = model(next_inp3)
+            out4 = inp4[:, :, 1:] + output4
+        
+            optimizer.zero_grad(set_to_none=True)
+
+            future_loss = future_decay * (loss_fn(out2[:,-1,:], label2[:, 1:]) +  loss_fn(out3[:,-1,:], label3[:, 1:]) +  loss_fn(out4[:,-1,:], label4[:, 1:]))
+            if future_decay>0:
+                future_loss.backward(retain_graph=True)
+        #--------------------------------------------------------------------------------------------      
+
+        optimizer.zero_grad(set_to_none=True)
+        loss = loss_fn(out[:,-1,:], label[:, 1:])
+        loss.backward(retain_graph=True)
+        optimizer.step()
+
+        total_loss.append(loss.detach().cpu().numpy())
+
+    return np.mean(total_loss)
+
+def TF_train(input_data, model, weight_decay, future_decay, learning_rate=0.001):
+    """
+    Train the LSTM model using input data.
+
+    Args:
+    - input_data: Input data for training
+    - model: LSTM model to be trained
+    - ws: Window size
+    - odestep: Option for using ODE steps
+    - use_autograd: Option for using autograd
+
+    Returns:
+    - Mean loss over all batches
+    """
+    loss_fn = nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
 
     model.train()
     total_loss = []
@@ -114,29 +209,14 @@ def train(input_data, model, weight_decay, future_decay):
         output, _ = model(inp)
         out = inp[:, :, 1:] + output
 
-        # Predict next 2 timesteps:
-        #inp2 , label2 = next(iterator)
-        next_inp = inp.clone()
-        tmp = output.clone()
-        next_inp[:, :, 1:] += tmp
-
-        output2, _ = model(next_inp)
+        # Predict extra timesteps
+        output2, _ = model(inp2)
         out2 = inp2[:, :, 1:] + output2
 
-        #inp3 , label3 = next(iterator)
-        next_inp2 = next_inp.clone()
-        tmp = output2.clone()
-        next_inp2[:, :, 1:] += tmp
-
-        output3, _ = model(next_inp2)
+        output3, _ = model(inp3)
         out3 = inp3[:, :, 1:] + output3
 
-        #inp4 , label4 = next(iterator)
-        next_inp3 = next_inp2.clone()
-        tmp = output3.clone()
-        next_inp3[:, :, 1:] += tmp
-
-        output4, _ = model(next_inp3)
+        output4, _ = model(inp4)
         out4 = inp4[:, :, 1:] + output4
         
         optimizer.zero_grad(set_to_none=True)
@@ -145,14 +225,6 @@ def train(input_data, model, weight_decay, future_decay):
         if future_decay>0:
          future_loss.backward(retain_graph=True)
 
-        # future_loss1 = future_decay * loss_fn(out2[:,-1,:], label2[:, 1:])
-        # future_loss2 = future_decay *  loss_fn(out3[:,-1,:], label3[:, 1:])
-        # future_loss3 = future_decay * loss_fn(out4[:,-1,:], label4[:, 1:])
-
-        # if future_decay>0:
-        #  future_loss1.backward(retain_graph=True)
-        #  future_loss2.backward(retain_graph=True)
-        #  future_loss3.backward(retain_graph=True)
 
         loss = loss_fn(out[:,-1,:], label[:, 1:])
         loss.backward(retain_graph=True)
@@ -161,6 +233,7 @@ def train(input_data, model, weight_decay, future_decay):
         total_loss.append(loss.detach().cpu().numpy())
 
     return np.mean(total_loss)
+
 
 def test(test_data, model, steps=600, ws=10, plot_opt=False):
 
@@ -236,16 +309,16 @@ def main():
     parameter_sets  = [
 
 
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [64,           8 ,     1,    20,        150,           0,           1e-5,               0.5,                 0.3 ,          64], 
+                        #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           64 ,    3,    10,        0.001,           0,           1e-5,               0.2,                 0.3 ,          128], 
 
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [32,          8 ,     1,    20,        150,           0,           1e-5,               0.5,                 0.3 ,          64], 
+                        #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           64 ,    3,    10,       0.01,           0,           1e-5,               0.2,                 0.3 ,           128], 
                       ]
 
 
     for k,set in enumerate(parameter_sets):
-        window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data, future_decay, batch_size = set
+        window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data, future_decay, batch_size = set
         
         # Configure logging
         log_file = 'training.log'
@@ -300,13 +373,13 @@ def main():
         average_traj_err_test = []
 
         for e in tqdm(range(epochs)):
-            loss_epoch = train(train_dataloader, model, weight_decay, future_decay)
+            loss_epoch = OR_train(train_dataloader, model, weight_decay, future_decay, learning_rate=learning_rate)
 
             losses.append(loss_epoch)
             #if e % 10 == 0:
             #    print(f"Epoch {e}: Loss: {loss_epoch}")
 
-            if e%50 == 0:
+            if e%5 == 0:
                 _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 average_traj_err_train.append(err_train)
@@ -329,7 +402,7 @@ def main():
 
         # Log parameters
         logging.info(f"Epochs: {epochs}, Window Size: {window_size}")
-        logging.info(f"hyperparams: h_size {h_size}, l_num {l_num}, epochs {epochs}, \n slice_of_data {slice_of_data},part_of_data {part_of_data}")
+        logging.info(f"hyperparams: h_size {h_size}, l_num {l_num}, learning rate {learning_rate},part_of_data {part_of_data}")
         logging.info(f"percentage_of_data {percentage_of_data}, weight_decay {weight_decay}, future_decay {future_decay}, batchsize {batch_size}")
         logging.info(f"final loss {losses[-1]}")
         logging.info(f"average training error every 40 epochs {average_traj_err_train}")
