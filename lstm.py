@@ -84,17 +84,23 @@ def train(input_data, model, weight_decay, future_decay):
     model.train()
     total_loss = []
 
-    iterator = iter(input_data)
+    iterator2 = iter(input_data)
+    next(iterator2)
+    iterator3 = iter(input_data)
+    next(iterator3), next(iterator3)
+    iterator4 = iter(input_data)
+    next(iterator4), next(iterator4),next(iterator4)
+
 
     for k, (inp, label) in enumerate(input_data):  # inp = (u, x) label = x
         
         try:
-            a,b = next(iterator)
-            inp2 , label2 = next(iterator)
+            
+            inp2 , label2 = next(iterator2)
             inp2 , label2 = inp2.to(device) , label2.to(device)
-            inp3 , label3 = next(iterator)
+            inp3 , label3 = next(iterator3)
             inp3 , label3 = inp3.to(device) , label3.to(device)
-            inp4 , label4 = next(iterator)
+            inp4 , label4 = next(iterator4)
             inp4 , label4 = inp4.to(device) , label4.to(device)
 
         except StopIteration:
@@ -231,16 +237,10 @@ def main():
 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           128 ,     3,    1000,        150,           0,           0,               0.8,                   0.3 ,             128],  
+                        [64,           8 ,     1,    20,        150,           0,           1e-5,               0.5,                 0.3 ,          64], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           128 ,     3,    1000,        150,           0,           0,               0.8,                   0.8 ,             128], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           128 ,     3,    1000,        150,           0,           1e-5,               0.8,                 0.3 ,          128], 
-
-                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           128 ,     3,    1000,        150,           0,          1e-5,               0.8,                  0.8 ,           128] 
+                        [32,          8 ,     1,    20,        150,           0,           1e-5,               0.5,                 0.3 ,          64], 
                       ]
 
 
@@ -294,7 +294,7 @@ def main():
             model.load_state_dict(torch.load(path, map_location=torch.device(device)))    
         
         #Train
-        epochs=1
+        #epochs=1
         losses = []
         average_traj_err_train = []
         average_traj_err_test = []
@@ -306,7 +306,7 @@ def main():
             #if e % 10 == 0:
             #    print(f"Epoch {e}: Loss: {loss_epoch}")
 
-            if e%25 == 0:
+            if e%50 == 0:
                 _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 average_traj_err_train.append(err_train)
