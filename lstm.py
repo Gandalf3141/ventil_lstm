@@ -43,7 +43,7 @@ class LSTMmodel(nn.Module):
 
         # Define LSTM layer
         #self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-        self.lstm = nn.GRU(input_size, hidden_size, num_layers=layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
 
         # Define linear layer
         self.linear = nn.Linear(hidden_size, out_size)
@@ -201,19 +201,19 @@ def main():
 
     parameter_sets  = [
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        [1,           64 ,     3,     5,        150,           0,           0,               0.5], 
+                        [1,           64 ,     3,     800,        150,           0,           0,               0.2], 
 
                         #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
-                        #[2,           128 ,     3,     100,        150,           0,           0,               0.7],  
+                        #[4,           8 ,      1,     100,        150,           0,           0,               0.5], 
 
+                        #window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data
+                        #[4,           64 ,     3,     100,        150,           0,           0,               0.5], 
 
                       ]
 
     for k,set in enumerate(parameter_sets):
         window_size, h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data = set
         
-
-
         log_file = 'training.log'
         filemode = 'a' if os.path.exists(log_file) else 'w'
 
@@ -230,7 +230,7 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 900, 
+                                skip_steps_end = 800, 
                                 drop_half_timesteps = True,
                                 normalise_s_w=True,
                                 rescale_p=False,
@@ -240,7 +240,7 @@ def main():
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
-                                drop_half_timesteps = True,
+                                drop_half_timesteps = False,
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_old_data)
@@ -263,7 +263,7 @@ def main():
         test_size = len(data) - train_size
         train_dataset, test_dataset = torch.utils.data.random_split(data, [train_size, test_size])
 
-        train_dataloader = DataLoader(train_dataset, batch_size=64,pin_memory=True)
+        train_dataloader = DataLoader(train_dataset, batch_size=32, pin_memory=True)
         test_dataloader = DataLoader(test_dataset, batch_size=1)
   
         # Take a slice of data for training (only slice_of_data many timesteps)
@@ -279,7 +279,7 @@ def main():
 
         
         #Train
-        #epochs=1
+        
         for e in tqdm(range(epochs)):
             loss_epoch = train(train_dataloader, model)
 
@@ -292,10 +292,12 @@ def main():
         # Plot losses
         #plt.plot(losses[1:])
         #plt.show()
-
+        
         # Save trained model
-        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{k}.pth"
+        a = np.random.randint(0,200,1)[0]
+        path = f"Ventil_trained_NNs\lstm_ws{window_size}hs{h_size}layer{l_num}_nummer{a}.pth"
         torch.save(model.state_dict(), path)
+        print("Run compleze saved file!\n", path)
 
         #test the model
         #test(input_data2, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=True)
@@ -305,6 +307,7 @@ def main():
         logging.info(f"hyperparams: h_size, l_num, epochs, slice_of_data, part_of_data, part_of_old_data,  percentage_of_data")
         logging.info(f"hyperparams: {h_size,      l_num,     epochs,    slice_of_data,    part_of_data,    part_of_old_data,    percentage_of_data}")
         logging.info(f"final loss {losses[-1]}")
+        logging.info(f"saved at {path}")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("\n")
