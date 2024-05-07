@@ -20,6 +20,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
 
     if num_inits>1:
        df = df.iloc[:,0:4*num_inits]
+
     #Reorder columns for familiar setup (t,u,x) here (t, p_b, s_b, w_b)
     L = df.columns.to_list()
     time_cols = L[0::4]
@@ -33,15 +34,11 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     #normalise each column of the dataframe
     #mean normalization
     #df=(df-df.mean())/df.std()
-    
-    #Can't normalize p_b because then a[i]*X+b[i] becomes cX+d for all i.. same with mean normal. 
-    
+ 
     # Normalise / Rescale
     if normalise_s_w:
         tmp=pb_cols+sb_cols+wb_cols
         df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
-    if rescale_p:
-        df[pb_cols] = df[pb_cols] / 1e5
 
     tensor = torch.tensor(df.values)
 
