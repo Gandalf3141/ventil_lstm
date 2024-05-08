@@ -19,7 +19,9 @@ from dataloader import *
 # Define the LSTM model with two hidden layers
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
-print(device)
+
+# print(device, "is available but using cpu")
+# device = "cpu"
 
 class LSTMmodel(nn.Module):
     """
@@ -243,10 +245,13 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
     test_loss_deriv = 0
     total_loss = 0
 
+    ids = np.random.randint(0, test_data.size(dim=0), 10)
+    ids = np.unique(ids)
+
     for i, x in enumerate(test_data):
         x=x.to(device)
-        if i > 20:
-            break
+        if i not in ids:
+            continue
 
         with torch.inference_mode():
 
@@ -314,11 +319,11 @@ def main():
                         #[16,           64 ,    3,    1000,       0.0001,           0,           1e-5,               0.4,                 0.3 ,           32],  
 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [32,           8 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          32], 
+                        [4,           5 ,    1,    20,       0.001,           0,           1e-5,               0.9,                 0.3 ,          64], 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           8 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          16], 
+                        [8,           5 ,    1,    20,       0.001,           0,           1e-5,               0.9,                 0.3 ,          32],  
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           8 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          8],
+                        #[16,           64 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          8],
                       ]
 
 
@@ -335,12 +340,13 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 600, 
+                                skip_steps_end = 0, 
                                 drop_half_timesteps = False,
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_data)
 
+        cut_off_timesteps = 900
 
         #Split data into train and test sets
 
@@ -351,13 +357,13 @@ def main():
 
         # make sure we really get the specified percentage of training data..
         if percentage_of_data < 0.99: 
-                while len(train_inits) < num_of_inits_train * percentage_of_data:
+                while len(train_inits) < num_of_inits_train:
                     i = np.random.randint(0,len(test_inits),1)[0]
                     train_inits = np.append(train_inits,test_inits[i])
                     test_inits = np.delete(test_inits, i)
 
 
-        train_data = input_data[train_inits,:,:]
+        train_data = input_data[train_inits,:input_data.size(dim=1)-cut_off_timesteps,:]
         test_data = input_data[test_inits,:,:]
 
         data_set  = CustomDataset(train_data, window_size=window_size)
@@ -384,14 +390,14 @@ def main():
             #if e % 10 == 0:
             #    print(f"Epoch {e}: Loss: {loss_epoch}")
 
-            if e%100 == 0:
-                _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
-                _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
+            if (e+1)%100 == 0:
+                _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=window_size, plot_opt=False)
+                _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=window_size, plot_opt=False)
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_test)
 
-        _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
-        _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
+        _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=window_size, plot_opt=False)
+        _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=window_size, plot_opt=False)
         average_traj_err_train.append(err_train)
         average_traj_err_test.append(err_test)
 
