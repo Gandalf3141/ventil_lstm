@@ -273,7 +273,7 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
             test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().cpu().numpy()
             test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().cpu().numpy()
 
-            total_loss += loss_fn(pred[:, 1:], x[:, 1:]).detach().cpu().numpy()
+            total_loss += loss_fn(pred[ws:, 1:], x[ws:, 1:]).detach().cpu().numpy()
 
             if plot_opt:
                 figure , axs = plt.subplots(1,3,figsize=(16,9))
@@ -308,13 +308,17 @@ def main():
     parameter_sets  = [
 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [4,           8 ,    1,    200,        0.001,           0,           1e-5,               0.4,                 0.3 ,          32],
+                        #[32,           64 ,    3,    50,       5*0.0001,           0,           1e-5,               0.4,                 0.3 ,          32],
 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           64 ,    3,    200,        0.001,           0,           1e-5,               0.4,                 0.3 ,          32], 
+                        #[16,           64 ,    3,    1000,       0.0001,           0,           1e-5,               0.4,                 0.3 ,           32],  
 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           64 ,    3,    200,       5*0.0001,           0,           1e-5,               0.4,                 0.3 ,           32], 
+                        [32,           8 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          32], 
+                        #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           8 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          16], 
+                        #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [16,           8 ,    1,    50,       5*0.0001,           0,           1e-5,               0.3,                 0.3 ,          8],
                       ]
 
 
@@ -331,8 +335,8 @@ def main():
         input_data = get_data(path = "save_data_test3.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
-                                skip_steps_end = 200, 
-                                drop_half_timesteps = True,
+                                skip_steps_end = 600, 
+                                drop_half_timesteps = False,
                                 normalise_s_w=True,
                                 rescale_p=False,
                                 num_inits=part_of_data)
@@ -380,7 +384,7 @@ def main():
             #if e % 10 == 0:
             #    print(f"Epoch {e}: Loss: {loss_epoch}")
 
-            if e%500 == 0:
+            if e%100 == 0:
                 _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 average_traj_err_train.append(err_train)
@@ -390,7 +394,7 @@ def main():
         _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
         average_traj_err_train.append(err_train)
         average_traj_err_test.append(err_test)
-        
+
         # Plot losses
         #plt.plot(average_traj_err_train[1:], label="inits from training data")
         #plt.plot(average_traj_err_test[1:], label="inits from testing data")
