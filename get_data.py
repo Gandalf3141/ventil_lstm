@@ -34,8 +34,10 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     # Normalise / Rescale
     if normalise_s_w:
         tmp=pb_cols+sb_cols+wb_cols
-        #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
+        #mean normalization
         df[tmp]=(df[tmp]-df[tmp].mean())/df[tmp].std()
+        #min-max normalization
+        #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
 
     tensor = torch.tensor(df.values)
 
