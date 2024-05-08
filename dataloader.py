@@ -35,9 +35,10 @@ class CustomDataset(Dataset):
             inp=torch.cat((self.data[j, index : self.data.size(1) , :],
                           self.data[j, self.data.size(1) - 1, :].repeat(m, 1)))
             if self.future>1:
-                label = self.data[j, (k * self.data.size(1))%self.data.size(1) - 1 : (k * self.data.size(1))%self.data.size(1) + self.future, :]         
+                label = self.data[j, self.data.size(1) - 1, :].repeat(self.future, 1)        
             else:
-                label = self.data[j,(k * self.data.size(1))%self.data.size(1) - 1 , :]
+                label = self.data[j, self.data.size(1) - 1, :]
+                
             
         else:
 
