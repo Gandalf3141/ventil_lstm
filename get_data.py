@@ -31,14 +31,13 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     df= df[new_col_order]
     df = df.drop(time_cols, axis=1)
 
-    #normalise each column of the dataframe
-    #mean normalization
-    #df=(df-df.mean())/df.std()
- 
     # Normalise / Rescale
     if normalise_s_w:
         tmp=pb_cols+sb_cols+wb_cols
-        df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
+        #mean normalization
+        df[tmp]=(df[tmp]-df[tmp].mean())/df[tmp].std()
+        #min-max normalization
+        #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
 
     tensor = torch.tensor(df.values)
 
