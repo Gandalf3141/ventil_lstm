@@ -234,7 +234,6 @@ def TF_train(input_data, model, weight_decay, future_decay, learning_rate=0.001)
 
     return np.mean(total_loss)
 
-
 def test(test_data, model, steps=600, ws=10, plot_opt=False):
 
     #test_data = test_dataloader.get_all_data() 
@@ -308,12 +307,14 @@ def main():
 
     parameter_sets  = [
 
+                        #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
+                        [4,           8 ,    1,    200,        0.001,           0,           1e-5,               0.4,                 0.3 ,          32],
 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           64 ,    3,    10,        0.001,           0,           1e-5,               0.2,                 0.3 ,          128], 
+                        [16,           64 ,    3,    200,        0.001,           0,           1e-5,               0.4,                 0.3 ,          32], 
 
                         #window_size, h_size, l_num, epochs, learning_rate, part_of_data, weight_decay,  percentage_of_data     future_decay      batch_size
-                        [16,           64 ,    3,    10,       0.01,           0,           1e-5,               0.2,                 0.3 ,           128], 
+                        [16,           64 ,    3,    200,       5*0.0001,           0,           1e-5,               0.4,                 0.3 ,           32], 
                       ]
 
 
@@ -379,12 +380,17 @@ def main():
             #if e % 10 == 0:
             #    print(f"Epoch {e}: Loss: {loss_epoch}")
 
-            if e%5 == 0:
+            if e%500 == 0:
                 _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_test)
 
+        _,_, err_train = test(train_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
+        _,_, err_test = test(test_data, model, steps=input_data.size(dim=1), ws=window_size, plot_opt=False)
+        average_traj_err_train.append(err_train)
+        average_traj_err_test.append(err_test)
+        
         # Plot losses
         #plt.plot(average_traj_err_train[1:], label="inits from training data")
         #plt.plot(average_traj_err_test[1:], label="inits from testing data")
