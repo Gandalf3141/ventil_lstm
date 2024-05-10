@@ -308,6 +308,8 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False):
             
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
 
+
+
 def main():
 
     parameter_sets  = [
