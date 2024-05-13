@@ -9,16 +9,20 @@ from get_data import *
 from dataloader import *
 from ray import train, tune
 from ray.tune.search.optuna import OptunaSearch
+from ray.train import Checkpoint
+from ray.tune.search import ConcurrencyLimiter
+from ray.tune.schedulers import ASHAScheduler
 import ray
 import logging
 import os
+import tempfile
 
 ray.init()
 
 # Use the GPU if available
 #torch.set_default_dtype(torch.float64)
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-#device="cpu"
+#device = "cuda:0" if torch.cuda.is_available() else "cpu"
+device="cpu"
 torch.set_default_dtype(torch.float64)
 
 class LSTMmodel(nn.Module):
@@ -64,66 +68,44 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-def train_epoch(input_data, model, weight_decay, learning_rate=0.001, ws=0, future=1):
-    """
-    Train the LSTM model using input data.
+def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws=0, future=1):
 
-    Args:
-    - input_data: Input data for training
-    - model: LSTM model to be trained
-    - ws: Window size
-    - odestep: Option for using ODE steps
-    - use_autograd: Option for using autograd
-
-    Returns:
-    - Mean loss over all batches
-    """
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
 
     model.train()
     total_loss = []
 
-    for k, (inp, label) in enumerate(input_data):  # inp = (u, x) label = x
-        #print(k, f"timesteps {k} : {k+4} mit label bis {k+6}")
+    for k, (inp, label) in enumerate(input_data):  
+
+        # if k%future != 0:
+        #     continue
+        
         inp=inp.to(device)
         label=label.to(device)
 
         # Predict one timestep :
         output, _ = model(inp)
         out = inp[:, :, 1:] + output
-
-        # print("inp", inp, inp.size())
-        # print("label", label, label.size())
-        # print("out", out, out.size())
         
-        #1. extra step-------------------------
-        if future>1:
-            new_combined_inp = torch.cat((label[:, 0, 0:1], out[:,-1,:].clone()), dim=1)
+        inputs = [0]
+        outputs = [out]
+        loss_future = []
+
+        for t in range(future-1): 
+           
+            new_combined_inp = torch.cat((label[:, t, 0:1], outputs[t][:,-1,:]), dim=1)
             new_combined_inp = new_combined_inp.view(inp.size(dim=0),1,3)
+            if t>0:
+                inputs.append(torch.cat((inputs[t-1][: , 1:ws,:], new_combined_inp), dim =1))
+            else:
+                inputs[0] = torch.cat((inp[: , 1:ws,:], new_combined_inp), dim =1)
 
-            #print("new_combined_inp", new_combined_inp, new_combined_inp.size())
+            output2, _ = model(inputs[t])
+            outputs.append(inputs[t][:, :, 1:] + output2)
 
-            inp2 = torch.cat((inp[: , 1:ws,:], new_combined_inp), dim =1)        
-            #print("inp2" , inp2, inp2.size())
+            loss_future.append(loss_fn(outputs[t][:,-1,:], label[:, t+1, 1:]))
 
-            output2, _ = model(inp2)
-            out2 = inp2[:, :, 1:] + output2
-
-            #print("out2", out2, out2.size())
-
-        #2. extra step-------------------------
-        if future > 2:
-            new_combined_inp2 = torch.cat((label[:, 1, 0:1], out2[:,-1,:].clone()), dim=1)
-            new_combined_inp2 = new_combined_inp2.view(inp2.size(dim=0),1,3)
-
-            #print("new_combined_inp", new_combined_inp, new_combined_inp.size())
-
-            inp3 = torch.cat((inp2[: , 1:ws,:], new_combined_inp2), dim =1)        
-            #print("inp2" , inp2, inp2.size())
-
-            output3, _ = model(inp3)
-            out3 = inp3[:, :, 1:] + output3
 
         # reset the gradient
         
@@ -136,14 +118,12 @@ def train_epoch(input_data, model, weight_decay, learning_rate=0.001, ws=0, futu
 
         #backpropagation
         if future>1:
-            loss2 = loss_fn(out2[:,-1,:], label[:, 1, 1:])
-            loss2.backward(retain_graph=True)
-        if future>2:
-            loss3 = loss_fn(out3[:,-1,:], label[:, 2, 1:])
-            loss3.backward(retain_graph=True)
+            for loss_f in loss_future:
+            
+             loss += future_decay * loss_f
 
-        loss.backward(retain_graph=True)
-        optimizer.step()
+            loss.backward(retain_graph=True)
+            optimizer.step()
 
 
         total_loss.append(loss.detach().cpu().numpy())
@@ -226,18 +206,21 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
 
 def objective(config):  # ①
 
+    #print("calling objective function with config:", config)
     torch.set_default_dtype(torch.float64)
 
     #other parameters:
-    fixed_params = {"part_of_data" : 0,
+    fixed_params = {
+                    "part_of_data" : 0,
                     "percentage_of_data" : 0.8,
                     "future" : 4,
-                    "weight_decay" : 1e-5  
+                    "weight_decay" : 1e-5,  
+                    "future_decay" : 1,
+                    "ls" : 1
                     }
 
-
     # Initialize the LSTM model
-    model = LSTMmodel(input_size=3, hidden_size=config["hs"], out_size=2, layers=config["ls"]).to(device)
+    model = LSTMmodel(input_size=3, hidden_size=config["hs"], out_size=2, layers=fixed_params["ls"]).to(device)
     # Generate input data (the data is normalized and some timesteps are cut off)
     input_data = get_data(path = r"C:\Users\StrasserP\Documents\Python Projects\ventil_lstm\save_data_test3.csv", 
                             timesteps_from_data=0, 
@@ -247,10 +230,10 @@ def objective(config):  # ①
                             normalise_s_w=True,
                             rescale_p=False,
                             num_inits=fixed_params["part_of_data"])
-    cut_off_timesteps = 800
+    cut_off_timesteps = 100
 
     #Split data into train and test sets
-
+    np.random.seed(1234)
     num_of_inits_train = int(len(input_data)*fixed_params["percentage_of_data"])
     train_inits = np.random.randint(0,len(input_data), num_of_inits_train)
     train_inits = np.unique(train_inits)
@@ -266,38 +249,61 @@ def objective(config):  # ①
     test_data = input_data[test_inits,:,:]
 
     data_set  = CustomDataset(train_data, window_size=config["ws"], future=fixed_params["future"])
-    train_dataloader = DataLoader(data_set, batch_size=config["bs"], pin_memory=True, drop_last=True)
+    train_dataloader = DataLoader(data_set, batch_size=config["bs"])#, pin_memory=True, drop_last=True)
 
-    epochs=10
+    epochs=40
 
+
+        # Load existing checkpoint through `get_checkpoint()` API.
+    if train.get_checkpoint():
+        loaded_checkpoint = train.get_checkpoint()
+        with loaded_checkpoint.as_directory() as loaded_checkpoint_dir:
+            model_state, optimizer_state = torch.load(
+                os.path.join(loaded_checkpoint_dir, "checkpoint.pt")
+            )
     
     for e in range(epochs):
         
-        train_epoch(train_dataloader, model, fixed_params["weight_decay"], learning_rate=config["lr"], ws=config["ws"], future=fixed_params["future"])  # Train the model
-        _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 1)  # Compute test accuracy
+        train_epoch(train_dataloader, model, fixed_params["weight_decay"], fixed_params["future_decay"], learning_rate=config["lr"], ws=config["ws"], future=config["fu"])  # Train the model
+        _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100)  # Compute test accuracy
 
-        if (e+1)%5 == 0: 
+        if (e+1)%5 == 0:
+            
             train.report({"mean_accuracy": acc}, checkpoint=None)  # Report to Tune
+            with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
+                path = os.path.join(temp_checkpoint_dir, "checkpoint.pt")
+            
+                checkpoint = Checkpoint.from_directory(temp_checkpoint_dir)
+                train.report(
+                    {"mean_accuracy": acc},
+                    checkpoint=checkpoint,
+            )
 
 #parameters to optimise:
 # config : "lr", "ws", "bs", "hs", "ls"
 #         learning rate, window size, batch size, hidden size, number of layers
 
 search_space = {"lr": tune.loguniform(1e-4, 1e-2),
-                "ws": tune.randint(lower=2, upper=17),
-                "bs": tune.randint(lower=8,upper=64),
+                "ws": tune.randint(lower=1, upper=17),
+                "bs": tune.randint(lower=8,upper=128),
                 "hs": tune.randint(lower=4, upper=33),
-                "ls": tune.randint(lower=1, upper=4)}
+                "fu" : tune.choice([2,4,8,16,32]),
+               # "ls": tune.randint(lower=1, upper=4)
+               }
 
 algo = OptunaSearch()  # ②
+algo = ConcurrencyLimiter(algo, max_concurrent=32)
+
+scheduler =  ASHAScheduler(max_t = 4, grace_period = 1, reduction_factor=2)
 
 tuner = tune.Tuner(  # ③
     objective,
     tune_config=tune.TuneConfig(
-        num_samples=2,
+        num_samples=200,
         metric="mean_accuracy",
         mode="min",
         search_alg=algo,
+        scheduler=scheduler
     ),
     #run_config=train.RunConfig(
     # stop={"training_iteration": 5},
