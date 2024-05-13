@@ -10,12 +10,15 @@ from dataloader import *
 from ray import train, tune
 from ray.tune.search.optuna import OptunaSearch
 import ray
+import logging
+import os
 
 ray.init()
 
 # Use the GPU if available
 #torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
+#device="cpu"
 torch.set_default_dtype(torch.float64)
 
 class LSTMmodel(nn.Module):
@@ -236,7 +239,7 @@ def objective(config):  # ①
     # Initialize the LSTM model
     model = LSTMmodel(input_size=3, hidden_size=config["hs"], out_size=2, layers=config["ls"]).to(device)
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\save_data_test3.csv", 
+    input_data = get_data(path = r"C:\Users\StrasserP\Documents\Python Projects\ventil_lstm\save_data_test3.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -265,10 +268,16 @@ def objective(config):  # ①
     data_set  = CustomDataset(train_data, window_size=config["ws"], future=fixed_params["future"])
     train_dataloader = DataLoader(data_set, batch_size=config["bs"], pin_memory=True, drop_last=True)
 
-    while True:
+    epochs=10
+
+    
+    for e in range(epochs):
+        
         train_epoch(train_dataloader, model, fixed_params["weight_decay"], learning_rate=config["lr"], ws=config["ws"], future=fixed_params["future"])  # Train the model
-        _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 20)  # Compute test accuracy
-        train.report({"mean_accuracy": acc})  # Report to Tune
+        _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 1)  # Compute test accuracy
+
+        if (e+1)%5 == 0: 
+            train.report({"mean_accuracy": acc}, checkpoint=None)  # Report to Tune
 
 #parameters to optimise:
 # config : "lr", "ws", "bs", "hs", "ls"
@@ -285,17 +294,28 @@ algo = OptunaSearch()  # ②
 tuner = tune.Tuner(  # ③
     objective,
     tune_config=tune.TuneConfig(
+        num_samples=2,
         metric="mean_accuracy",
         mode="min",
         search_alg=algo,
     ),
-    run_config=train.RunConfig(
-        stop={"training_iteration": 5},
-    ),
+    #run_config=train.RunConfig(
+    # stop={"training_iteration": 5},
+    #),
     param_space=search_space,   
 )
 results = tuner.fit()
 print("Best config is:", results.get_best_result().config)
+
+
+# Configure logging
+log_file = 'training.log'
+filemode = 'a' if os.path.exists(log_file) else 'w'
+logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Log parameters
+logging.info(f"config output: {results.get_best_result().config}")
+
 
 # find results in :
 # ~/ray_results
