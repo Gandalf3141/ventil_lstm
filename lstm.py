@@ -268,7 +268,6 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
 def main():
 
     parameter_configs  = [
-
                         {
                            "experiment_number" : 555,
                            "window_size" : 4,
@@ -285,7 +284,6 @@ def main():
                         }
                       ]
 
-
     for k, params in enumerate(parameter_configs):
 
         # Configure logging
@@ -297,7 +295,7 @@ def main():
         model = LSTMmodel(input_size=3, hidden_size=params["h_size"], out_size=2, layers=params["l_num"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data = get_data(path = "save_data_test3.csv", 
+        input_data = get_data(path = "save_data_test4.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -363,13 +361,6 @@ def main():
         logging.info(f"Final test error over whole traj (average over some inits) {average_traj_err_test}")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("\n")
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
 

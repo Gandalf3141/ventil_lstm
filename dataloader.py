@@ -11,7 +11,10 @@
 import torch.utils
 from torch.utils.data import Dataset, DataLoader
 
+
 class CustomDataset(Dataset):
+
+
     def __init__(self, data, window_size, future=1):
 
         self.data = data
@@ -57,3 +60,4 @@ class CustomDataset(Dataset):
 
     def get_all_data(self):
         return self.data
+    
