@@ -38,6 +38,8 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
         df[tmp]=(df[tmp]-df[tmp].mean())/df[tmp].std()
         #min-max normalization
         #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
+        
+        
 
     tensor = torch.tensor(df.values)
 
@@ -89,7 +91,6 @@ def visualise(data, num_inits=499,set_ylim=False):
     #     axs[j].set_title("Ventil Sim-daten")
 
     plt.show()
-
 
 #visualise(get_data(path = "save_data_test3.csv", timesteps_from_data=0, skip_steps_start = 0, skip_steps_end = 0, drop_half_timesteps = False, normalise_s_w=False, rescale_p=True, num_inits=0), num_inits=20)
 

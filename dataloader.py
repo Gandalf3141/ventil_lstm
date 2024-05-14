@@ -4,6 +4,7 @@
 # inp(0:t) and label(t+1)
 #if values are missing the last value is used for padding sind 
 #Structure of the data:
+
 # (number of timeseries // timesteps // features)
 # if index+window_size > timesteps  >>> padding
 
@@ -24,21 +25,25 @@ class CustomDataset(Dataset):
 
         j = int(idx/self.data.size(1))  
 
-        k = int((idx + self.ws) / self.data.size(1))
+        k = int((idx + self.ws + (self.future-1)) / self.data.size(1))
 
         m = (idx + self.ws) - k * self.data.size(1)
 
         index = idx % self.data.size(1)
 
         if j < k :
-
-            inp=torch.cat((self.data[j, index : self.data.size(1) , :],
-                          self.data[j, self.data.size(1) - 1, :].repeat(m, 1)))
-            if self.future>1:
-                label = self.data[j, (k * self.data.size(1))%self.data.size(1) - 1 : (k * self.data.size(1))%self.data.size(1) + self.future, :]         
-            else:
-                label = self.data[j,(k * self.data.size(1))%self.data.size(1) - 1 , :]
             
+            if m < 0: 
+                inp = self.data[j, index : index + self.ws, :]
+            else: 
+                inp=torch.cat((self.data[j, index : self.data.size(1) , :],
+                          self.data[j, self.data.size(1) - 1, :].repeat(m, 1)))
+                
+            if self.future>1:
+                label = self.data[j, self.data.size(1) - 1, :].repeat(self.future, 1)        
+            else:
+                label = self.data[j, self.data.size(1) - 1, :]
+                
         else:
 
             inp = self.data[j, index : index + self.ws, :]
