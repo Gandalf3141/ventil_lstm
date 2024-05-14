@@ -80,9 +80,7 @@ def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.0
 
         if ((k+1)%(timesteps/batch_size))*(batch_size + ws + future) > timesteps:
             continue
-        # if k%future != 0:
-        #     continue
-        
+
         inp=inp.to(device)
         label=label.to(device)
 
@@ -302,7 +300,7 @@ scheduler =  ASHAScheduler(max_t = 4, grace_period = 1, reduction_factor=2)
 tuner = tune.Tuner(  # ③
     objective,
     tune_config=tune.TuneConfig(
-        num_samples=200,
+        num_samples=10,
         metric="mean_accuracy",
         mode="min",
         search_alg=algo,
