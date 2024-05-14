@@ -68,7 +68,7 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws=0, future=1):
+def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws=0, future=1, timesteps=0, batch_size=0):
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
@@ -78,6 +78,8 @@ def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.0
 
     for k, (inp, label) in enumerate(input_data):  
 
+        if ((k+1)%(timesteps/batch_size))*(batch_size + ws + future) > timesteps:
+            continue
         # if k%future != 0:
         #     continue
         
@@ -248,8 +250,8 @@ def objective(config):  # ①
     train_data = input_data[train_inits,:input_data.size(dim=1)-cut_off_timesteps,:]
     test_data = input_data[test_inits,:,:]
 
-    data_set  = CustomDataset(train_data, window_size=config["ws"], future=fixed_params["future"])
-    train_dataloader = DataLoader(data_set, batch_size=config["bs"])#, pin_memory=True, drop_last=True)
+    data_set  = CustomDataset(train_data, window_size=config["ws"], future=config["fu"])
+    train_dataloader = DataLoader(data_set, batch_size=config["bs"],drop_last=True)#, pin_memory=True)
 
     epochs=40
 
@@ -264,7 +266,8 @@ def objective(config):  # ①
     
     for e in range(epochs):
         
-        train_epoch(train_dataloader, model, fixed_params["weight_decay"], fixed_params["future_decay"], learning_rate=config["lr"], ws=config["ws"], future=config["fu"])  # Train the model
+        train_epoch(train_dataloader, model, fixed_params["weight_decay"], fixed_params["future_decay"], learning_rate=config["lr"], ws=config["ws"], future=config["fu"],
+                     timesteps=train_data.size(dim=1), batch_size=config["bs"])  # Train the model
         _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100)  # Compute test accuracy
 
         if (e+1)%5 == 0:
