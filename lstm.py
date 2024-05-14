@@ -268,33 +268,20 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
 def main():
 
     parameter_configs  = [
+
                         {
-                           "experiment_number" : 36263,
-                           "window_size" : 4 ,
-                           "h_size" : 5,
+                           "experiment_number" : 555,
+                           "window_size" : 4,
+                           "h_size" : 64,
                            "l_num" : 1,
-                           "epochs" : 20,
+                           "epochs" : 60,
                            "learning_rate" : 5*0.0001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
-                           "future_decay"  : 1,
-                           "batch_size" : 64,
+                           "future_decay"  : 0.1,
+                           "batch_size" : 128,
                            "future" : 4
-                        },
-                        {
-                           "experiment_number" : 23123,
-                           "window_size" : 4 ,
-                           "h_size" : 5,
-                           "l_num" : 1,
-                           "epochs" : 20,
-                           "learning_rate" : 5*0.0001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 1,
-                           "batch_size" : 64,
-                           "future" : 1
                         }
                       ]
 
@@ -319,7 +306,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        cut_off_timesteps = 800
+        cut_off_timesteps = 100
         #Split data into train and test sets
 
         num_of_inits_train = int(len(input_data)*params["percentage_of_data"])
