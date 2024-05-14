@@ -268,13 +268,82 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
 def main():
 
     parameter_configs  = [
-
                         {
-                           "experiment_number" : 555,
+                           "experiment_number" : 0,
                            "window_size" : 4,
                            "h_size" : 64,
                            "l_num" : 1,
-                           "epochs" : 60,
+                           "epochs" : 100,
+                           "learning_rate" : 5*0.0001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.1,
+                           "batch_size" : 16,
+                           "future" : 4
+                        },
+                        {
+                           "experiment_number" : 0,
+                           "window_size" : 4,
+                           "h_size" : 64,
+                           "l_num" : 1,
+                           "epochs" : 100,
+                           "learning_rate" : 5*0.0001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.5,
+                           "batch_size" : 16,
+                           "future" : 4
+                        },
+                                                {
+                           "experiment_number" : 0,
+                           "window_size" : 4,
+                           "h_size" : 8,
+                           "l_num" : 1,
+                           "epochs" : 100,
+                           "learning_rate" : 5*0.0001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.1,
+                           "batch_size" : 32,
+                           "future" : 4
+                        },
+                        {
+                           "experiment_number" : 0,
+                           "window_size" : 2,
+                           "h_size" : 8,
+                           "l_num" : 1,
+                           "epochs" : 100,
+                           "learning_rate" : 5*0.0001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.1,
+                           "batch_size" : 64,
+                           "future" : 4
+                        },
+                                                {
+                           "experiment_number" : 0,
+                           "window_size" : 4,
+                           "h_size" : 6,
+                           "l_num" : 1,
+                           "epochs" : 100,
+                           "learning_rate" : 5*0.0001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.1,
+                           "batch_size" : 16,
+                           "future" : 1
+                        },
+                        {
+                           "experiment_number" : 0,
+                           "window_size" : 4,
+                           "h_size" : 64,
+                           "l_num" : 1,
+                           "epochs" : 100,
                            "learning_rate" : 5*0.0001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
@@ -285,6 +354,8 @@ def main():
                         }
                       ]
 
+    for k, d in enumerate(parameter_configs):
+        d["experiment_number"] = k
 
     for k, params in enumerate(parameter_configs):
 
@@ -338,9 +409,9 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%5 == 0:
-                _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 20)
-                _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 20)
+            if (e+1)%10 == 0:
+                _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
+                _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_test)
 
