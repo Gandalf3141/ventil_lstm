@@ -266,22 +266,22 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
 
 def main():
-
+                                #{'lr': 0.00020110091342376562, 'ws': 4, 'bs': 256, 'hs': 6}#
     parameter_configs  = [
                         {
-                           "experiment_number" : 6,
+                           "experiment_number" : 4,
                            "window_size" : 2,
-                           "h_size" : 8,
+                           "h_size" : 6,
                            "l_num" : 1,
-                           "epochs" : 40,
-                           "learning_rate" : 0.001,
+                           "epochs" : 100,
+                           "learning_rate" : 0.0002,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.1,
-                           "batch_size" : 100,
+                           "batch_size" : 256,
                            "future" : 4
-                        },
+                        }
 
                       ]
 
@@ -308,7 +308,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        cut_off_timesteps = 800
+        cut_off_timesteps = 600
         #Split data into train and test sets
 
         np.random.seed(1234)
@@ -334,17 +334,17 @@ def main():
             # compared to the network prediction starting from some initial conditions
             if (e+1)%10 == 0:
                 _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
-                _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
+               # _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
-                average_traj_err_test.append(err_test)
+              #  average_traj_err_test.append(err_test)
 
                 print(f"Average error over full trajectories: training data : {err_train}")
-                print(f"Average error over full trajectories: testing data : {err_test}")
+                #print(f"Average error over full trajectories: testing data : {err_test}")
 
         _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
-        _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
+        #_,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
         print(f"TRAINING FINISHED: Average error over full trajectories: training data : {err_train}")
-        print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")
+       # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")
         
         # Save trained model
         path = f'Ventil_trained_NNs\lstm_ws{params["experiment_number"]}.pth'
