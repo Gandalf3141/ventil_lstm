@@ -269,89 +269,20 @@ def main():
 
     parameter_configs  = [
                         {
-                           "experiment_number" : 0,
-                           "window_size" : 4,
-                           "h_size" : 64,
-                           "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 5*0.0001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.1,
-                           "batch_size" : 16,
-                           "future" : 4
-                        },
-                        {
-                           "experiment_number" : 0,
-                           "window_size" : 4,
-                           "h_size" : 64,
-                           "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 5*0.0001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 16,
-                           "future" : 4
-                        },
-                                                {
-                           "experiment_number" : 0,
-                           "window_size" : 4,
-                           "h_size" : 8,
-                           "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 5*0.0001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.1,
-                           "batch_size" : 32,
-                           "future" : 4
-                        },
-                        {
-                           "experiment_number" : 0,
+                           "experiment_number" : 6,
                            "window_size" : 2,
                            "h_size" : 8,
                            "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 5*0.0001,
+                           "epochs" : 40,
+                           "learning_rate" : 0.001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.1,
-                           "batch_size" : 64,
+                           "batch_size" : 100,
                            "future" : 4
                         },
-                                                {
-                           "experiment_number" : 0,
-                           "window_size" : 4,
-                           "h_size" : 6,
-                           "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 5*0.0001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.1,
-                           "batch_size" : 16,
-                           "future" : 1
-                        },
-                        {
-                           "experiment_number" : 0,
-                           "window_size" : 4,
-                           "h_size" : 64,
-                           "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 5*0.0001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.1,
-                           "batch_size" : 128,
-                           "future" : 4
-                        }
+
                       ]
 
     for k, d in enumerate(parameter_configs):
@@ -377,21 +308,13 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        cut_off_timesteps = 100
+        cut_off_timesteps = 800
         #Split data into train and test sets
 
-        num_of_inits_train = int(len(input_data)*params["percentage_of_data"])
         np.random.seed(1234)
-        train_inits = np.random.randint(0,len(input_data), num_of_inits_train)
-        train_inits = np.unique(train_inits)
+        num_of_inits_train = int(len(input_data)*params["percentage_of_data"])
+        train_inits = np.random.choice(np.arange(len(input_data)),num_of_inits_train,replace=False)
         test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
-
-        # make sure we really get the specified percentage of training data..
-        if params["percentage_of_data"] < 0.99: 
-                while len(train_inits) < num_of_inits_train:
-                    i = np.random.randint(0,len(test_inits),1)[0]
-                    train_inits = np.append(train_inits,test_inits[i])
-                    test_inits = np.delete(test_inits, i)
 
         train_data = input_data[train_inits,:input_data.size(dim=1)-cut_off_timesteps,:]
         test_data = input_data[test_inits,:,:]
