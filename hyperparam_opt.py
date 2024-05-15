@@ -68,7 +68,8 @@ class LSTMmodel(nn.Module):
 
         return pred, hidden
 
-def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws=0, future=1, timesteps=0, batch_size=0):
+#works:
+def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws=0, future=1):
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
@@ -76,10 +77,7 @@ def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.0
     model.train()
     total_loss = []
 
-    for k, (inp, label) in enumerate(input_data):  
-
-        if ((k+1)%(timesteps/batch_size))*(batch_size + ws + future) > timesteps:
-            continue
+    for k, (inp, label) in enumerate(input_data):  # inp = (u, x) label = x
 
         inp=inp.to(device)
         label=label.to(device)
@@ -87,25 +85,37 @@ def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.0
         # Predict one timestep :
         output, _ = model(inp)
         out = inp[:, :, 1:] + output
-        
-        inputs = [0]
-        outputs = [out]
-        loss_future = []
 
-        for t in range(future-1): 
-           
-            new_combined_inp = torch.cat((label[:, t, 0:1], outputs[t][:,-1,:]), dim=1)
+        #1. extra step-------------------------
+        if future>1:
+            new_combined_inp = torch.cat((label[:, 0, 0:1], out[:,-1,:]), dim=1)
             new_combined_inp = new_combined_inp.view(inp.size(dim=0),1,3)
-            if t>0:
-                inputs.append(torch.cat((inputs[t-1][: , 1:ws,:], new_combined_inp), dim =1))
-            else:
-                inputs[0] = torch.cat((inp[: , 1:ws,:], new_combined_inp), dim =1)
 
-            output2, _ = model(inputs[t])
-            outputs.append(inputs[t][:, :, 1:] + output2)
+            inp2 = torch.cat((inp[: , 1:ws,:], new_combined_inp), dim =1)        
 
-            loss_future.append(loss_fn(outputs[t][:,-1,:], label[:, t+1, 1:]))
+            output2, _ = model(inp2)
+            out2 = inp2[:, :, 1:] + output2
 
+        #2. extra step-------------------------
+        if future > 2:
+
+            new_combined_inp2 = torch.cat((label[:, 1, 0:1], out2[:,-1,:]), dim=1)
+            new_combined_inp2 = new_combined_inp2.view(inp2.size(dim=0),1,3)
+
+            inp3 = torch.cat((inp2[: , 1:ws,:], new_combined_inp2), dim =1)        
+
+            output3, _ = model(inp3)
+            out3 = inp3[:, :, 1:] + output3
+        
+        #3. extra step-------------------------
+        if future > 3:
+            new_combined_inp3 = torch.cat((label[:, 1, 0:1], out3[:,-1,:].clone()), dim=1)
+            new_combined_inp3 = new_combined_inp3.view(inp2.size(dim=0),1,3)
+
+            inp4 = torch.cat((inp3[: , 1:ws,:], new_combined_inp3), dim =1)        
+
+            output4, _ = model(inp4)
+            out4 = inp4[:, :, 1:] + output4
 
         # reset the gradient
         
@@ -118,12 +128,17 @@ def train_epoch(input_data, model, weight_decay, future_decay, learning_rate=0.0
 
         #backpropagation
         if future>1:
-            for loss_f in loss_future:
-            
-             loss += future_decay * loss_f
+            loss2 = future_decay * loss_fn(out2[:,-1,:], label[:, 1, 1:])
+            loss += loss2
+        if future>2:
+            loss3 = future_decay * loss_fn(out3[:,-1,:], label[:, 2, 1:])
+            loss += loss3
+        if future>3:
+            loss4 = future_decay * loss_fn(out4[:,-1,:], label[:, 3, 1:])
+            loss += loss4
 
-            loss.backward(retain_graph=True)
-            optimizer.step()
+        loss.backward(retain_graph=False)
+        optimizer.step()
 
 
         total_loss.append(loss.detach().cpu().numpy())
@@ -215,8 +230,9 @@ def objective(config):  # ①
                     "percentage_of_data" : 0.8,
                     "future" : 4,
                     "weight_decay" : 1e-5,  
-                    "future_decay" : 1,
-                    "ls" : 1
+                    "future_decay" : 0.1,
+                    "ls" : 1,
+                    "fu" : 4
                     }
 
     # Initialize the LSTM model
@@ -235,20 +251,13 @@ def objective(config):  # ①
     #Split data into train and test sets
     np.random.seed(1234)
     num_of_inits_train = int(len(input_data)*fixed_params["percentage_of_data"])
-    train_inits = np.random.randint(0,len(input_data), num_of_inits_train)
-    train_inits = np.unique(train_inits)
+    train_inits = np.random.choice(np.arange(len(input_data)),num_of_inits_train,replace=False)
     test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
-    # make sure we really get the specified percentage of training data..
-    if fixed_params["percentage_of_data"] < 0.99: 
-            while len(train_inits) < num_of_inits_train:
-                i = np.random.randint(0,len(test_inits),1)[0]
-                train_inits = np.append(train_inits,test_inits[i])
-                test_inits = np.delete(test_inits, i)
 
     train_data = input_data[train_inits,:input_data.size(dim=1)-cut_off_timesteps,:]
     test_data = input_data[test_inits,:,:]
 
-    data_set  = CustomDataset(train_data, window_size=config["ws"], future=config["fu"])
+    data_set  = CustomDataset(train_data, window_size=config["ws"], future=fixed_params["fu"])
     train_dataloader = DataLoader(data_set, batch_size=config["bs"],drop_last=True)#, pin_memory=True)
 
     epochs=40
@@ -264,8 +273,8 @@ def objective(config):  # ①
     
     for e in range(epochs):
         
-        train_epoch(train_dataloader, model, fixed_params["weight_decay"], fixed_params["future_decay"], learning_rate=config["lr"], ws=config["ws"], future=config["fu"],
-                     timesteps=train_data.size(dim=1), batch_size=config["bs"])  # Train the model
+        train_epoch(train_dataloader, model, fixed_params["weight_decay"], fixed_params["future_decay"], learning_rate=config["lr"], ws=config["ws"], future=fixed_params["fu"]) 
+         # Train the model
         _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100)  # Compute test accuracy
 
         if (e+1)%5 == 0:
@@ -286,9 +295,9 @@ def objective(config):  # ①
 
 search_space = {"lr": tune.loguniform(1e-4, 1e-2),
                 "ws": tune.randint(lower=1, upper=17),
-                "bs": tune.randint(lower=8,upper=128),
+                "bs": tune.choice([8,16,32,64,128,256,400]),
                 "hs": tune.randint(lower=4, upper=33),
-                "fu" : tune.choice([2,4,8,16,32]),
+                #"fu" : tune.choice([2,4,8,16,32]),
                # "ls": tune.randint(lower=1, upper=4)
                }
 
