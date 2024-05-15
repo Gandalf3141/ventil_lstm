@@ -246,7 +246,7 @@ def objective(config):  # ①
                             normalise_s_w=True,
                             rescale_p=False,
                             num_inits=fixed_params["part_of_data"])
-    cut_off_timesteps = 100
+    cut_off_timesteps = 800
 
     #Split data into train and test sets
     np.random.seed(1234)
@@ -275,8 +275,10 @@ def objective(config):  # ①
         
         train_epoch(train_dataloader, model, fixed_params["weight_decay"], fixed_params["future_decay"], learning_rate=config["lr"], ws=config["ws"], future=fixed_params["fu"]) 
          # Train the model
-        _,_, acc = test(test_data, model, steps=test_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100)  # Compute test accuracy
-
+        _,_, acc = test(train_data, model, steps=train_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100)  # Compute test accuracy
+        
+        if acc < 2:
+            logging.info(f"logged config because error was small ({acc}) config: {config}")
         if (e+1)%5 == 0:
             
             train.report({"mean_accuracy": acc}, checkpoint=None)  # Report to Tune
@@ -294,9 +296,9 @@ def objective(config):  # ①
 #         learning rate, window size, batch size, hidden size, number of layers
 
 search_space = {"lr": tune.loguniform(1e-4, 1e-2),
-                "ws": tune.randint(lower=1, upper=17),
-                "bs": tune.choice([8,16,32,64,128,256,400]),
-                "hs": tune.randint(lower=4, upper=33),
+                "ws": tune.choice([2,4,8,16,32, 64]),
+                "bs": tune.choice([64,128,256, 800, 2000, 4000]),
+                "hs": tune.randint(lower=4, upper=12),
                 #"fu" : tune.choice([2,4,8,16,32]),
                # "ls": tune.randint(lower=1, upper=4)
                }
@@ -309,7 +311,7 @@ scheduler =  ASHAScheduler(max_t = 4, grace_period = 1, reduction_factor=2)
 tuner = tune.Tuner(  # ③
     objective,
     tune_config=tune.TuneConfig(
-        num_samples=10,
+        num_samples=100,
         metric="mean_accuracy",
         mode="min",
         search_alg=algo,
