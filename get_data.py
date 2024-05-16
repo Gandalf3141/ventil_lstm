@@ -3,7 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 
-def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, skip_steps_start = 1, skip_steps_end = 1, drop_half_timesteps = True, normalise_s_w=False, rescale_p=False, num_inits=0):
+def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, skip_steps_start = 1, skip_steps_end = 1, drop_half_timesteps = True, normalise_s_w="mean", rescale_p=False, num_inits=0):
     
     if timesteps_from_data>1:
      df = pd.read_csv(path, header=0, nrows=timesteps_from_data, skiprows=skip_steps_start)
@@ -32,14 +32,29 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     df = df.drop(time_cols, axis=1)
 
     # Normalise / Rescale
-    if normalise_s_w:
+    if normalise_s_w=="mean":
         tmp=pb_cols+sb_cols+wb_cols
         #mean normalization
         df[tmp]=(df[tmp]-df[tmp].mean())/df[tmp].std()
         #min-max normalization
-        #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())
-        
-        
+        #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())  
+    elif normalise_s_w == "minmax":
+        p_max = np.max(df[pb_cols].to_numpy())
+        p_min = np.min(df[pb_cols].to_numpy())
+
+        s_max = np.max(df[sb_cols].to_numpy())
+        s_min = np.min(df[sb_cols].to_numpy())
+
+        w_max = np.max(df[wb_cols].to_numpy())
+        w_min = np.min(df[wb_cols].to_numpy())
+
+        df[pb_cols]=(df[pb_cols] - p_min) / (p_max - p_min)
+        df[sb_cols]=(df[sb_cols] - s_min) / (s_max - s_min)
+        df[wb_cols]=(df[wb_cols] - w_min) / (w_max - w_min)     
+
+    if rescale_p:
+       
+       df[pb_cols] = df[pb_cols] / 1e5 
 
     tensor = torch.tensor(df.values)
 
