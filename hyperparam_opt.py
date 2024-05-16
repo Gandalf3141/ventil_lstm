@@ -303,7 +303,7 @@ search_space = {"lr": tune.loguniform(1e-4, 1e-2),
                # "ls": tune.randint(lower=1, upper=4)
                }
 
-algo = OptunaSearch()  # ②
+algo = OptunaSearch(metric="mean_accuracy", mode="min")  # ②
 algo = ConcurrencyLimiter(algo, max_concurrent=32)
 
 scheduler =  ASHAScheduler(max_t = 4, grace_period = 1, reduction_factor=2)
@@ -311,20 +311,19 @@ scheduler =  ASHAScheduler(max_t = 4, grace_period = 1, reduction_factor=2)
 tuner = tune.Tuner(  # ③
     objective,
     tune_config=tune.TuneConfig(
-        num_samples=100,
-        metric="mean_accuracy",
-        mode="min",
+        num_samples=10,
+        #metric="mean_accuracy",
+        #mode="min",
         search_alg=algo,
         scheduler=scheduler
     ),
-    #run_config=train.RunConfig(
-    # stop={"training_iteration": 5},
-    #),
+    run_config=train.RunConfig(
+     stop={"training_iteration": 5},
+    ),
     param_space=search_space,   
 )
 results = tuner.fit()
 print("Best config is:", results.get_best_result().config)
-
 
 # Configure logging
 log_file = 'training.log'
