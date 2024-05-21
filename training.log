@@ -109,3 +109,15 @@
 2024-05-15 15:25:35,346 - INFO - 
 
 2024-05-17 11:00:28,692 - INFO - config output: {'lr': 0.008868908692860654, 'ws': 4, 'bs': 128, 'hs': 10, 'ls': 3}
+2024-05-21 12:40:13,280 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 6, 'h_size': 5, 'l_num': 1, 'epochs': 2, 'learning_rate': 0.005, 'part_of_data': 0, 'weight_decay': 1e-05, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 50, 'future': 10, 'cut_off_timesteps': 900}
+2024-05-21 12:40:13,280 - INFO - Final train error over whole traj (average over some inits) []
+2024-05-21 12:40:13,280 - INFO - Final test error over whole traj (average over some inits) []
+2024-05-21 12:40:13,281 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-05-21 12:40:13,281 - INFO - 
+
+2024-05-21 12:42:47,150 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 6, 'h_size': 5, 'l_num': 1, 'epochs': 100, 'learning_rate': 0.005, 'part_of_data': 0, 'weight_decay': 1e-05, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 50, 'future': 10, 'cut_off_timesteps': 900}
+2024-05-21 12:42:47,150 - INFO - Final train error over whole traj (average over some inits) [0.16537629640947785, 0.1266548865629094, 0.11641358822871492, 0.1126609468757591, 0.10526830017581174]
+2024-05-21 12:42:47,150 - INFO - Final test error over whole traj (average over some inits) []
+2024-05-21 12:42:47,150 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-05-21 12:42:47,150 - INFO - 
+
