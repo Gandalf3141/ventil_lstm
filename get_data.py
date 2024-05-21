@@ -64,7 +64,9 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
 
     tensor = tensor.view(len(df),a,3).permute(1,0,2)
 
-    return tensor
+    PSW_max = [p_max, s_max, w_max]
+
+    return tensor, PSW_max
 
 
 def visualise(data, num_inits=499,set_ylim=False):
