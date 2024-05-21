@@ -9,9 +9,10 @@ from get_data import *
 from dataloader import *
 from ray import train, tune
 from ray.tune.search.optuna import OptunaSearch
+from ray.tune.search.bayesopt import BayesOptSearch
 from ray.train import Checkpoint
 from ray.tune.search import ConcurrencyLimiter
-from ray.tune.schedulers import ASHAScheduler
+from ray.tune.schedulers import AsyncHyperBandScheduler
 import ray
 import logging
 import os
@@ -227,25 +228,26 @@ def objective(config):  # ①
     #other parameters:
     fixed_params = {
                     "part_of_data" : 0,
-                    "percentage_of_data" : 0.8,
-                    "future" : 4,
+                    "percentage_of_data" : 0.2,
                     "weight_decay" : 1e-5,  
-                    "future_decay" : 0.1,
-                    "ls" : 1,
-                    "fu" : 4
+                    "future_decay" : 0.5,
+                    #"ls" : 1,
+                    "fu" : 1
                     }
 
     # Initialize the LSTM model
-    model = LSTMmodel(input_size=3, hidden_size=config["hs"], out_size=2, layers=fixed_params["ls"]).to(device)
+    model = LSTMmodel(input_size=3, hidden_size=config["hs"], out_size=2, layers=config["ls"]).to(device)
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data = get_data(path = r"C:\Users\StrasserP\Documents\Python Projects\ventil_lstm\save_data_test3.csv", 
+
+    input_data = get_data(path = "C:\\Users\\strasserp\\Documents\\ventil_lstm\\save_data_test4.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
                             drop_half_timesteps = False,
-                            normalise_s_w=True,
+                            normalise_s_w="minmax",
                             rescale_p=False,
                             num_inits=fixed_params["part_of_data"])
+    
     cut_off_timesteps = 800
 
     #Split data into train and test sets
@@ -255,13 +257,12 @@ def objective(config):  # ①
     test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
 
     train_data = input_data[train_inits,:input_data.size(dim=1)-cut_off_timesteps,:]
-    test_data = input_data[test_inits,:,:]
+    #test_data = input_data[test_inits,:,:]
 
     data_set  = CustomDataset(train_data, window_size=config["ws"], future=fixed_params["fu"])
     train_dataloader = DataLoader(data_set, batch_size=config["bs"],drop_last=True)#, pin_memory=True)
 
-    epochs=40
-
+    epochs=100
 
         # Load existing checkpoint through `get_checkpoint()` API.
     if train.get_checkpoint():
@@ -277,9 +278,9 @@ def objective(config):  # ①
          # Train the model
         _,_, acc = test(train_data, model, steps=train_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100)  # Compute test accuracy
         
-        if acc < 2:
+        if acc < 0.2:
             logging.info(f"logged config because error was small ({acc}) config: {config}")
-        if (e+1)%5 == 0:
+        if (e+1)%25 == 0:
             
             train.report({"mean_accuracy": acc}, checkpoint=None)  # Report to Tune
             with tempfile.TemporaryDirectory() as temp_checkpoint_dir:
@@ -297,34 +298,36 @@ def objective(config):  # ①
 
 search_space = {"lr": tune.loguniform(1e-4, 1e-2),
                 "ws": tune.choice([2,4,8,16,32, 64]),
-                "bs": tune.choice([64,128,256, 800, 2000, 4000]),
+                "bs": tune.choice([64,128,256, 800, 2000, 4000, 6000]),
                 "hs": tune.randint(lower=4, upper=12),
                 #"fu" : tune.choice([2,4,8,16,32]),
-               # "ls": tune.randint(lower=1, upper=4)
+                "ls": tune.choice([1,2,3,4,5])
                }
 
-algo = OptunaSearch()  # ②
-algo = ConcurrencyLimiter(algo, max_concurrent=32)
+algo = OptunaSearch(metric="mean_accuracy", mode="min")  # ②
+#algo = BayesOptSearch(metric="mean_accuracy", mode="min", utility_kwargs={"kind": "ucb", "kappa": 2.5, "xi": 0.0})
+#algo = ConcurrencyLimiter(algo, max_concurrent=32)
 
-scheduler =  ASHAScheduler(max_t = 4, grace_period = 1, reduction_factor=2)
+scheduler = AsyncHyperBandScheduler()
 
 tuner = tune.Tuner(  # ③
     objective,
     tune_config=tune.TuneConfig(
-        num_samples=100,
+       
         metric="mean_accuracy",
         mode="min",
         search_alg=algo,
-        scheduler=scheduler
+        scheduler=scheduler,
+        num_samples=100
     ),
-    #run_config=train.RunConfig(
-    # stop={"training_iteration": 5},
-    #),
+    run_config=train.RunConfig(
+     #stop={"training_iteration": 5},
+     name="my_exp"
+    ),
     param_space=search_space,   
 )
 results = tuner.fit()
 print("Best config is:", results.get_best_result().config)
-
 
 # Configure logging
 log_file = 'training.log'
