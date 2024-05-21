@@ -110,7 +110,7 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1, rand=True):
+def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1, rand=True, PSW_max = [0,0,0]):
  
     model.eval()
     loss_fn = nn.MSELoss()
@@ -154,7 +154,16 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1
             test_loss += loss_fn(pred[ws:, 1], x[0, ws:, 1]).detach().cpu().numpy()
             test_loss_deriv += loss_fn(pred[ws:, 2], x[0, ws:, 2]).detach().cpu().numpy()
             total_loss += loss_fn(pred[ws:, 1:], x[0, ws:, 1:]).detach().cpu().numpy()
- 
+
+            #scale back:
+            
+            pred[:,0] = pred[:,0]*PSW_max[0]
+            pred[:,1] = pred[:,1]*PSW_max[1]
+            pred[:,2] = pred[:,2]*PSW_max[2]
+            x[0, :,0] = x[0, :,0]*PSW_max[0]
+            x[0, :,1] = x[0, :,1]*PSW_max[1]
+            x[0, :,2] = x[0, :,2]*PSW_max[2]
+
             if plot_opt:
                 figure , axs = plt.subplots(1,3,figsize=(16,9))
            
@@ -181,26 +190,25 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1
            
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
 
-
 def main():
                 
     parameter_configs  = [
                         {
-                           "experiment_number" : 4,
-                           "window_size" : 6,
+                           "experiment_number" : 2,
+                           "window_size" : 4,
                            "h_size" : 5,
                            "l_num" : 1,
-                           "epochs" : 300,
-                           "learning_rate" : 0.0005,
+                           "epochs" : 100,
+                           "learning_rate" : 0.001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
+                           "percentage_of_data" : 0.7,
                            "future_decay"  : 0.5,
-                           "batch_size" : 100,
+                           "batch_size" : 10,
                            "future" : 10,
-                           "cut_off_timesteps" : 900
+                           "cut_off_timesteps" : 100,
+                           "drop_half_timesteps": True
                         }
-
                       ]
 
     for k, d in enumerate(parameter_configs):
@@ -217,11 +225,11 @@ def main():
         model = LSTMmodel(input_size=3, hidden_size=params["h_size"], out_size=2, layers=params["l_num"], window_size=params["window_size"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data = get_data(path = "save_data_test4.csv", 
+        input_data, PSW_max = get_data(path = "save_data_test4.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
-                                drop_half_timesteps = True,
+                                drop_half_timesteps = params["drop_half_timesteps"],
                                 normalise_s_w="minmax",
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
@@ -252,18 +260,17 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%20 == 0:
+            if (e+1)%50 == 0:
 
-                _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20)
-                # if err_train < 0.05:
-                #     print("stopped early")
-                #     break
-                #_,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=window_size, plot_opt=False, n = 20)
-                average_traj_err_train.append(err_train)
-                #average_traj_err_test.append(err_test)
-                print(f"Epoch: {e}, the average next step error was : loss_epoch")
-                print(f"Average error over full trajectories: training data : {err_train}")
-                #print(f"Average error over full trajectories: testing data : {err_test}")
+                
+                #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
+                _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
+
+                #average_traj_err_train.append(err_train)
+                average_traj_err_test.append(err_test)
+
+                #print(f"Average error over full trajectories: training data : {err_train}")
+                print(f"Average error over full trajectories: testing data : {err_test}")
         
         # Save trained model
         path = f'Ventil_trained_NNs\lstm_ws{params["experiment_number"]}.pth'
