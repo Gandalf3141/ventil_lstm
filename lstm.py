@@ -201,7 +201,7 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
     test_loss = 0
     test_loss_deriv = 0
     total_loss = 0
-    np.random.seed(123)
+    np.random.seed(1234)
     ids = np.random.choice(test_data.size(dim=0), min([n, test_data.size(dim=0)]), replace=False)
     ids = np.unique(ids)
 

@@ -1,19 +1,13 @@
-from ray import train, tune
 
 
-def objective(config):  # ①
-    score = config["a"] ** 2 + config["b"]
-    return {"score": score}
+res = 1
 
+n = 2000
+ 
+for i in range(1,n):
 
-search_space = {  # ②
-    "a": tune.choice([0.001, 0.01, 0.1, 1.0]),
-    
-    "b": tune.choice([1, 2, 3]),
-}
+    res = res * i
 
-tuner = tune.Tuner(objective, param_space=search_space, tune_config=tune.TuneConfig(num_samples=10))  # ③
+print(res)
 
-results = tuner.fit()
-print(results.get_best_result(metric="score", mode="min").config)
-#added a comment
+print((n*(n+1)/2))
