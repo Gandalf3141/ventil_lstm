@@ -128,43 +128,43 @@ def train(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws
         # print("label", label, label.size())
         # print("out", out, out.size())
         
-        #1. extra step-------------------------
-        if future>1:
-            new_combined_inp = torch.cat((label[:, 0, 0:1], out[:,-1,:]), dim=1)
-            new_combined_inp = new_combined_inp.view(inp.size(dim=0),1,3)
+        # #1. extra step-------------------------
+        # if future>1:
+        #     new_combined_inp = torch.cat((label[:, 0, 0:1], out[:,-1,:]), dim=1)
+        #     new_combined_inp = new_combined_inp.view(inp.size(dim=0),1,3)
 
-            #print("new_combined_inp", new_combined_inp, new_combined_inp.size())
+        #     #print("new_combined_inp", new_combined_inp, new_combined_inp.size())
 
-            inp2 = torch.cat((inp[: , 1:ws,:], new_combined_inp), dim =1)        
-            #print("inp2" , inp2, inp2.size())
+        #     inp2 = torch.cat((inp[: , 1:ws,:], new_combined_inp), dim =1)        
+        #     #print("inp2" , inp2, inp2.size())
 
-            output2, _ = model(inp2)
-            out2 = inp2[:, :, 1:] + output2
+        #     output2, _ = model(inp2)
+        #     out2 = inp2[:, :, 1:] + output2
 
-            #print("out2", out2, out2.size())
+        #     #print("out2", out2, out2.size())
 
-        #2. extra step-------------------------
-        if future > 2:
-            #new_combined_inp2 = torch.cat((label[:, 1, 0:1], out2[:,-1,:].clone()), dim=1)
-            new_combined_inp2 = torch.cat((label[:, 1, 0:1], out2[:,-1,:]), dim=1)
-            new_combined_inp2 = new_combined_inp2.view(inp2.size(dim=0),1,3)
+        # #2. extra step-------------------------
+        # if future > 2:
+        #     #new_combined_inp2 = torch.cat((label[:, 1, 0:1], out2[:,-1,:].clone()), dim=1)
+        #     new_combined_inp2 = torch.cat((label[:, 1, 0:1], out2[:,-1,:]), dim=1)
+        #     new_combined_inp2 = new_combined_inp2.view(inp2.size(dim=0),1,3)
 
-            inp3 = torch.cat((inp2[: , 1:ws,:], new_combined_inp2), dim =1)        
+        #     inp3 = torch.cat((inp2[: , 1:ws,:], new_combined_inp2), dim =1)        
 
-            output3, _ = model(inp3)
-            out3 = inp3[:, :, 1:] + output3
+        #     output3, _ = model(inp3)
+        #     out3 = inp3[:, :, 1:] + output3
         
-        #3. extra step-------------------------
-        if future > 3:
-            new_combined_inp3 = torch.cat((label[:, 1, 0:1], out3[:,-1,:].clone()), dim=1)
-            new_combined_inp3 = new_combined_inp3.view(inp2.size(dim=0),1,3)
+        # #3. extra step-------------------------
+        # if future > 3:
+        #     new_combined_inp3 = torch.cat((label[:, 1, 0:1], out3[:,-1,:].clone()), dim=1)
+        #     new_combined_inp3 = new_combined_inp3.view(inp2.size(dim=0),1,3)
 
-            inp4 = torch.cat((inp3[: , 1:ws,:], new_combined_inp3), dim =1)        
+        #     inp4 = torch.cat((inp3[: , 1:ws,:], new_combined_inp3), dim =1)        
 
-            output4, _ = model(inp4)
-            out4 = inp4[:, :, 1:] + output4
+        #     output4, _ = model(inp4)
+        #     out4 = inp4[:, :, 1:] + output4
 
-        # reset the gradient
+        # # reset the gradient
         
         optimizer.zero_grad(set_to_none=True)
         # calculate the error
@@ -173,16 +173,16 @@ def train(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws
         else:   
             loss = loss_fn(out[:,-1,:], label[:, 0, 1:])
 
-        #backpropagation
-        if future>1:
-            loss2 = future_decay * loss_fn(out2[:,-1,:], label[:, 1, 1:])
-            loss += loss2
-        if future>2:
-            loss3 = future_decay * loss_fn(out3[:,-1,:], label[:, 2, 1:])
-            loss += loss3
-        if future>3:
-            loss4 = future_decay * loss_fn(out4[:,-1,:], label[:, 3, 1:])
-            loss += loss4
+        # #backpropagation
+        # if future>1:
+        #     loss2 = future_decay * loss_fn(out2[:,-1,:], label[:, 1, 1:])
+        #     loss += loss2
+        # if future>2:
+        #     loss3 = future_decay * loss_fn(out3[:,-1,:], label[:, 2, 1:])
+        #     loss += loss3
+        # if future>3:
+        #     loss4 = future_decay * loss_fn(out4[:,-1,:], label[:, 3, 1:])
+        #     loss += loss4
 
         loss.backward(retain_graph=False)
         optimizer.step()
@@ -270,17 +270,18 @@ def main():
     parameter_configs  = [
                         {
                            "experiment_number" : 4,
-                           "window_size" : 2,
-                           "h_size" : 6,
+                           "window_size" : 4,
+                           "h_size" : 5,
                            "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 0.0002,
+                           "epochs" : 500,
+                           "learning_rate" : 0.0008,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.1,
-                           "batch_size" : 256,
-                           "future" : 4
+                           "batch_size" : 2000,
+                           "future" : 4,
+                           "drop_half_timesteps" : True
                         }
 
                       ]
@@ -299,16 +300,16 @@ def main():
         model = LSTMmodel(input_size=3, hidden_size=params["h_size"], out_size=2, layers=params["l_num"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data = get_data(path = "save_data_test4.csv", 
+        input_data, PSW_max = get_data(path = "save_data_test4.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
-                                drop_half_timesteps = False,
-                                normalise_s_w=True,
+                                drop_half_timesteps = params["drop_half_timesteps"],
+                                normalise_s_w="minmax",
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        cut_off_timesteps = 600
+        cut_off_timesteps = 800
         #Split data into train and test sets
 
         np.random.seed(1234)
