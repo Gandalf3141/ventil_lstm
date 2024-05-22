@@ -202,7 +202,7 @@ def objective(config):  # ①
 
     #other parameters:
     fixed_params = {
-                    "part_of_data" : 0,
+                    "part_of_data" : 100,
                     "percentage_of_data" : 0.8,
                     "weight_decay" : 1e-5,  
                     "future_decay" : 0.5,
@@ -253,7 +253,7 @@ def objective(config):  # ①
         
         train_epoch(train_dataloader, model, fixed_params["weight_decay"], learning_rate=config["lr"], ws=config["ws"]) 
          # Train the model
-        _,_, acc = test(input_data[train_inits,:,:], model, steps=input_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100, test_inits=len(train_data), PSW_max=0)  # Compute test accuracy
+        _,_, acc = test(input_data[test_inits,:,:], model, steps=input_data.size(dim=1), ws=config["ws"], plot_opt=False, n = 100, test_inits=len(train_data), PSW_max=0)  # Compute test accuracy
         
         if acc < 0.01:
             logging.info(f"logged config because error was small ({acc}) config: {config}")
