@@ -31,6 +31,8 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     df= df[new_col_order]
     df = df.drop(time_cols, axis=1)
 
+    #
+    PSW_max = 0
     # Normalise / Rescale
     if normalise_s_w=="mean":
         tmp=pb_cols+sb_cols+wb_cols
@@ -52,6 +54,8 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
         df[sb_cols]=(df[sb_cols] - s_min) / (s_max - s_min)
         df[wb_cols]=(df[wb_cols] - w_min) / (w_max - w_min)     
 
+        PSW_max = [p_max, s_max, w_max]
+
     if rescale_p:
        
        df[pb_cols] = df[pb_cols] / 1e5 
@@ -64,7 +68,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
 
     tensor = tensor.view(len(df),a,3).permute(1,0,2)
 
-    PSW_max = [p_max, s_max, w_max]
+    
 
     return tensor, PSW_max
 
@@ -73,7 +77,13 @@ def visualise(data, num_inits=499,set_ylim=False):
  
     steps=data.size(dim=1) 
     
-    ids = np.random.randint(0,num_inits,1)
+    if num_inits >= data.size(dim=0):
+        
+       print("index exceeds number of initial conditions -> random value chosen")
+       ids = np.random.randint(0,data.size(dim=0),1)
+    else:
+       ids = [num_inits]
+    
     
     figure , axs = plt.subplots(1, 3, figsize=(16,9))
     colors=["r","b","g","yellow", "purple"]
