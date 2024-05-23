@@ -25,13 +25,18 @@ print(device)
 
 class LSTMmodel(nn.Module):
 
-    def __init__(self, input_size, hidden_size, out_size, layers, window_size=4):
+    def __init__(self, input_size, hidden_size, out_size, layers, window_size=4, stepsize=1):
 
         super().__init__()
 
         self.hidden_size = hidden_size
         self.input_size = input_size
         self.ws = window_size
+
+        if stepsize==1:
+            self.step_size = 1
+        else:
+            self.step_size = torch.nn.parameter.Parameter(torch.rand(1))
 
         # Define LSTM layer
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
@@ -44,7 +49,7 @@ class LSTMmodel(nn.Module):
         seq = one_full_traj[:, 0:self.ws, :]
         lstm_out, hidden = self.lstm(seq)           
         pred = self.linear(lstm_out)
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred[:, -1: , :]
+        out = one_full_traj[:, self.ws-1:self.ws, 1:] + self.step_size * pred[:, -1: , :]
 
         for t in range(1, self.ws):
 
@@ -52,7 +57,7 @@ class LSTMmodel(nn.Module):
             seq = torch.cat((one_full_traj[:, t:self.ws+(t-1), :], tmp), dim=1)
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
-            out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + self.step_size * pred[:, -1: , :]), dim=1)
 
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
             seq = torch.cat((out[:, t - self.ws : t , :], one_full_traj[:, t : t + self.ws, 0:1]), dim=2)
@@ -60,9 +65,10 @@ class LSTMmodel(nn.Module):
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
 
-            out = torch.cat((out, out[:, t-1:t, :] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, out[:, t-1:t, :] + self.step_size * pred[:, -1: , :]), dim=1)
 
-        return out, hidden     
+        return out, hidden          
+     
   
 class custom_simple_dataset(Dataset):
  
@@ -196,17 +202,17 @@ def main():
                         {
                            "experiment_number" : 2,
                            "window_size" : 4,
-                           "h_size" : 6,
-                           "l_num" : 1,
-                           "epochs" : 2000,
-                           "learning_rate" : 0.0005,
+                           "h_size" : 5,
+                           "l_num" : 2,
+                           "epochs" : 1000,
+                           "learning_rate" : 0.001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.5,
-                           "batch_size" : 10,
+                           "batch_size" : 20,
                            "future" : 10,
-                           "cut_off_timesteps" : 100,
+                           "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True
                         }
                       ]
@@ -273,7 +279,7 @@ def main():
                 print(f"Average error over full trajectories: testing data : {err_test}")
         
         # Save trained model
-        path = f'Ventil_trained_NNs\lstm_ws{params["experiment_number"]}.pth'
+        path = f'Ventil_trained_NNs\OR_lstm_ws{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)
         print(f"Run finished, file saved as: \n {path}")
 
