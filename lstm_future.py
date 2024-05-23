@@ -116,7 +116,8 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1, rand=True, PSW_max = [0,0,0]):
+def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1, rand=True, PSW_max = 0):
+
  
     model.eval()
     loss_fn = nn.MSELoss()
@@ -126,6 +127,7 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1
    
     if rand:
      np.random.seed(1234)
+
  
     ids = np.random.choice(test_inits, min([n, test_inits]), replace=False)
     ids = np.unique(ids)
@@ -161,32 +163,38 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1
             test_loss_deriv += loss_fn(pred[ws:, 2], x[0, ws:, 2]).detach().cpu().numpy()
             total_loss += loss_fn(pred[ws:, 1:], x[0, ws:, 1:]).detach().cpu().numpy()
 
-            #scale back:
-            
-            pred[:,0] = pred[:,0]*PSW_max[0]
-            pred[:,1] = pred[:,1]*PSW_max[1]
-            pred[:,2] = pred[:,2]*PSW_max[2]
-            x[0, :,0] = x[0, :,0]*PSW_max[0]
-            x[0, :,1] = x[0, :,1]*PSW_max[1]
-            x[0, :,2] = x[0, :,2]*PSW_max[2]
+            #scale back:    
+            if PSW_max != 0:
+                pred[:,0] = pred[:,0]*PSW_max[0]
+                pred[:,1] = pred[:,1]*PSW_max[1]
+                pred[:,2] = (pred[:,2]*2 - 1) * PSW_max[2]
+                x[0, :,0] = x[0, :,0]*PSW_max[0]
+                x[0, :,1] = x[0, :,1]*PSW_max[1]
+                x[0, :,2] = (x[0, :,2]*2 - 1) * PSW_max[2]
 
             if plot_opt:
-                figure , axs = plt.subplots(1,3,figsize=(16,9))
+                figure , axs = plt.subplots(1,3,figsize=(20,9))
            
                 axs[0].plot(pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
                 axs[0].plot(x.detach().cpu().numpy()[0, :, 1], color="blue", label="true", linestyle="dashed")
                 axs[0].set_title("position")
+                axs[0].set_ylabel("[m]")
+                axs[0].set_xlabel("time")
                 axs[0].grid()
                 axs[0].legend()
  
                 axs[1].plot(pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
                 axs[1].plot(x.detach().cpu().numpy()[0, :, 2], color="blue", label="true", linestyle="dashed")
                 axs[1].set_title("speed")
+                axs[1].set_ylabel("[m/s]")
+                axs[1].set_xlabel("time")
                 axs[1].grid()
                 axs[1].legend()
  
                 axs[2].plot(x.detach().cpu().numpy()[0, :,0], label="pressure")
                 axs[2].set_title("pressure")
+                axs[2].set_ylabel("[Pascal]")
+                axs[2].set_xlabel("time")
                 axs[2].grid()
                 axs[2].legend()
  
@@ -195,6 +203,7 @@ def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1
                 plt.show()
            
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
+
 
 def main():
                 
