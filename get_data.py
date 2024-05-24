@@ -54,7 +54,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
         df[sb_cols]=(df[sb_cols] - s_min) / (s_max - s_min)
         df[wb_cols]=(df[wb_cols] - w_min) / (w_max - w_min)     
 
-        PSW_max = [p_max, s_max, w_max]
+        #PSW_max = [p_max, s_max, w_max]
 
     if rescale_p:
        
@@ -68,7 +68,16 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
 
     tensor = tensor.view(len(df),a,3).permute(1,0,2)
 
-    
+
+    # Daten aus Matlab Simulation bzw. physikalische Größen
+    # Als Ober/Unter Grenzen
+
+    p_max = 3.5 #Druck in [bar]             ... [0, 3.5]
+    s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
+    w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
+
+    PSW_max = [p_max, s_max, w_max]
+
 
     return tensor, PSW_max
 
