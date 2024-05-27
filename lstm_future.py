@@ -13,7 +13,6 @@ import os
 import cProfile
 import pstats
 from dataloader import *
-from test import test
 
 #Define the LSTM model class
 
@@ -209,10 +208,10 @@ def main():
                         {
                            "experiment_number" : 2,
                            "window_size" : 4,
-                           "h_size" : 5,
-                           "l_num" : 2,
-                           "epochs" : 1000,
-                           "learning_rate" : 0.001,
+                           "h_size" : 8,
+                           "l_num" : 1,
+                           "epochs" : 4000,
+                           "learning_rate" : 0.0008,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
@@ -246,6 +245,26 @@ def main():
                                 normalise_s_w="minmax",
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
+        
+        input_data2, PSW_max = get_data(path = "save_data_test5.csv", 
+                                timesteps_from_data=0, 
+                                skip_steps_start = 0,
+                                skip_steps_end = 0, 
+                                drop_half_timesteps = params["drop_half_timesteps"],
+                                normalise_s_w="minmax",
+                                rescale_p=False,
+                                num_inits=params["part_of_data"])
+        
+        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_200.csv", 
+                                timesteps_from_data=0, 
+                                skip_steps_start = 0,
+                                skip_steps_end = 0, 
+                                drop_half_timesteps = params["drop_half_timesteps"],
+                                normalise_s_w="minmax",
+                                rescale_p=False,
+                                num_inits=params["part_of_data"])
+
+        input_data = torch.cat((input_data, input_data2, input_data3))
 
         print(input_data.size())
 
