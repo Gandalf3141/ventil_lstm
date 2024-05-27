@@ -239,8 +239,8 @@ def main():
                         {
                            "experiment_number" : 2,
                            "window_size" : 5,
-                           "h_size" : 8,
-                           "l_num" : 1,
+                           "h_size" : 16,
+                           "l_num" : 3,
                            "epochs" : 2000,
                            "learning_rate" : 0.001,
                            "part_of_data" : 0, 
@@ -278,7 +278,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data2, PSW_max = get_data(path = "save_data_test4.csv", 
+        input_data2, PSW_max = get_data(path = "save_data_test5.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -287,14 +287,14 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data3, PSW_max = get_data(path = "save_data_test4.csv", 
+        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_200.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
                                 drop_half_timesteps = params["drop_half_timesteps"],
                                 normalise_s_w="minmax",
                                 rescale_p=False,
-                                num_inits=params["part_of_data"])        
+                                num_inits=params["part_of_data"])       
 
 
         input_data = torch.cat((input_data, input_data2, input_data3))

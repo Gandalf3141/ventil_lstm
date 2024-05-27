@@ -246,7 +246,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data2, PSW_max = get_data(path = "save_data_test4.csv", 
+        input_data2, PSW_max = get_data(path = "save_data_test5.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -255,7 +255,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data3, PSW_max = get_data(path = "save_data_test4.csv", 
+        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_200.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
