@@ -325,7 +325,7 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%20 == 0:
+            if (e+1)%200 == 0:
                 _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 20)
                # _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
