@@ -20,10 +20,10 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=0):
     if physics_rescaling != 0:
         pred[:,0] = pred[:,0]*physics_rescaling[0]
         pred[:,1] = pred[:,1]*physics_rescaling[1]
-        pred[:,2] = pred[:,2]*physics_rescaling[2]
+        pred[:,2] = (2*pred[:,2]-1)*physics_rescaling[2]
         x[:,0] = x[:,0]*physics_rescaling[0]
         x[:,1] = x[:,1]*physics_rescaling[1]
-        x[:,2] = x[:,2]*physics_rescaling[2]
+        x[:,2] = (2*x[:,2]-1)*physics_rescaling[2]
 
     figure , axs = plt.subplots(1,3,figsize=(20,9))
 
@@ -112,6 +112,8 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[0, :] = x[0, 0, :]
                     pred[:, 0] = x[0, :, 0]
     
+
+                  
 
                 out, _ = model(x)
                 pred[window_size:,1:] = out
