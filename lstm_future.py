@@ -292,7 +292,7 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%50 == 0:
+            if (e+1)%200 == 0:
 
                 
                 #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
