@@ -118,16 +118,16 @@ def main():
     parameter_configs  = [
                         {
                            "experiment_number" : 2,
-                           "window_size" : 8,
+                           "window_size" : 4,
                            "h_size" : 6,
-                           "l_num" : 3,
-                           "epochs" : 1000,
-                           "learning_rate" : 0.0008,
-                           "part_of_data" : 200, 
+                           "l_num" : 1,
+                           "epochs" : 2,
+                           "learning_rate" : 0.0005,
+                           "part_of_data" : 300, 
                            "weight_decay" : 0,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.5,
-                           "batch_size" : 20,
+                           "batch_size" : 10,
                            
                            "cut_off_timesteps" : 200,
                            "drop_half_timesteps": True
@@ -176,7 +176,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        input_data = torch.cat((input_data, input_data2, input_data3))
+        input_data = torch.cat((input_data, input_data2, input_data3)).to(device)
 
         print(input_data.size())
 
@@ -191,7 +191,7 @@ def main():
 
         # dataloader for batching during training
         train_set = custom_simple_dataset(train_data, window_size=params["window_size"])
-        train_loader = DataLoader(train_set, batch_size=params["batch_size"], pin_memory=True)
+        train_loader = DataLoader(train_set, batch_size=params["batch_size"])#, pin_memory=True)
 
         losses = []
         average_traj_err_train = []
@@ -204,7 +204,7 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%200 == 0:
+            if (e+1)%2 == 0:
 
                 
                 #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
