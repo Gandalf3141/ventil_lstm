@@ -15,6 +15,7 @@ import os
 import cProfile
 import pstats
 from dataloader import *
+from test_function import *
 
 #Define the LSTM model class
 torch.set_default_dtype(torch.float64)
@@ -107,98 +108,6 @@ class MLP(nn.Module):
     def forward(self, x):
         
         return self.network(x)         
-  
-def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5, test_inits=1, rand=True, PSW_max = 0):
- 
-    model.eval()
-    loss_fn = nn.MSELoss()
-    test_loss = 0
-    test_loss_deriv = 0
-    total_loss = 0
-   
-    if rand:
-     np.random.seed(1234)
-
- 
-    ids = np.random.choice(test_inits, min([n, test_inits]), replace=False)
-    ids = np.unique(ids)
- 
- 
-    for i, x in enumerate(test_data):
-
-        x=x.to(device)
-        
-        if i not in ids:
-            continue
- 
-        with torch.inference_mode():
- 
-            pred = torch.zeros((steps, 3), device=device)
- 
-            if ws > 1:
-                pred[0:ws, :] = x[0:ws, :]
-                pred[:, 0] = x[ :, 0]
- 
-            else:
-                pred[0, :] = x[0, :]
-                pred[:, 0] = x[:, 0]
-
-            inp = torch.cat((x[:ws,0], x[:ws,1], x[:ws,2]))
-
-            for t in range(1,steps - ws + 1 ): 
-
-                out = model(inp)
-                pred[ws+(t-1):ws+t,1:] =  pred[ws+(t-2):ws+(t-1):,1:] + out
-                new_p = pred[t:t+ws,0]
-                new_s = pred[t:t+ws,1]
-                new_v = pred[t:t+ws,2]
-                
-                inp = torch.cat((new_p, new_s, new_v))
-
-            test_loss += loss_fn(pred[ws:, 1], x[ws:, 1]).detach().cpu().numpy()
-            test_loss_deriv += loss_fn(pred[ws:, 2], x[ws:, 2]).detach().cpu().numpy()
-            total_loss += loss_fn(pred[ws:, 1:], x[ws:, 1:]).detach().cpu().numpy()
-
-            #scale back:    
-            if PSW_max != 0:
-                pred[:,0] = pred[:,0]*PSW_max[0]
-                pred[:,1] = pred[:,1]*PSW_max[1]
-                pred[:,2] = (pred[:,2]*2 - 1) * PSW_max[2]
-                x[:,0] = x[:,0]*PSW_max[0]
-                x[:,1] = x[:,1]*PSW_max[1]
-                x[:,2] = (x[:,2]*2 - 1) * PSW_max[2]
-
-            if plot_opt:
-                figure , axs = plt.subplots(1,3,figsize=(20,9))
-           
-                axs[0].plot(pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
-                axs[0].plot(x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
-                axs[0].set_title("position")
-                axs[0].set_ylabel("[m]")
-                axs[0].set_xlabel("time")
-                axs[0].grid()
-                axs[0].legend()
- 
-                axs[1].plot(pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
-                axs[1].plot(x.detach().cpu().numpy()[:, 2], color="blue", label="true", linestyle="dashed")
-                axs[1].set_title("speed")
-                axs[1].set_ylabel("[m/s]")
-                axs[1].set_xlabel("time")
-                axs[1].grid()
-                axs[1].legend()
- 
-                axs[2].plot(x.detach().cpu().numpy()[:,0], label="pressure")
-                axs[2].set_title("pressure")
-                axs[2].set_ylabel("[Pascal]")
-                axs[2].set_xlabel("time")
-                axs[2].grid()
-                axs[2].legend()
- 
-                plt.grid(True)
-                plt.legend()
-                plt.show()
-           
-    return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
 
 def train(loader, model, weight_decay, learning_rate=0.001, ws=0, batch_size=1):
  
@@ -326,7 +235,7 @@ def main():
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
             if (e+1)%200 == 0:
-                _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 20)
+                _,_, err_train = test(train_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
                # _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
               #  average_traj_err_test.append(err_test)
@@ -334,7 +243,7 @@ def main():
                 print(f"Average error over full trajectories: training data : {err_train}")
                 #print(f"Average error over full trajectories: testing data : {err_test}")
 
-        _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
+        _,_, err_train = test(train_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
         #_,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
         print(f"TRAINING FINISHED: Average error over full trajectories: training data : {err_train}")
        # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")

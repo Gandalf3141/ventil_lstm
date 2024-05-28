@@ -15,6 +15,7 @@ import os
 import cProfile
 import pstats
 from dataloader import *
+from test_function import * 
 
 # Define the LSTM model with two hidden layers
 torch.set_default_dtype(torch.float64)
@@ -193,78 +194,6 @@ def train(input_data, model, weight_decay, future_decay, learning_rate=0.001, ws
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-def test(test_data, model, steps=600, ws=10, plot_opt=False, n = 5):
-
-    #test_data = test_dataloader.get_all_data() 
-    model.eval()
-    loss_fn = nn.MSELoss()
-    test_loss = 0
-    test_loss_deriv = 0
-    total_loss = 0
-    np.random.seed(1234)
-    ids = np.random.choice(test_data.size(dim=0), min([n, test_data.size(dim=0)]), replace=False)
-    ids = np.unique(ids)
-
-    for i, x in enumerate(test_data):
-        x=x.to(device)
-        if i not in ids:
-            continue
-
-        with torch.inference_mode():
-
-            pred = torch.zeros((steps, 3), device=device)
-            pred_next_step = torch.zeros((steps, 3), device=device)
-
-            if ws > 1:
-                pred[0:ws, :] = x[0:ws, :]
-                pred[:, 0] = x[:, 0]
-                pred_next_step[0:ws, :] = x[0:ws, :]
-                pred_next_step[:, 0] = x[:, 0]
-            else:
-                pred[0, :] = x[0, :]
-                pred[:, 0] = x[:, 0]
-                pred_next_step[0, :] = x[0, :]
-                pred_next_step[:, 0] = x[:, 0]
-
-            for i in range(len(x) - ws):
-
-                out, _ = model(pred[i:i+ws, :])
-                pred[i+ws, 1:] = pred[i+ws-1, 1:] + out[-1, :]
-                pred_next_step[i+ws, 1:] = x[i+ws-1, 1:] + out[-1, :]
-            
-            test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().cpu().numpy()
-            test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().cpu().numpy()
-
-            total_loss += loss_fn(pred[:, 1:], x[:, 1:]).detach().cpu().numpy()
-
-            if plot_opt:
-                figure , axs = plt.subplots(1,3,figsize=(16,9))
-            
-                axs[0].plot(pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
-                axs[0].plot(pred_next_step.detach().cpu().numpy()[:, 1], color="green", label="next step from data")
-                axs[0].plot(x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
-                axs[0].set_title("position")
-                axs[0].grid()
-                axs[0].legend()
-
-                axs[1].plot(pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
-                axs[1].plot(pred_next_step.detach().cpu().numpy()[:, 2], color="green", label="next step from data")
-                axs[1].plot(x.detach().cpu().numpy()[:, 2], color="blue", label="true", linestyle="dashed")
-                axs[1].set_title("speed")
-                axs[1].grid()
-                axs[1].legend()
-
-                axs[2].plot(x.detach().cpu().numpy()[:,0], label="pressure")
-                axs[2].set_title("pressure")
-                axs[2].grid()
-                axs[2].legend()
-
-                plt.grid(True)
-                plt.legend()
-                plt.show()
-            
-    return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
-
 def main():
                                 #{'lr': 0.00020110091342376562, 'ws': 4, 'bs': 256, 'hs': 6}#
     parameter_configs  = [
@@ -334,7 +263,7 @@ def main():
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
             if (e+1)%10 == 0:
-                _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
+                _,_, err_train = test(train_data, model, model_type = "lstm", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
                # _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
               #  average_traj_err_test.append(err_test)
@@ -342,7 +271,7 @@ def main():
                 print(f"Average error over full trajectories: training data : {err_train}")
                 #print(f"Average error over full trajectories: testing data : {err_test}")
 
-        _,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
+        _,_, err_train = test(train_data, model, model_type = "lstm", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
         #_,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
         print(f"TRAINING FINISHED: Average error over full trajectories: training data : {err_train}")
        # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")
