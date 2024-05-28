@@ -206,18 +206,18 @@ def main():
     parameter_configs  = [
                         {
                            "experiment_number" : 2,
-                           "window_size" : 4,
-                           "h_size" : 5,
-                           "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 0.001,
+                           "window_size" : 8,
+                           "h_size" : 6,
+                           "l_num" : 3,
+                           "epochs" : 1000,
+                           "learning_rate" : 0.0008,
                            "part_of_data" : 200, 
-                           "weight_decay" : 1e-5,
+                           "weight_decay" : 0,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.5,
-                           "batch_size" : 40,
-                           "future" : 10,
-                           "cut_off_timesteps" : 0,
+                           "batch_size" : 20,
+                           
+                           "cut_off_timesteps" : 200,
                            "drop_half_timesteps": True
                         }
                       ]
