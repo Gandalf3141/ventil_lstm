@@ -106,3 +106,21 @@
 2024-05-28 06:00:10,951 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2024-05-28 06:00:10,951 - INFO - 
 
+2024-05-28 11:54:41,852 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 4, 'h_size': 5, 'l_num': 1, 'epochs': 100, 'learning_rate': 0.001, 'part_of_data': 200, 'weight_decay': 1e-05, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 40, 'future': 10, 'cut_off_timesteps': 0, 'drop_half_timesteps': True}
+2024-05-28 11:54:41,852 - INFO - Final train error over whole traj (average over some inits) []
+2024-05-28 11:54:41,852 - INFO - Final test error over whole traj (average over some inits) []
+2024-05-28 11:54:41,852 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-05-28 11:54:41,852 - INFO - 
+
+2024-05-28 12:05:33,685 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 8, 'h_size': 5, 'l_num': 3, 'epochs': 50, 'learning_rate': 0.001, 'part_of_data': 200, 'weight_decay': 0, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 40, 'cut_off_timesteps': 0, 'drop_half_timesteps': True}
+2024-05-28 12:05:33,685 - INFO - Final train error over whole traj (average over some inits) []
+2024-05-28 12:05:33,685 - INFO - Final test error over whole traj (average over some inits) []
+2024-05-28 12:05:33,685 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-05-28 12:05:33,685 - INFO - 
+
+2024-05-28 14:40:37,195 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 8, 'h_size': 6, 'l_num': 3, 'epochs': 1000, 'learning_rate': 0.0008, 'part_of_data': 200, 'weight_decay': 0, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 20, 'cut_off_timesteps': 200, 'drop_half_timesteps': True}
+2024-05-28 14:40:37,195 - INFO - Final train error over whole traj (average over some inits) []
+2024-05-28 14:40:37,195 - INFO - Final test error over whole traj (average over some inits) [0.02435677550134617, 0.01925451506522479, 0.01981628568059992, 0.018796927040979586, 0.018504147812049898]
+2024-05-28 14:40:37,195 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-05-28 14:40:37,195 - INFO - 
+

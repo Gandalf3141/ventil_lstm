@@ -269,6 +269,7 @@ def main():
                                 #{'lr': 0.00020110091342376562, 'ws': 4, 'bs': 256, 'hs': 6}#
     parameter_configs  = [
                         {
+
                            "experiment_number" : 4,
                            "window_size" : 4,
                            "h_size" : 5,
@@ -282,6 +283,7 @@ def main():
                            "batch_size" : 2000,
                            "future" : 4,
                            "drop_half_timesteps" : True
+                           
                         }
 
                       ]
