@@ -59,7 +59,7 @@ class GRUmodel(nn.Module):
             out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + self.step_size * pred[:, -1: , :]), dim=1)
 
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
-            seq = torch.cat((out[:, t - self.ws : t , :], one_full_traj[:, t : t + self.ws, 0:1]), dim=2)
+            seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
             
             GRU_out, hidden = self.GRU(seq)           
             pred = self.linear(GRU_out)
