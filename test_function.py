@@ -18,12 +18,17 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
 
         #scale back:    
     if physics_rescaling != None:
-        pred[:,0] = pred[:,0]*physics_rescaling[0]
-        pred[:,1] = pred[:,1]*physics_rescaling[1]
-        pred[:,2] = (2*pred[:,2]-1)*physics_rescaling[2]
-        x[:,0] = x[:,0]*physics_rescaling[0]
-        x[:,1] = x[:,1]*physics_rescaling[1]
-        x[:,2] = (2*x[:,2]-1)*physics_rescaling[2]
+
+        # we invert:
+        # x = (x - xmin)/(xmax - xmin)
+        # x * (xmax - xmin) + xmin
+
+        pred[:,0] = pred[:,0]*(physics_rescaling[0] - physics_rescaling[3]) + physics_rescaling[3]
+        pred[:,1] = pred[:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
+        pred[:,2] = pred[:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
+        x[:,0] = x[:,0]*(physics_rescaling[0] - physics_rescaling[3]) + physics_rescaling[3]
+        x[:,1] = x[:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
+        x[:,2] = x[:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
 
     figure , axs = plt.subplots(1,3,figsize=(20,9))
 
