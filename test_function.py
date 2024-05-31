@@ -6,7 +6,7 @@ from torch import nn
 import numpy as np
 
 
-def plot_results(x, pred, pred_next_step=None, physics_rescaling=0):
+def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
 
     if x.dim() == 3:
         x = x.view(x.size(dim=1), x.size(dim=2))
@@ -17,7 +17,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=0):
             pred_next_step = pred_next_step.view(pred_next_step.size(dim=1), pred_next_step.size(dim=2))
 
         #scale back:    
-    if physics_rescaling != 0:
+    if physics_rescaling != None:
         pred[:,0] = pred[:,0]*physics_rescaling[0]
         pred[:,1] = pred[:,1]*physics_rescaling[1]
         pred[:,2] = (2*pred[:,2]-1)*physics_rescaling[2]
