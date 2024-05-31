@@ -41,14 +41,26 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
         #min-max normalization
         #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())  
     elif normalise_s_w == "minmax":
-        p_max = np.max(df[pb_cols].to_numpy())
-        p_min = np.min(df[pb_cols].to_numpy())
 
-        s_max = np.max(df[sb_cols].to_numpy())
-        s_min = np.min(df[sb_cols].to_numpy())
+        p_max = 3.5*1e5 #Druck in [bar]             ... [0, 3.5]
+        s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
+        w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
 
-        w_max = np.max(df[wb_cols].to_numpy())
-        w_min = np.min(df[wb_cols].to_numpy())
+        p_min = 0.0
+        s_min = 0.0
+        w_min = -1.7
+
+        # alt 
+        # p_max = np.max(df[pb_cols].to_numpy())
+        # p_min = np.min(df[pb_cols].to_numpy())
+
+        # s_max = np.max(df[sb_cols].to_numpy())
+        # s_min = np.min(df[sb_cols].to_numpy())
+
+        # w_max = np.max(df[wb_cols].to_numpy())
+        # w_min = np.min(df[wb_cols].to_numpy())
+        # PSW_max = [p_max, s_max, w_max, p_min, s_min, w_min]
+        # print(PSW_max)
 
         df[pb_cols]=(df[pb_cols] - p_min) / (p_max - p_min)
         df[sb_cols]=(df[sb_cols] - s_min) / (s_max - s_min)
@@ -69,14 +81,20 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     tensor = tensor.view(len(df),a,3).permute(1,0,2)
 
 
+
     # Daten aus Matlab Simulation bzw. physikalische Größen
     # Als Ober/Unter Grenzen
 
-    p_max = 3.5 #Druck in [bar]             ... [0, 3.5]
+    p_max = 3.5*1e5 #Druck in [bar]             ... [0, 3.5]
     s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
     w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
+    
+    #Diese Werte bestätigen!!!
+    p_min = 0.0
+    s_min = 0.0
+    w_min = -1.7
 
-    PSW_max = [p_max, s_max, w_max]
+    PSW_max = [p_max, s_max, w_max, p_min, s_min, w_min]
 
 
     return tensor, PSW_max
