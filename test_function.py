@@ -18,6 +18,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=0):
 
         #scale back:    
     if physics_rescaling != 0:
+        print("got here")
         pred[:,0] = pred[:,0]*physics_rescaling[0]
         pred[:,1] = pred[:,1]*physics_rescaling[1]
         pred[:,2] = (2*pred[:,2]-1)*physics_rescaling[2]
