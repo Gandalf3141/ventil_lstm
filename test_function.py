@@ -120,7 +120,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                   
 
-                out, _ = model(x)
+                out, _, _ = model(x)
                 pred[window_size:,1:] = out
             
                 test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
