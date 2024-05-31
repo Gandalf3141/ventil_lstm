@@ -186,17 +186,66 @@ def main():
                            "window_size" : 4,
                            "h_size" : 5,
                            "l_num" : 1,
-                           "epochs" : 100,
-                           "learning_rate" : 0.0008,
+                           "epochs" : 2000,
+                           "learning_rate" : 0.001,
                            "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
+                           "weight_decay" : 0,
                            "percentage_of_data" : 0.8,
                            "future_decay"  : 0.5,
                            "batch_size" : 20,
                            "future" : 10,
                            "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True
+                        },
+                                                {
+                           "experiment_number" : 2,
+                           "window_size" : 16,
+                           "h_size" : 8,
+                           "l_num" : 3,
+                           "epochs" : 3000,
+                           "learning_rate" : 0.0008,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 0,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.5,
+                           "batch_size" : 20,
+                           "future" : 10,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True
+                        },
+                        {
+                           "experiment_number" : 2,
+                           "window_size" : 32,
+                           "h_size" : 8,
+                           "l_num" : 1,
+                           "epochs" : 3000,
+                           "learning_rate" : 0.0008,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 0,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.5,
+                           "batch_size" : 10,
+                           "future" : 10,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True
+                        },
+                        {
+                           "experiment_number" : 2,
+                           "window_size" : 32,
+                           "h_size" : 10,
+                           "l_num" : 3,
+                           "epochs" : 3000,
+                           "learning_rate" : 0.0005,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 0,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.5,
+                           "batch_size" : 30,
+                           "future" : 10,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True
                         }
+
                       ]
 
     for k, d in enumerate(parameter_configs):
@@ -272,24 +321,28 @@ def main():
 
                 
                 #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
-                test_loss, test_loss_deriv, err_train = test(train_data, model, model_type = "or_lstm", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
+                test_loss, test_loss_deriv, err_train = test(train_data.to(device), model, model_type = "or_lstm", window_size=params["window_size"],
+                                                              display_plots=False, num_of_inits = 50, set_rand_seed=True, physics_rescaling = PSW_max)
 
 
-                #average_traj_err_train.append(err_train)
+                average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_train)
 
                 #print(f"Average error over full trajectories: training data : {err_train}")
                 print(f"Average error over full trajectories: training data : {err_train}")
         
+        test_loss, test_loss_deriv, err_test_final = test(test_data.to(device), model, model_type = "or_lstm", window_size=params["window_size"], 
+                                                          display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
+
         # Save trained model
-        path = f'Ventil_trained_NNs\OR_lstm_ws{params["experiment_number"]}.pth'
+        path = f'Ventil_trained_NNs\OR_lstm_{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)
         print(f"Run finished, file saved as: \n {path}")
 
         # Log parameters
         logging.info(f"hyperparams: {params}")
         logging.info(f"Final train error over whole traj (average over some inits) {average_traj_err_train}")
-        logging.info(f"Final test error over whole traj (average over some inits) {average_traj_err_test}")
+        logging.info(f"Final test error over whole traj (average over some inits) {err_test_final}")
         logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         logging.info("\n")
 
