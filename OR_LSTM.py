@@ -181,23 +181,7 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
 def main():
                 
     parameter_configs  = [
-                        {
-                           "experiment_number" : 2,
-                           "window_size" : 4,
-                           "h_size" : 5,
-                           "l_num" : 1,
-                           "epochs" : 2000,
-                           "learning_rate" : 0.001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 0,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 20,
-                           "future" : 10,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True
-                        },
-                                                {
+                                               {
                            "experiment_number" : 2,
                            "window_size" : 16,
                            "h_size" : 8,
@@ -206,45 +190,32 @@ def main():
                            "learning_rate" : 0.0008,
                            "part_of_data" : 0, 
                            "weight_decay" : 0,
-                           "percentage_of_data" : 0.8,
+                           "percentage_of_data" : 0.7,
                            "future_decay"  : 0.5,
                            "batch_size" : 20,
                            "future" : 10,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True
-                        },
-                        {
-                           "experiment_number" : 2,
-                           "window_size" : 32,
-                           "h_size" : 8,
-                           "l_num" : 1,
-                           "epochs" : 3000,
-                           "learning_rate" : 0.0008,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 0,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 10,
-                           "future" : 10,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True
-                        },
-                        {
-                           "experiment_number" : 2,
-                           "window_size" : 32,
-                           "h_size" : 10,
-                           "l_num" : 3,
-                           "epochs" : 3000,
-                           "learning_rate" : 0.0005,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 0,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 30,
-                           "future" : 10,
-                           "cut_off_timesteps" : 0,
+                           "cut_off_timesteps" : 100,
                            "drop_half_timesteps": True
                         }
+
+                        #Best so far!!!
+                        #                         {
+                        #    "experiment_number" : 2,
+                        #    "window_size" : 16,
+                        #    "h_size" : 8,
+                        #    "l_num" : 3,
+                        #    "epochs" : 3000,
+                        #    "learning_rate" : 0.0008,
+                        #    "part_of_data" : 0, 
+                        #    "weight_decay" : 0,
+                        #    "percentage_of_data" : 0.8,
+                        #    "future_decay"  : 0.5,
+                        #    "batch_size" : 20,
+                        #    "future" : 10,
+                        #    "cut_off_timesteps" : 0,
+                        #    "drop_half_timesteps": True
+                        # },
+
 
                       ]
 
@@ -262,7 +233,7 @@ def main():
         model = LSTMmodel(input_size=3, hidden_size=params["h_size"], out_size=2, layers=params["l_num"], window_size=params["window_size"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data, PSW_max = get_data(path = "save_data_test4.csv", 
+        input_data, PSW_max = get_data(path = "save_data_test_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -280,7 +251,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_200.csv", 
+        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -317,7 +288,7 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%200 == 0:
+            if (e+1)%300 == 0:
 
                 
                 #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
