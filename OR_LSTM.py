@@ -299,6 +299,9 @@ def main():
         train_inits = np.random.choice(np.arange(len(input_data)),num_of_inits_train,replace=False)
         test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
 
+        np.random.shuffle(train_inits)
+        np.random.shuffle(test_inits)
+        
         train_data = input_data[train_inits,:input_data.size(dim=1)-params["cut_off_timesteps"],:]
         test_data = input_data[test_inits,:,:]
 
