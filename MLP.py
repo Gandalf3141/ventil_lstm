@@ -16,6 +16,7 @@ import cProfile
 import pstats
 from dataloader import *
 from test_function import *
+from NN_classes import *
 
 #Define the LSTM model class
 torch.set_default_dtype(torch.float64)
@@ -76,38 +77,6 @@ class CustomDataset(Dataset):
         inp = torch.cat((inp[:,0], inp[:,1], inp[:,2]))
         
         return inp, last, label
-
-class MLP(nn.Module):
-    def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh"):
-        super(MLP, self).__init__()
-        
-        if act_fn == "tanh":
-            fn = nn.Tanh()
-        else:
-            fn = nn.ReLU()
-
-        hidden_sizes = [hidden_size for x in range(l_num)]
-        # Create a list to hold the layers
-        layers = []
-        
-        # Input layer
-        layers.append(nn.Linear(input_size, hidden_sizes[0]))
-        layers.append(fn)
-        
-        # Hidden layers
-        for i in range(1, len(hidden_sizes)):
-            layers.append(nn.Linear(hidden_sizes[i-1], hidden_sizes[i]))
-            layers.append(fn)
-        
-        # Output layer
-        layers.append(nn.Linear(hidden_sizes[-1], output_size))
-        
-        # Use nn.Sequential to put together the layers
-        self.network = nn.Sequential(*layers)
-    
-    def forward(self, x):
-        
-        return self.network(x)         
 
 def train(loader, model, weight_decay, learning_rate=0.001, ws=0, batch_size=1):
  
