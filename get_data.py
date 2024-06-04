@@ -46,7 +46,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
         s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
         w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
 
-        p_min = 0.0
+        p_min = 1.0
         s_min = 0.0
         w_min = -1.7
 
@@ -90,7 +90,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
     
     #Diese Werte bestätigen!!!
-    p_min = 0.0
+    p_min = 1.0
     s_min = 0.0
     w_min = -1.7
 
