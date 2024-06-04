@@ -14,6 +14,7 @@ import cProfile
 import pstats
 from dataloader import *
 from test_function import *
+from NN_classes import *
 
 #Define the GRU model class
 
@@ -22,52 +23,6 @@ torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 print(device)
 
-class GRUmodel(nn.Module):
-
-    def __init__(self, input_size, hidden_size, out_size, layers, window_size=4, stepsize=1):
-
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.input_size = input_size
-        self.ws = window_size
-
-        if stepsize==1:
-            self.step_size = 1
-        else:
-            self.step_size = torch.nn.parameter.Parameter(torch.rand(1))
-
-        # Define GRU layer
-        self.GRU = nn.GRU(input_size, hidden_size, num_layers=layers, batch_first=True)
-
-        # Define linear layer
-        self.linear = nn.Linear(hidden_size, out_size)
-
-    def forward(self, one_full_traj):
-
-        seq = one_full_traj[:, 0:self.ws, :]
-        GRU_out, hidden = self.GRU(seq)           
-        pred = self.linear(GRU_out)
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + self.step_size * pred[:, -1: , :]
-
-        for t in range(1, self.ws):
-
-            tmp = torch.cat(( one_full_traj[:,self.ws+t:self.ws+t+1, 0:1] , out[:, (t-1):t,:]), dim=2)
-            seq = torch.cat((one_full_traj[:, t:self.ws+(t-1), :], tmp), dim=1)
-            GRU_out, hidden = self.GRU(seq)           
-            pred = self.linear(GRU_out)
-            out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + self.step_size * pred[:, -1: , :]), dim=1)
-
-        for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
-            seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
-            
-            GRU_out, hidden = self.GRU(seq)           
-            pred = self.linear(GRU_out)
-
-            out = torch.cat((out, out[:, t-1:t, :] + self.step_size * pred[:, -1: , :]), dim=1)
-
-        return out, hidden          
-     
 class custom_simple_dataset(Dataset):
  
  
