@@ -32,10 +32,6 @@ class LSTMmodel(nn.Module):
         self.input_size = input_size
         self.ws = window_size
         self.rungekutta = rungekutta
-        if stepsize==1:
-         self.step_size = 1
-        else:
-         self.step_size = torch.nn.parameter.Parameter(torch.rand(1))
 
         # Define LSTM layer
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
@@ -48,7 +44,10 @@ class LSTMmodel(nn.Module):
         seq = one_full_traj[:, 0:self.ws, :]
         lstm_out, hidden = self.lstm(seq)           
         pred = self.linear(lstm_out)
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + self.step_size * pred[:, -1: , :]
+        #only update next step
+        out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred[:, -1: , :]
+
+        derivatie_sv = pred[:, -1: , :]
 
         if self.rungekutta == False:
             for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
@@ -59,78 +58,22 @@ class LSTMmodel(nn.Module):
                 pred = self.linear(lstm_out)
                 out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + pred[:, -1: , :]), dim=1)
 
+                derivatie_sv = torch.cat((derivatie_sv, pred[:, -1: , :]), dim=1)
+
+
             for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
-
-                #wäre richtig!!!    
+    
                 seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
-                #war falsch
-                #seq = torch.cat((out[:, t - self.ws : t , :],one_full_traj[:, t : t + self.ws, 0:1]), dim=2)
-                
+            
                 lstm_out, hidden = self.lstm(seq)           
                 pred = self.linear(lstm_out)
 
-                out = torch.cat((out, out[:, t-1:t, :] + self.step_size * pred[:, -1: , :]), dim=1)
+                out = torch.cat((out, out[:, t-1:t, :] + pred[:, -1: , :]), dim=1)
 
-        if self.rungekutta == True:
-            for t in range(1, self.ws + 2): # für RK : range(1, self.ws + 2):
-
-                tmp = torch.cat(( one_full_traj[:,self.ws+t:self.ws+t+1, 0:1] , out[:, (t-1):t,:]), dim=2)
-                seq = torch.cat((one_full_traj[:, t:self.ws+(t-1), :], tmp), dim=1)
-                lstm_out, hidden = self.lstm(seq)           
-                pred = self.linear(lstm_out)
-                out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + pred[:, -1: , :]), dim=1)
+                derivatie_sv = torch.cat((derivatie_sv, pred[:, -1: , :]), dim=1)
             
-            for t in range(self.ws, one_full_traj.size(dim=1) - self.ws - 2):
-                # seq = torch.cat((out[:, t - self.ws : t , :], one_full_traj[:, t : t + self.ws, 0:1]), dim=2)
-                
-                # lstm_out, hidden = self.lstm(seq)           
-                # pred = self.linear(lstm_out)
-
-                # out = torch.cat((out, out[:, t-1:t, :] + pred[:, -1: , :]), dim=1)
-
-                #Runge Kutta : 
-                
-                #y(n+1) = y(n) + h/6 * (k1 + 2k2 + 2k3 + k4)
-                # k1 = f(y(n))          --- u1
-                # k2 = f(y(n)+h/2*k1)   --- u2
-                # k3 = f(y(n)+h/2*k2)   --- u2
-                # k4 = f(y(n)+h*k3)     --- u3
-                # We only have u at discrete steps -> use h = 2 such that y(n)+k1 = y(n+1) and so on
-
-                #richtig wäre :
-                seq = torch.cat((one_full_traj[:, t : t + self.ws + 2, 0:1], out[:, t - self.ws : t + 2 , :]), dim=2)
-                #war falsch beim training!
-                #seq = torch.cat((out[:, t - self.ws : t + 2 , :], one_full_traj[:, t : t + self.ws + 2, 0:1]), dim=2)
-
-                inp1 = seq[:, 0:-2, :]
-
-                lstm_out, hidden = self.lstm(inp1)           
-                k1 = self.linear(lstm_out)
-
-                inp2 = seq[:, 1:-1, :]
-                inp2[:, -1:, 1:] = inp2[:, -1:, 1:] + k1[:, -1, :]
-
-                lstm_out, hidden = self.lstm(inp2)           
-                k2 = self.linear(lstm_out) 
-
-                inp3 = seq[:, 1:-1, :]
-                inp3[:, -1:, 1:] = inp3[:, -1:, 1:] + k2[:, -1, :]
-
-                lstm_out, hidden = self.lstm(inp3)           
-                k3 = self.linear(lstm_out)          
-
-                inp4 = seq[:, 2:, :]
-                inp4[:, -1:, 1:] = inp4[:, -1:, 1:] + 2*k3[:, -1, :]
-
-                lstm_out, hidden = self.lstm(inp4)           
-                k4 = self.linear(lstm_out)  
-
-                    # y(n+1) ist 2 steps in der zukunft wegen h = 2 ?!?
-                res = out[:, t:t+1, :]  +  2/6 * (k1[:, -1, :] + 2*k2[:, -1, :] + 2*k3[:, -1, :] + k4[:, -1, :])
-                out = torch.cat((out, res), dim=1)
-
-            
-        return out, hidden          
+        return out, hidden, derivatie_sv
+    
 
 class custom_simple_dataset(Dataset):
  
@@ -163,7 +106,7 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
         x = x.to(device)
         y = y.to(device)
         
-        output, _ = model(x)
+        output, _, _ = model(x)
   
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
@@ -181,8 +124,24 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
 def main():
                 
     parameter_configs  = [
-                                               {
+                                                       {
                            "experiment_number" : 2,
+                           "window_size" : 16,
+                           "h_size" : 8,
+                           "l_num" : 3,
+                           "epochs" : 1000,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 0,
+                           "percentage_of_data" : 0.8,
+                           "future_decay"  : 0.5,
+                           "batch_size" : 80,
+                           "future" : 10,
+                           "cut_off_timesteps" : 200,
+                           "drop_half_timesteps": True
+                        },
+                                               {
+                           "experiment_number" : 3,
                            "window_size" : 16,
                            "h_size" : 8,
                            "l_num" : 3,
@@ -190,7 +149,7 @@ def main():
                            "learning_rate" : 0.0008,
                            "part_of_data" : 0, 
                            "weight_decay" : 0,
-                           "percentage_of_data" : 0.7,
+                           "percentage_of_data" : 0.8,
                            "future_decay"  : 0.5,
                            "batch_size" : 20,
                            "future" : 10,
@@ -233,7 +192,7 @@ def main():
         model = LSTMmodel(input_size=3, hidden_size=params["h_size"], out_size=2, layers=params["l_num"], window_size=params["window_size"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data, PSW_max = get_data(path = "save_data_test_revised.csv", 
+        input_data1, PSW_max = get_data(path = "save_data_test_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -242,16 +201,16 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data2, PSW_max = get_data(path = "save_data_test5.csv", 
-                                timesteps_from_data=0, 
-                                skip_steps_start = 0,
-                                skip_steps_end = 0, 
-                                drop_half_timesteps = params["drop_half_timesteps"],
-                                normalise_s_w="minmax",
-                                rescale_p=False,
-                                num_inits=params["part_of_data"])
+        # input_data2, PSW_max = get_data(path = "save_data_test5.csv", 
+        #                         timesteps_from_data=0, 
+        #                         skip_steps_start = 0,
+        #                         skip_steps_end = 0, 
+        #                         drop_half_timesteps = params["drop_half_timesteps"],
+        #                         normalise_s_w="minmax",
+        #                         rescale_p=False,
+        #                         num_inits=params["part_of_data"])
         
-        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_revised.csv", 
+        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -260,7 +219,9 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        input_data = torch.cat((input_data, input_data2, input_data3))
+        #input_data = torch.cat((input_data1, input_data2, input_data3))
+        input_data = torch.cat((input_data1, input_data3))
+
 
         print(input_data.size())
 
@@ -291,7 +252,7 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%300 == 0:
+            if (e+1)%200 == 0:
 
                 
                 #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
