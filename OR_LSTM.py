@@ -72,38 +72,58 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
 def main():
                 
     parameter_configs  = [
-                                                       {
-                           "experiment_number" : 2,
-                           "window_size" : 16,
-                           "h_size" : 8,
-                           "l_num" : 3,
-                           "epochs" : 1000,
-                           "learning_rate" : 0.001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 0,
-                           "percentage_of_data" : 0.7,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 80,
-                           "future" : 10,
-                           "cut_off_timesteps" : 200,
-                           "drop_half_timesteps": True
-                        },
-                                               {
-                           "experiment_number" : 3,
-                           "window_size" : 16,
-                           "h_size" : 8,
-                           "l_num" : 3,
-                           "epochs" : 3000,
-                           "learning_rate" : 0.0008,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 0,
-                           "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 20,
-                           "future" : 10,
-                           "cut_off_timesteps" : 100,
-                           "drop_half_timesteps": True
-                        }
+                            
+                                {
+                                "experiment_number" : 2,
+                                "window_size" : 16,
+                                "h_size" : 8,
+                                "l_num" : 3,
+                                "epochs" : 4000,
+                                "learning_rate" : 0.0008,
+                                "part_of_data" : 0, 
+                                "weight_decay" : 0,
+                                "percentage_of_data" : 0.8,
+                                "future_decay"  : 0.5,
+                                "batch_size" : 20,
+                                "future" : 10,
+                                "cut_off_timesteps" : 0,
+                                "drop_half_timesteps": True
+                                },
+
+                                {
+                                "experiment_number" : 2,
+                                "window_size" : 16,
+                                "h_size" : 12,
+                                "l_num" : 1,
+                                "epochs" : 3000,
+                                "learning_rate" : 0.0008,
+                                "part_of_data" : 0, 
+                                "weight_decay" : 0,
+                                "percentage_of_data" : 0.8,
+                                "future_decay"  : 0.5,
+                                "batch_size" : 20,
+                                "future" : 10,
+                                "cut_off_timesteps" : 0,
+                                "drop_half_timesteps": True
+                                }
+                                                      {
+                                "experiment_number" : 2,
+                                "window_size" : 32,
+                                "h_size" : 8,
+                                "l_num" : 3,
+                                "epochs" : 3000,
+                                "learning_rate" : 0.001,
+                                "part_of_data" : 0, 
+                                "weight_decay" : 0,
+                                "percentage_of_data" : 0.8,
+                                "future_decay"  : 0.5,
+                                "batch_size" : 50,
+                                "future" : 10,
+                                "cut_off_timesteps" : 0,
+                                "drop_half_timesteps": True
+                                }
+    ]
+
 
                         #Best so far!!!
                         #                         {
@@ -124,7 +144,7 @@ def main():
                         # },
 
 
-                      ]
+                      
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
