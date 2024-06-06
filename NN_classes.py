@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-
+# OR - LSTM
 class LSTMmodel(nn.Module):
 
     def __init__(self, input_size, hidden_size, out_size, layers, window_size=4, stepsize=1, rungekutta=False):
@@ -126,6 +126,7 @@ class LSTMmodel(nn.Module):
             
         return out, hidden, derivatie_sv          
   
+# LSTM
 class LSTMmodel_nextstep(nn.Module):
 
 
@@ -167,7 +168,8 @@ class LSTMmodel_nextstep(nn.Module):
         pred = self.linear(lstm_out)
 
         return pred, hidden
-    
+
+# GRU 
 class GRUmodel(nn.Module):
 
     def __init__(self, input_size, hidden_size, out_size, layers, window_size=4, stepsize=1):
@@ -215,6 +217,7 @@ class GRUmodel(nn.Module):
 
         return out, hidden          
 
+# Multilayer perceptron
 class MLP(nn.Module):
     def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh"):
         super(MLP, self).__init__()
