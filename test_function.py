@@ -120,8 +120,6 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[:, 0] = x[0, :, 0]
     
 
-                  
-
                 out, _, _ = model(x)
                 pred[window_size:,1:] = out
             
