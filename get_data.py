@@ -85,7 +85,7 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     # Daten aus Matlab Simulation bzw. physikalische Größen
     # Als Ober/Unter Grenzen
 
-    p_max = 3.5*1e5 #Druck in [bar]             ... [0, 3.5]
+    p_max = 3.5*1e5 #Druck in [bar]             ... [1 , 3.5]
     s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
     w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
     
