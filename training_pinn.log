@@ -1,0 +1,24 @@
+2024-06-07 14:11:20,456 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 16, 'h_size': 8, 'l_num': 1, 'epochs': 100, 'learning_rate': 0.0008, 'part_of_data': 100, 'weight_decay': 0, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 20, 'future': 10, 'cut_off_timesteps': 100, 'drop_half_timesteps': True, 'physics_loss_weight': 1e-10}
+2024-06-07 14:11:20,456 - INFO - Final train error over whole traj (average over some inits) [1974.6324051808322, 1.9388225738418632, 1.3695522440972643, 0.8681322828085832, 0.4719746047307738, 0.6206956146377903, 0.7170851104915288, 0.7638817248973028, 0.723096621585595, 0.6675854318982205]
+2024-06-07 14:11:20,456 - INFO - Final test error over whole traj (average over some inits) 0.31993397889475866
+2024-06-07 14:11:20,456 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-07 14:11:20,456 - INFO - 
+
+2024-06-07 14:17:15,236 - INFO - hyperparams: {'experiment_number': 1, 'window_size': 16, 'h_size': 8, 'l_num': 1, 'epochs': 100, 'learning_rate': 0.0008, 'part_of_data': 100, 'weight_decay': 0, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 20, 'future': 10, 'cut_off_timesteps': 100, 'drop_half_timesteps': True, 'physics_loss_weight': 0}
+2024-06-07 14:17:15,236 - INFO - Final train error over whole traj (average over some inits) [23.699301676951, 10.16760707992743, 7.899136545425207, 6.645730482078453, 5.62886952158422, 4.8368709733612825, 4.186540647253527, 3.5990627672186877, 3.134031093772177, 2.681327773673117]
+2024-06-07 14:17:15,236 - INFO - Final test error over whole traj (average over some inits) 1.2415770711258298
+2024-06-07 14:17:15,236 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-07 14:17:15,236 - INFO - 
+
+2024-06-08 05:16:31,576 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 16, 'h_size': 8, 'l_num': 1, 'epochs': 1000, 'learning_rate': 0.0008, 'part_of_data': 100, 'weight_decay': 0, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 20, 'future': 10, 'cut_off_timesteps': 100, 'drop_half_timesteps': True, 'physics_loss_weight': 1e-15}
+2024-06-08 05:16:31,576 - INFO - Final train error over whole traj (average over some inits) [1.3466707207389448, 3.8362695769670596, 2.848004196490587, 2.6145266462229975, 2.9029819657209943, 2.9823564471170694, 2.96814024128827, 3.013746299684513, 3.1165658064946125, 3.3036969691551112]
+2024-06-08 05:16:31,576 - INFO - Final test error over whole traj (average over some inits) 1.9192000611219004
+2024-06-08 05:16:31,576 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-08 05:16:31,576 - INFO - 
+
+2024-06-08 06:03:07,498 - INFO - hyperparams: {'experiment_number': 1, 'window_size': 16, 'h_size': 8, 'l_num': 1, 'epochs': 1000, 'learning_rate': 0.0008, 'part_of_data': 100, 'weight_decay': 0, 'percentage_of_data': 0.8, 'future_decay': 0.5, 'batch_size': 20, 'future': 10, 'cut_off_timesteps': 100, 'drop_half_timesteps': True, 'physics_loss_weight': 0}
+2024-06-08 06:03:07,498 - INFO - Final train error over whole traj (average over some inits) [1018.5629604097263, 15.332242238666462, 0.26022905317782274, 0.2526843388538546, 0.21963648710350406, 0.1881793079806265, 0.17075403154729418, 0.13404370392007667, 0.13014691368948078, 0.11545443413651775]
+2024-06-08 06:03:07,498 - INFO - Final test error over whole traj (average over some inits) 0.05206386956008347
+2024-06-08 06:03:07,498 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-08 06:03:07,498 - INFO - 
+
