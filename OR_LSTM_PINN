@@ -50,8 +50,8 @@ def fr(v):
     d = 3.2
     F_c  = 0.5
 
-    fr = - d * v - F_c * torch.sign(v)
-
+    #fr = - d * v - F_c * torch.sign(v)
+    fr = - d * v - F_c * torch.tanh(v/0.1)
 
     return fr
 
@@ -90,7 +90,7 @@ def fk(s,v):
 
     return fk
 
-def ODE_right_side(x, pressure, physics_rescaling=None):
+def ODE_right_side(x, pressure, physics_rescaling=None, no_fk=False, no_fr=False):
 
     #rescale to physical units
 
@@ -114,20 +114,28 @@ def ODE_right_side(x, pressure, physics_rescaling=None):
     c = 16.5e3                              # parBoost_gen.c_b  = 16.5e3;                 % Federkonstante Booster in [N/m]
     F_cb0 = -4.3                            #parBoost_gen.F_cb0 = -4.3;                    % Federvorspannkraft (Kraft der Feder bei sb=0) [N]
 
-
     for i in range(x_dt.size(dim=0)):
         for time in range(x_dt.size(dim=1)):
 
             p = pressure[i, time, 0] * (physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
             s =  x[i, time, 0] * (physics_rescaling[0] - physics_rescaling[3]) + physics_rescaling[3]
             v = x[i, time, 1] * (physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
+            
+            if no_fr:
+                x_dt[i, time, 0:1] =  1/m * ( A * ( p - p0) - (c * s - F_cb0) + fk(s,v) ) 
+            
+            elif no_fk and not no_fr:
+                x_dt[i, time, 0:1] =  1/m * ( A * ( p - p0) - (c * s - F_cb0) + fr(v)) 
+            
+            elif no_fk and no_fr:
+                x_dt[i, time, 0:1] =  1/m * ( A * ( p - p0) - (c * s - F_cb0)) 
 
-            x_dt[i, time, 0:1] =  1/m * ( A * ( p - p0) - (c * s - F_cb0) + fr(v) + fk(s,v) ) 
+            else:
+                x_dt[i, time, 0:1] =  1/m * ( A * ( p - p0) - (c * s - F_cb0) + fr(v) + fk(s,v) ) 
 
     return x_dt
 
-
-def train(input_data, model, weight_decay, learning_rate=0.001, ws=0, PSW_max=0, physics_loss_weight = 0.0001):
+def train(input_data, model, weight_decay, learning_rate=0.001, ws=0, PSW_max=0, physics_loss_weight = 0.0001, phy_options=[False, False]):
  
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
@@ -155,16 +163,9 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0, PSW_max=0,
         
          pressure = x[:, ws:, 0:1] # Anfangswerte sind abgeschnitten weil len(output) == len(x) - windowsize 
 
-         a_net = ODE_right_side(output, pressure, PSW_max)
-         a_true = ODE_right_side(y, pressure, PSW_max)
-
-        #  for i in range(a_net.size(dim=0)):
-        #   for time in range(a_net.size(dim=1)):
-        #       if abs(a_net[i, time, :] - a_true[i, time, :]) > 20000: 
-        #           a_net[i, time, :]  = 0
-        #           a_true[i, time, :] = 0
-                  
-
+         a_net = ODE_right_side(output, pressure, PSW_max, phy_options[0], phy_options[1])
+         a_true = ODE_right_side(y, pressure, PSW_max, phy_options[0], phy_options[1])
+       
          physics_loss = physics_loss_weight * loss_fn(a_net, a_true)
 
         losses = loss
@@ -186,9 +187,62 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0, PSW_max=0,
 
 def main():
                 
-    parameter_configs  = [
-                            
+    parameter_configs  = [                           
                                 {
+                                "experiment_number" : 2,
+                                "window_size" : 16,
+                                "h_size" : 8,
+                                "l_num" : 3,
+                                "epochs" : 1000,
+                                "learning_rate" : 0.0008,
+                                "part_of_data" : 100, 
+                                "weight_decay" : 0,
+                                "percentage_of_data" : 0.8,
+                                "future_decay"  : 0.5,
+                                "batch_size" : 20,
+                                "future" : 10,
+                                "cut_off_timesteps" : 100,
+                                "drop_half_timesteps": True,
+                                "physics_loss_weight" : 1e-5,
+                                "phy_options" : [False, False]
+                                },
+                                {
+                                "experiment_number" : 2,
+                                "window_size" : 16,
+                                "h_size" : 8,
+                                "l_num" : 3,
+                                "epochs" : 1000,
+                                "learning_rate" : 0.0008,
+                                "part_of_data" : 100, 
+                                "weight_decay" : 0,
+                                "percentage_of_data" : 0.8,
+                                "future_decay"  : 0.5,
+                                "batch_size" : 20,
+                                "future" : 10,
+                                "cut_off_timesteps" : 100,
+                                "drop_half_timesteps": True,
+                                "physics_loss_weight" : 1e-5,
+                                "phy_options" : [True, False]
+                                },
+                                                                {
+                                "experiment_number" : 2,
+                                "window_size" : 16,
+                                "h_size" : 8,
+                                "l_num" : 3,
+                                "epochs" : 1000,
+                                "learning_rate" : 0.0008,
+                                "part_of_data" : 100, 
+                                "weight_decay" : 0,
+                                "percentage_of_data" : 0.8,
+                                "future_decay"  : 0.5,
+                                "batch_size" : 20,
+                                "future" : 10,
+                                "cut_off_timesteps" : 100,
+                                "drop_half_timesteps": True,
+                                "physics_loss_weight" : 1e-5,
+                                "phy_options" : [False, True]
+                                },
+                                                                {
                                 "experiment_number" : 2,
                                 "window_size" : 16,
                                 "h_size" : 8,
@@ -203,26 +257,9 @@ def main():
                                 "future" : 10,
                                 "cut_off_timesteps" : 100,
                                 "drop_half_timesteps": True,
-                                "physics_loss_weight" : 1e-15
+                                "physics_loss_weight" : 1e-5,
+                                "phy_options" : [True, True]
                                 },
-                                {
-                                "experiment_number" : 4,
-                                "window_size" : 16,
-                                "h_size" : 8,
-                                "l_num" : 1,
-                                "epochs" : 1000,
-                                "learning_rate" : 0.0008,
-                                "part_of_data" : 100, 
-                                "weight_decay" : 0,
-                                "percentage_of_data" : 0.8,
-                                "future_decay"  : 0.5,
-                                "batch_size" : 20,
-                                "future" : 10,
-                                "cut_off_timesteps" : 100,
-                                "drop_half_timesteps": True,
-                                "physics_loss_weight" : 0
-                                }
-   
     ]
                   
 
@@ -291,14 +328,14 @@ def main():
 
         for e in tqdm(range(params["epochs"])):
             
-            if e > 100 and params["physics_loss_weight"]!=0:
+            if e > 300 and params["physics_loss_weight"]!=0:
                 loss_epoch, physics_loss_epochs = train(train_loader, model, params["weight_decay"], learning_rate= params["learning_rate"],
                                                         ws=params["window_size"], PSW_max=PSW_max,
-                                                        physics_loss_weight=params["physics_loss_weight"])
+                                                        physics_loss_weight=params["physics_loss_weight"], phy_options = params["phy_options"])
                 losses.append(loss_epoch)
             else:
                 loss_epoch, physics_loss_epochs = train(train_loader, model, params["weight_decay"], learning_rate= params["learning_rate"],
-                                        ws=params["window_size"], PSW_max=PSW_max, physics_loss_weight=0)   
+                                        ws=params["window_size"], PSW_max=PSW_max, physics_loss_weight=0, phy_options = params["phy_options"])   
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
