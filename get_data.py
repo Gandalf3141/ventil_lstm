@@ -5,10 +5,15 @@ import numpy as np
 
 def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, skip_steps_start = 1, skip_steps_end = 1, drop_half_timesteps = True, normalise_s_w="mean", rescale_p=False, num_inits=0):
     
-    if timesteps_from_data>1:
-     df = pd.read_csv(path, header=0, nrows=timesteps_from_data, skiprows=skip_steps_start)
+    if path[-3:] == "pkl":
+       
+     df = pd.read_pickle(path)
+
     else:
-     df = pd.read_csv(path, header=0, skiprows=skip_steps_start)
+       if timesteps_from_data>1:
+        df = pd.read_csv(path, header=0, nrows=timesteps_from_data, skiprows=skip_steps_start)
+       else:
+        df = pd.read_csv(path, header=0, skiprows=skip_steps_start)
 
 
     #drop even more timesteps
@@ -120,18 +125,20 @@ def visualise(data, num_inits=499,set_ylim=False):
             axs[1].set_ylim(0, 0.7*1e-3)
             axs[2].set_ylim(-1, 1)
 
-        axs[0].plot(data[id,:,0], label="pressure", color=colors[k], linewidth=3, alpha=0.7)
-        axs[1].plot(data[id,:,1], label="position", color=colors[k+1], linewidth=3, alpha=0.7)
-        axs[2].plot(data[id,:,2], label="speed", color=colors[k+2], linewidth=3, alpha=0.7)
+        
+        axs[0].plot(data[id,:,1], label="position", color=colors[k+1], linewidth=3, alpha=0.7)
+        axs[1].plot(data[id,:,2], label="speed", color=colors[k+2], linewidth=3, alpha=0.7)
+        axs[2].plot(data[id,:,0], label="pressure", color=colors[k], linewidth=3, alpha=0.7)
+
         axs[0].grid(True)
         #axs[0].legend()
-        axs[0].set_title("pressure [Pa]")
+        axs[2].set_title("pressure [Pa]")
         axs[1].grid(True)
         #axs[1].legend()
-        axs[1].set_title("position [m]")
+        axs[0].set_title("position [m]")
         axs[2].grid(True)
        #axs[2].legend()
-        axs[2].set_title("speed [m/s]")
+        axs[1].set_title("speed [m/s]")
 
     # ids = np.random.randint(0,400,2)
 
