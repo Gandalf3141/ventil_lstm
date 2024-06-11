@@ -32,7 +32,9 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
         x[:,1] = x[:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
         x[:,2] = x[:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
 
-    figure , axs = plt.subplots(1,3,figsize=(20,9))
+    #figure , axs = plt.subplots(1,3,figsize=(20,9))
+    figure , axs = plt.subplots(3,1, figsize=(30,9))
+    
 
 
     axs[0].plot(pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
