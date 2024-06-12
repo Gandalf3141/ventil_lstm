@@ -6,7 +6,7 @@ from torch import nn
 import numpy as np
 
 
-def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
+def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additional_data=None):
 
     if x.dim() == 3:
         x = x.view(x.size(dim=1), x.size(dim=2))
@@ -32,6 +32,12 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
         x[:,1] = x[:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
         x[:,2] = x[:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
 
+        if additional_data != None:
+            for i in range(additional_data.size(dim=0)):
+                additional_data[i,:,0] = additional_data[i,:,0]*(physics_rescaling[0] - physics_rescaling[3]) + physics_rescaling[3]
+                additional_data[i,:,1] = additional_data[i,:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
+                additional_data[i,:,2] = additional_data[i,:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
+
     #figure , axs = plt.subplots(1,3,figsize=(20,9))
     figure , axs = plt.subplots(3,1, figsize=(30,9))
     
@@ -39,6 +45,11 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
 
     axs[0].plot(pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
     axs[0].plot(x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
+    if additional_data != None:
+        for i in range(additional_data.size(dim=0)):
+           names = ["simulink", "Hub im Regler"]
+           axs[0].plot(additional_data[i, :, 1], label=names[i])
+
     axs[0].set_title("position")
     axs[0].set_ylabel("[m]")
     axs[0].set_xlabel("time")
@@ -48,6 +59,10 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
 
     axs[1].plot(pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
     axs[1].plot(x.detach().cpu().numpy()[:, 2], color="blue", label="true", linestyle="dashed")
+    if additional_data != None:
+        for i in range(additional_data.size(dim=0)):
+           names = ["simulink", "Hub im Regler"]
+           axs[1].plot(additional_data[i, :, 2], label=names[i])
     axs[1].set_title("speed")
     axs[1].set_ylabel("[m/s]")
     axs[1].set_xlabel("time")
@@ -55,6 +70,10 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
     axs[1].legend()
 
     axs[2].plot(x.detach().cpu().numpy()[:,0], label="pressure")
+    if additional_data != None:
+       for i in range(additional_data.size(dim=0)):
+           names = ["simulink", "Hub im Regler"]
+           axs[2].plot(additional_data[i, :, 0], label=names[i])
     axs[2].set_title("pressure")
     axs[2].set_ylabel("[Pascal]")
     axs[2].set_xlabel("time")
@@ -71,7 +90,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None):
     plt.legend()
     plt.show()
 
-def test(data, model, model_type = "or_lstm", window_size=10, display_plots=False, num_of_inits = 5, set_rand_seed=True, physics_rescaling = 0):
+def test(data, model, model_type = "or_lstm", window_size=10, display_plots=False, num_of_inits = 5, set_rand_seed=True, physics_rescaling = 0, additional_data=None):
 
     if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcm"]:
         print("Error: model_type = ", model_type, "available options are: [or_lstm, lstm, mlp, gru, tcm]")
@@ -130,7 +149,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling)
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
 
     if model_type == "mlp":
         for i, x in enumerate(data):
@@ -169,7 +188,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     total_loss += loss_fn(pred[window_size:, 1:], x[window_size:, 1:]).detach().cpu().numpy()
 
                     if display_plots:
-                        plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling)
+                        plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
 
 
     if model_type == "lstm":
@@ -206,7 +225,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 total_loss += loss_fn(pred[:, 1:], x[:, 1:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling)
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
 
 

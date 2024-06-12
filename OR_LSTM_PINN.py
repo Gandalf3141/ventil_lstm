@@ -168,7 +168,7 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0, PSW_max=0,
        
          physics_loss = physics_loss_weight * loss_fn(a_net, a_true)
 
-        losses = loss
+        losses = loss.clone()
 
         if physics_loss != None:
          losses += physics_loss
