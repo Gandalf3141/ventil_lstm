@@ -247,9 +247,9 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 for i in range(len(x) - window_size):
 
-                    out = model(pred[0:i+window_size, :])
-                    pred[i+window_size, 1:] = pred[i+window_size-1, 1:] + out[-1, :]
-                    pred_next_step[i+window_size, 1:] = x[0, i+window_size-1, 1:] + out[-1, :]
+                    out = model(pred[i:i+window_size, :])
+                    pred[i+window_size, 1:] = out[-1, :]
+                    pred_next_step[i+window_size, 1:] = out[-1, :]
                 
                 test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
