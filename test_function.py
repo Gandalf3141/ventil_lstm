@@ -38,8 +38,8 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
                 additional_data[i,:,1] = additional_data[i,:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
                 additional_data[i,:,2] = additional_data[i,:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
 
-    #figure , axs = plt.subplots(1,3,figsize=(20,9))
-    figure , axs = plt.subplots(3,1, figsize=(30,9))
+    figure , axs = plt.subplots(1,3,figsize=(20,8))
+    #figure , axs = plt.subplots(3,1, figsize=(25,12))
     
 
 
@@ -92,7 +92,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
 
 def test(data, model, model_type = "or_lstm", window_size=10, display_plots=False, num_of_inits = 5, set_rand_seed=True, physics_rescaling = 0, additional_data=None):
 
-    if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcm"]:
+    if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcn"]:
         print("Error: model_type = ", model_type, "available options are: [or_lstm, lstm, mlp, gru, tcm]")
         return 0
 
@@ -190,7 +190,6 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     if display_plots:
                         plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
 
-
     if model_type == "lstm":
         for i, x in enumerate(data):
             x=x.to(device)
@@ -227,7 +226,38 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
+    if model_type == "tcn" : 
+         for i, x in enumerate(data):
+            if i not in ids:
+                continue
 
+            with torch.inference_mode():
+
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))
+
+                pred = torch.zeros((timesteps, 3), device=device)
+                pred_next_step = torch.zeros((timesteps, 3), device=device)
+
+                pred[0:window_size, :] = x[0, 0:window_size, :]
+                pred[:, 0] = x[0, :, 0]
+                pred_next_step[0:window_size, :] = x[0, 0:window_size, :]
+                pred_next_step[:, 0] = x[0, :, 0]
+
+
+                for i in range(len(x) - window_size):
+
+                    out = model(pred[0:i+window_size, :])
+                    pred[i+window_size, 1:] = pred[i+window_size-1, 1:] + out[-1, :]
+                    pred_next_step[i+window_size, 1:] = x[0, i+window_size-1, 1:] + out[-1, :]
+                
+                test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
+
+                total_loss += loss_fn(pred[:, 1:], x[0, :, 1:]).detach().cpu().numpy()
+
+                if display_plots:
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
 
 
