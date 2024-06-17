@@ -226,8 +226,9 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
-    if model_type == "tcn" : 
+    if model_type == "tcn" :
          for i, x in enumerate(data):
+            
             if i not in ids:
                 continue
 
@@ -244,17 +245,19 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 pred_next_step[0:window_size, :] = x[0, 0:window_size, :]
                 pred_next_step[:, 0] = x[0, :, 0]
 
+                pred = pred.view(1,pred.size(dim=0), pred.size(dim=1))
 
-                for i in range(len(x) - window_size):
 
-                    out = model(pred[0:i+window_size, :])
-                    pred[i+window_size, 1:] = pred[i+window_size-1, 1:] + out[-1, :]
-                    pred_next_step[i+window_size, 1:] = x[0, i+window_size-1, 1:] + out[-1, :]
+                for i in range(x.size(1) - window_size):
+
+                    out = model(pred[0:1, i:i+window_size, :])
+                    pred[0:1, i+window_size, 1:] = pred[0:1, i+window_size-1, 1:] + out[0, -1, :]
+                    pred_next_step[i+window_size, 1:] = x[0, i+window_size-1, 1:] + out[0, -1, :]
                 
-                test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
+                test_loss += loss_fn(pred[0, :, 1], x[0, :, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
 
-                total_loss += loss_fn(pred[:, 1:], x[0, :, 1:]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[0, :, 1:], x[0, :, 1:]).detach().cpu().numpy()
 
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
