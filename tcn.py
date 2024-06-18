@@ -40,12 +40,14 @@ def train(input_data, model, weight_decay, learning_rate=0.001):
 
         # reset the gradient
         
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
         # calculate the error
 
         loss = loss_fn(out[:,-1,:], label[:, 0, 1:])
-        loss.backward()
+
+        loss.backward(retain_graph=True)
         optimizer.step()
+
 
         total_loss.append(loss.detach().cpu().numpy())
 
@@ -53,27 +55,27 @@ def train(input_data, model, weight_decay, learning_rate=0.001):
     return np.mean(total_loss)
 
 
-
 def main():
                 
     parameter_configs  = [
                             
-                                {
-                                "experiment_number" : 2,
-                                "window_size" : 50,
-                                "h_size" : 8,
-                                "l_num" : 3,
-                                "epochs" : 10,
-                                "learning_rate" : 0.001,
-                                "part_of_data" : 10, 
-                                "weight_decay" : 0,
-                                "percentage_of_data" : 0.8,
-                                "future_decay"  : 0.5,
-                                "batch_size" : 1,
-                                "future" : 10,
-                                "cut_off_timesteps" : 0,
-                                "drop_half_timesteps": True
-                                },
+                                     {
+                           "experiment_number" : 4,
+                           "window_size" : 200,
+                           "h_size" : 5,
+                           "l_num" : 1,
+                           "epochs" : 50,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 0,
+                           "percentage_of_data" : 0.7,
+                           "future_decay"  : 0.1,
+                           "batch_size" : 5,
+                           "future" : 4,
+                           "drop_half_timesteps" : True,
+                           "cut_off_timesteps" : 0
+                        }
+
 
     ]
 
@@ -87,22 +89,24 @@ def main():
         filemode = 'a' if os.path.exists(log_file) else 'w'
         logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-            # Initialize the LSTM model
+# Initialize the model
+
         model = TCN(
-                    3, 
-                    [2],
-                    4,
-                    [1],
-                    None,
-                    0.1,
-                    True,
-                    'weight_norm',
-                    'relu',
-                    'xavier_uniform',
-                    True,
-                    'NLC',
-                ).to(device)
-        
+
+            3, # num_inputs: int,
+            [3, 4, 2],# num_channels: ArrayLike,
+            4,         # kernel_size: int = 4,
+            [1, 2, 4],# dilations: Optional[ ArrayLike ] = None,
+            None, # dilation_reset: Optional[ int ] = None,
+            0.1,# dropout: float = 0.1
+            True,# causal: bool = True,
+            None,# use_norm: str = 'weight_norm',
+            'relu',# activation: str = 'relu',
+            'xavier_uniform',# kernel_initializer: str = 'xavier_uniform',
+            True,# use_skip_connections: bool = False,
+            'NLC',# input_shape: str = 'NCL',
+        ).to(device)
+
         # Generate input data (the data is normalized and some timesteps are cut off)
         input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
                                 timesteps_from_data=0, 
@@ -132,6 +136,7 @@ def main():
                                 num_inits=params["part_of_data"])
 
         input_data = torch.cat((input_data1, input_data2, input_data3))
+        input_data =  input_data1
         #input_data = torch.cat((input_data1, input_data3))
 
 
@@ -166,15 +171,15 @@ def main():
             # compared to the network prediction starting from some initial conditions
             if (e+1)%2 == 0:
 
-                _,_, err_train = test(train_data, model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
-                _,_, err_test = test(test_data, model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
+                _,_, err_train = test(train_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
+                _,_, err_test = test(test_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_test)
                 print(f"Epoch: {e}, the average next step error was : loss_epoch")
                 print(f"Average error over full trajectories: training data : {err_train}")
                 print(f"Average error over full trajectories: testing data : {err_test}")  
 
-        _,_, err_test_final = test(test_data, model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)    
+        _, _, err_test_final = test(test_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)    
         # Save trained model
         path = f'Ventil_trained_NNs\\tcn_{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)
