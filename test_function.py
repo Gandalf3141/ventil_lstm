@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn
 import numpy as np
-
+import torchcde
 
 def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additional_data=None):
 
@@ -92,7 +92,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
 
 def test(data, model, model_type = "or_lstm", window_size=10, display_plots=False, num_of_inits = 5, set_rand_seed=True, physics_rescaling = 0, additional_data=None):
 
-    if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcn"]:
+    if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcn", "neural_cde"]:
         print("Error: model_type = ", model_type, "available options are: [or_lstm, lstm, mlp, gru, tcm]")
         return 0
 
@@ -262,7 +262,32 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
+    if model_type == "neural_cde" :
+         for i, x in enumerate(data):
+            
+            if i not in ids:
+                continue
 
+            with torch.inference_mode():
 
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))
+
+                pred = torch.zeros_like(x, device=device)
+        
+                pred[:, 0:window_size, :] = x[0:1, 0:window_size, :]
+                pred[:, :, 0:2] = x[0:1, :, 0:2] # time, pressure
+
+                for i in range(x.size(1) - window_size):
+                    train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(pred[0:1, i:i+window_size, :])    
+                    out = model(train_coeffs)
+                    pred[0:1, i+window_size, 2:] = out
+                
+                test_loss += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[0, :, 3], x[0, :, 3]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[0, :, 2:], x[0, :, 2:]).detach().cpu().numpy()
+
+                if display_plots:
+                    plot_results(x[:,:,1:], pred[:,:,1:], pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
