@@ -226,7 +226,7 @@ def main():
                 #_,_, err_train = test(train_data, model, steps=train_data.size(dim=1), ws=params["window_size"], plot_opt=False, test_inits=len(train_inits), n = 20, PSW_max=PSW_max)
                 test_loss, test_loss_deriv, err_train = test(train_data.to(device), model, model_type = "or_lstm", window_size=params["window_size"],
                                                               display_plots=False, num_of_inits = 50, set_rand_seed=True, physics_rescaling = PSW_max)
-
+#comment
 
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_train)
