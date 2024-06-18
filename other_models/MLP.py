@@ -116,21 +116,49 @@ def main():
     parameter_configs  = [
                         {
                            "experiment_number" : 2,
-                           "window_size" : 5,
-                           "h_size" : 16,
+                           "window_size" : 16,
+                           "h_size" : 48,
                            "l_num" : 3,
                            "epochs" : 2000,
                            "learning_rate" : 0.001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
-                           "future_decay"  : 0.5,
-                           "batch_size" : 600,
-                           "cut_off_timesteps" : 300,
+                           "batch_size" : 1000,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "relu"
+                        },
+                        {
+                           "experiment_number" : 2,
+                           "window_size" : 16,
+                           "h_size" : 48,
+                           "l_num" : 3,
+                           "epochs" : 2000,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 1000,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "tanh"
+                        },
+                        {
+                           "experiment_number" : 2,
+                           "window_size" : 32,
+                           "h_size" : 8,
+                           "l_num" : 5,
+                           "epochs" : 2000,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 1000,
+                           "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True,
                            "act_fn" : "relu"
                         }
-
                       ]
 
     for k, d in enumerate(parameter_configs):
@@ -147,7 +175,7 @@ def main():
         model = MLP(input_size=3*params["window_size"], hidden_size = params["h_size"], l_num=params["l_num"], output_size=2, act_fn = params["act_fn"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data, PSW_max = get_data(path = "save_data_test4.csv", 
+        input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -156,7 +184,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data2, PSW_max = get_data(path = "save_data_test5.csv", 
+        input_data2, PSW_max = get_data(path = "data\save_data_test5.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -165,17 +193,17 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data3, PSW_max = get_data(path = "Testruns_from_trajectory_generator_200.csv", 
+        input_data3, PSW_max = get_data(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
                                 drop_half_timesteps = params["drop_half_timesteps"],
                                 normalise_s_w="minmax",
                                 rescale_p=False,
-                                num_inits=params["part_of_data"])       
+                                num_inits=params["part_of_data"])     
 
 
-        input_data = torch.cat((input_data, input_data2, input_data3))
+        input_data = torch.cat((input_data1, input_data2, input_data3))
 
 
         print(input_data.size())
@@ -205,7 +233,7 @@ def main():
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
             if (e+1)%200 == 0:
-                _,_, err_train = test(train_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
+                _,_, err_train = test(test_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
                # _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
               #  average_traj_err_test.append(err_test)
@@ -213,7 +241,7 @@ def main():
                 print(f"Average error over full trajectories: training data : {err_train}")
                 #print(f"Average error over full trajectories: testing data : {err_test}")
 
-        _,_, err_train = test(train_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
+        _,_, err_train = test(test_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
         #_,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
         print(f"TRAINING FINISHED: Average error over full trajectories: training data : {err_train}")
        # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")

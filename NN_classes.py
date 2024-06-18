@@ -219,6 +219,7 @@ class GRUmodel(nn.Module):
 
 # Multilayer perceptron
 class MLP(nn.Module):
+    
     def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh"):
         super(MLP, self).__init__()
         
