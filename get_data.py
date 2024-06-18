@@ -105,6 +105,110 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
     return tensor, PSW_max
 
 
+def get_data_cde(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, skip_steps_start = 1, skip_steps_end = 1, drop_half_timesteps = True, normalise_s_w="mean", rescale_p=False, num_inits=0):
+    
+    if path[-3:] == "pkl":
+       
+     df = pd.read_pickle(path)
+
+    else:
+       if timesteps_from_data>1:
+        df = pd.read_csv(path, header=0, nrows=timesteps_from_data, skiprows=skip_steps_start)
+       else:
+        df = pd.read_csv(path, header=0, skiprows=skip_steps_start)
+
+
+    #drop even more timesteps
+    if drop_half_timesteps:
+     df = df.iloc[::2]
+
+    if skip_steps_end>1:
+       df = df.iloc[0:len(df)-skip_steps_end]
+
+    if num_inits>1:
+       df = df.iloc[:,0:4*num_inits]
+
+    #Reorder columns for familiar setup (t,u,x) here (t, p_b, s_b, w_b)
+    L = df.columns.to_list()
+    time_cols = L[0::4]
+    sb_cols = L[1::4]
+    pb_cols = L[2::4]
+    wb_cols = L[3::4]
+    new_col_order = [x for sub in list(zip(time_cols, pb_cols, sb_cols, wb_cols)) for x in sub]
+    df= df[new_col_order]
+    
+    # Keep the time columns!
+    #df = df.drop(time_cols, axis=1)
+
+    #
+    PSW_max = 0
+    # Normalise / Rescale
+    if normalise_s_w=="mean":
+        tmp=pb_cols+sb_cols+wb_cols
+        #mean normalization
+        df[tmp]=(df[tmp]-df[tmp].mean())/df[tmp].std()
+        #min-max normalization
+        #df[tmp]=(df[tmp]-df[tmp].min())/(df[tmp].max()-df[tmp].min())  
+    elif normalise_s_w == "minmax":
+
+        p_max = 3.5*1e5 #Druck in [bar]             ... [0, 3.5]
+        s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
+        w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
+
+        p_min = 1.0
+        s_min = 0.0
+        w_min = -1.7
+
+        # alt 
+        # p_max = np.max(df[pb_cols].to_numpy())
+        # p_min = np.min(df[pb_cols].to_numpy())
+
+        # s_max = np.max(df[sb_cols].to_numpy())
+        # s_min = np.min(df[sb_cols].to_numpy())
+
+        # w_max = np.max(df[wb_cols].to_numpy())
+        # w_min = np.min(df[wb_cols].to_numpy())
+        # PSW_max = [p_max, s_max, w_max, p_min, s_min, w_min]
+        # print(PSW_max)
+
+        df[pb_cols]=(df[pb_cols] - p_min) / (p_max - p_min)
+        df[sb_cols]=(df[sb_cols] - s_min) / (s_max - s_min)
+        df[wb_cols]=(df[wb_cols] - w_min) / (w_max - w_min)     
+
+        #PSW_max = [p_max, s_max, w_max]
+
+    if rescale_p:
+       
+       df[pb_cols] = df[pb_cols] / 1e5 
+
+    tensor = torch.tensor(df.values)
+
+    #tensor with t=0:600, 500 different input and the 3 outputs [s_b, p_b, w_b]
+    a = num_inits if num_inits>0 else 500
+    a=int(len(df.columns.to_list())/4)
+
+    tensor = tensor.view(len(df),a,4).permute(1,0,2)
+
+
+
+    # Daten aus Matlab Simulation bzw. physikalische Größen
+    # Als Ober/Unter Grenzen
+
+    p_max = 3.5*1e5 #Druck in [bar]             ... [1 , 3.5]
+    s_max = 0.6*1e-3 #Position [m]          ... [0, 0.0006]
+    w_max = 1.7 #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
+    
+    #Diese Werte bestätigen!!!
+    p_min = 1.0
+    s_min = 0.0
+    w_min = -1.7
+
+    PSW_max = [p_max, s_max, w_max, p_min, s_min, w_min]
+
+
+    return tensor, PSW_max
+
+
 def visualise(data, num_inits=499,set_ylim=False):
  
     steps=data.size(dim=1) 
