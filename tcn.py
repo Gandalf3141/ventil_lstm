@@ -61,16 +61,16 @@ def main():
                             
                                      {
                            "experiment_number" : 4,
-                           "window_size" : 200,
+                           "window_size" : 20,
                            "h_size" : 5,
                            "l_num" : 1,
-                           "epochs" : 50,
-                           "learning_rate" : 0.001,
+                           "epochs" : 500,
+                           "learning_rate" : 0.0005,
                            "part_of_data" : 0, 
                            "weight_decay" : 0,
                            "percentage_of_data" : 0.7,
                            "future_decay"  : 0.1,
-                           "batch_size" : 5,
+                           "batch_size" : 50,
                            "future" : 4,
                            "drop_half_timesteps" : True,
                            "cut_off_timesteps" : 0
@@ -94,18 +94,19 @@ def main():
         model = TCN(
 
             3, # num_inputs: int,
-            [3, 4, 2],# num_channels: ArrayLike,
-            4,         # kernel_size: int = 4,
-            [1, 2, 4],# dilations: Optional[ ArrayLike ] = None,
-            None, # dilation_reset: Optional[ int ] = None,
-            0.1,# dropout: float = 0.1
+            [4,4,4, 2],# num_channels: ArrayLike,
+            3,         # kernel_size: int = 4,
+            None,# dilations: Optional[ ArrayLike ] = None,
+            8, # dilation_reset: Optional[ int ] = None,
+            0.01,# dropout: float = 0.1
             True,# causal: bool = True,
-            None,# use_norm: str = 'weight_norm',
+            "weight_norm",# use_norm: str = 'weight_norm',
             'relu',# activation: str = 'relu',
             'xavier_uniform',# kernel_initializer: str = 'xavier_uniform',
-            True,# use_skip_connections: bool = False,
+            False,# use_skip_connections: bool = False,
             'NLC',# input_shape: str = 'NCL',
         ).to(device)
+
 
         # Generate input data (the data is normalized and some timesteps are cut off)
         input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
@@ -169,17 +170,17 @@ def main():
 
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
-            if (e+1)%2 == 0:
+            if (e+1)%25 == 0:
 
-                _,_, err_train = test(train_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
-                _,_, err_test = test(test_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
+                _,_, err_train = test(train_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max)
+                _,_, err_test = test(test_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max)
                 average_traj_err_train.append(err_train)
                 average_traj_err_test.append(err_test)
                 print(f"Epoch: {e}, the average next step error was : loss_epoch")
                 print(f"Average error over full trajectories: training data : {err_train}")
                 print(f"Average error over full trajectories: testing data : {err_test}")  
 
-        _, _, err_test_final = test(test_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)    
+        _, _, err_test_final = test(test_data.to(device=device), model, model_type = "tcn", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)    
         # Save trained model
         path = f'Ventil_trained_NNs\\tcn_{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)

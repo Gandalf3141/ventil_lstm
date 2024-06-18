@@ -9,19 +9,18 @@ import numpy as np
 from icecream import ic
 from tqdm import tqdm
 from itertools import chain
-from get_data import get_data
 import logging
 import os
 import cProfile
 import pstats
 from dataloader import *
 from test_function import *
+from get_data import *
 from NN_classes import *
 
 #Define the LSTM model class
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
-device = "cpu"
 
 print(device)
 
