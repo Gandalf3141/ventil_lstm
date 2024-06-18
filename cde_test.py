@@ -23,7 +23,7 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 # Here we've built a small single-hidden-layer neural network, whose hidden layer is of width 128.
 ######################
 class CDEFunc(torch.nn.Module):
-    def __init__(self, input_channels, hidden_channels):
+    def __init__(self, input_channels, hidden_channels, hidden_width=128):
         ######################
         # input_channels is the number of input channels in the data X. (Determined by the data.)
         # hidden_channels is the number of channels for z_t. (Determined by you!)
@@ -31,9 +31,10 @@ class CDEFunc(torch.nn.Module):
         super(CDEFunc, self).__init__()
         self.input_channels = input_channels
         self.hidden_channels = hidden_channels
+        self.hidden_width  = hidden_width
 
-        self.linear1 = torch.nn.Linear(hidden_channels, 128)
-        self.linear2 = torch.nn.Linear(128, input_channels * hidden_channels)
+        self.linear1 = torch.nn.Linear(hidden_channels, self.hidden_width)
+        self.linear2 = torch.nn.Linear(self.hidden_width, input_channels * hidden_channels)
 
     ######################
     # For most purposes the t argument can probably be ignored; unless you want your CDE to behave differently at
@@ -60,10 +61,10 @@ class CDEFunc(torch.nn.Module):
 # Next, we need to package CDEFunc up into a model that computes the integral.
 ######################
 class NeuralCDE(torch.nn.Module):
-    def __init__(self, input_channels, hidden_channels, output_channels, interpolation="cubic"):
+    def __init__(self, input_channels, hidden_channels, hidden_width, output_channels, interpolation="cubic"):
         super(NeuralCDE, self).__init__()
 
-        self.func = CDEFunc(input_channels, hidden_channels)
+        self.func = CDEFunc(input_channels, hidden_channels, hidden_width)
         self.initial = torch.nn.Linear(input_channels, hidden_channels)
         self.readout = torch.nn.Linear(hidden_channels, output_channels)
         self.interpolation = interpolation
@@ -136,9 +137,9 @@ def main():
                                 "window_size" : 50,
                                 "h_size" : 8,
                                 "l_num" : 3,
-                                "epochs" : 3,
+                                "epochs" : 100,
                                 "learning_rate" : 0.001,
-                                "part_of_data" : 2, 
+                                "part_of_data" : 100, 
                                 "percentage_of_data" : 0.8,
                                 "batch_size" : 100,
                                 "cut_off_timesteps" : 0,
@@ -179,7 +180,7 @@ def main():
     # hidden_channels=8 is the number of hidden channels for the evolving z_t, which we get to choose.
     # output_channels=1 because we're doing binary classification.
     ######################
-    model = NeuralCDE(input_channels=4, hidden_channels=8, output_channels=2).to(device)
+    model = NeuralCDE(input_channels=4, hidden_channels=8, hidden_width = 128, output_channels=2).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=params["learning_rate"])
     loss_fn = torch.nn.MSELoss()
 
@@ -198,8 +199,8 @@ def main():
 
             train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
 
-            batch_coeffs, batch_y = train_coeffs, y
-
+            batch_coeffs, batch_y = train_coeffs.to(device), y.to(device)
+        
             pred_y = model(batch_coeffs).squeeze(-1)
 
             loss = loss_fn(pred_y, batch_y[:, 2:])
@@ -209,14 +210,14 @@ def main():
 
         print('Epoch: {}   Training loss: {}'.format(epoch, loss.item()))    
 
-        if epoch % 2 == 0:            
+        if epoch % 20 == 0:            
             test_loss, test_loss_deriv, err_test = test(train_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                     display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
             print('Epoch: {}   Test loss: {}'.format(epoch, err_test.item()))
 
     print("Training finised!")
     test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
-                                                    display_plots=True, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max)
+                                                    display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max)
 
 
     path = f'Ventil_trained_NNs\cde{params["experiment_number"]}.pth'
