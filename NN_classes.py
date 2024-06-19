@@ -220,7 +220,7 @@ class GRUmodel(nn.Module):
 # Multilayer perceptron
 class MLP(nn.Module):
     
-    def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh"):
+    def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh", act_at_end = None):
         super(MLP, self).__init__()
         
         if act_fn == "tanh":
@@ -245,7 +245,13 @@ class MLP(nn.Module):
         layers.append(nn.Linear(hidden_sizes[-1], output_size))
         
         #Try final non linearity:
-       # layers.append(nn.Sigmoid())
+        if act_at_end != None:
+            if act_at_end == "tanh":
+                layers.append(nn.Tanh())
+            if act_at_end == "relu":
+                layers.append(nn.ReLU())
+            if act_at_end == "sigmoid":
+                layers.append(nn.Sigmoid())
         
         # Use nn.Sequential to put together the layers
         self.network = nn.Sequential(*layers)

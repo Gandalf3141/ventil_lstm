@@ -27,6 +27,7 @@ print(device)
 
 from torch.utils.data import Dataset, DataLoader
 
+#with future:
 def train(loader, model, weight_decay, learning_rate=0.001, ws=0, batch_size=1):
  
     loss_fn = nn.MSELoss()
@@ -40,20 +41,20 @@ def train(loader, model, weight_decay, learning_rate=0.001, ws=0, batch_size=1):
         x = x.to(device)
         y = y.to(device)
         x_last = x_last.to(device)
+        x_last = x_last.squeeze()
+       #print(x.size(), y.size(), x_last.size())
         
         output = model(x)
-        pred = x_last[0,:,1:] + output
+        pred = x_last[:,1:] + output
 
+        #print(output.size())
         # reset the gradient
-
-        if k % batch_size == 0:
-
-            optimizer.zero_grad(set_to_none=True)
-            
-            # calculate the error
-            loss = loss_fn(pred, y[:,1:])
-            loss.backward()
-            optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        
+        # calculate the error
+        loss = loss_fn(pred, y[:,1:])
+        loss.backward()
+        optimizer.step()
  
         total_loss.append(loss.detach().cpu().numpy())
  
@@ -65,18 +66,35 @@ def main():
     parameter_configs  = [
                         {
                            "experiment_number" : 2,
-                           "window_size" : 16,
-                           "h_size" : 48,
+                           "window_size" : 20,
+                           "h_size" : 64,
                            "l_num" : 3,
-                           "epochs" : 100,
+                           "epochs" : 2000,
                            "learning_rate" : 0.001,
-                           "part_of_data" : 50, 
+                           "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
                            "batch_size" : 1000,
                            "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True,
-                           "act_fn" : "relu"
+                           "act_fn" : "relu",
+                           "nonlin_at_out" : "sigmoid" #None if no nonlinearity at the end
+                        },
+                        {
+                           "experiment_number" : 1,
+                           "window_size" : 20,
+                           "h_size" : 64,
+                           "l_num" : 3,
+                           "epochs" : 2000,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 1000,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "relu",
+                           "nonlin_at_out" : None #None if no nonlinearity at the end
                         }
                       ]
 
@@ -91,7 +109,7 @@ def main():
         logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
         # Initialize the LSTM model
-        model = MLP(input_size=3*params["window_size"], hidden_size = params["h_size"], l_num=params["l_num"], output_size=2, act_fn = params["act_fn"]).to(device)
+        model = MLP(input_size=3*params["window_size"], hidden_size = params["h_size"], l_num=params["l_num"], output_size=2, act_fn = params["act_fn"], act_at_end = params["nonlin_at_out"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
         input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
@@ -123,8 +141,6 @@ def main():
 
 
         input_data = torch.cat((input_data1, input_data2, input_data3))
-        input_data = input_data1
-
 
         print(input_data.size())
 
@@ -140,7 +156,7 @@ def main():
 
         # dataloader for batching during training
         train_set = CustomDataset_mlp(train_data, window_size=params["window_size"])
-        train_loader = DataLoader(train_set)#, batch_size=params["batch_size"], pin_memory=True)
+        train_loader = DataLoader(train_set, batch_size=params["batch_size"], pin_memory=True)
 
         losses = []
         average_traj_err_train = []
@@ -153,7 +169,7 @@ def main():
             # Every few epochs get the error MSE of the true data
             # compared to the network prediction starting from some initial conditions
             if (e+1)%200 == 0:
-                _,_, err_train = test(test_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
+                _,_, err_train = test(test_data.to(device), model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
                # _,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 40)
                 average_traj_err_train.append(err_train)
               #  average_traj_err_test.append(err_test)
@@ -161,7 +177,7 @@ def main():
                 print(f"Average error over full trajectories: training data : {err_train}")
                 #print(f"Average error over full trajectories: testing data : {err_test}")
 
-        _,_, err_train = test(test_data, model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
+        _,_, err_train = test(test_data.to(device), model, model_type = "mlp", window_size=params["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
         #_,_, err_test = test(test_data, model, steps=test_data.size(dim=1), ws=params["window_size"], plot_opt=False, n = 100)
         print(f"TRAINING FINISHED: Average error over full trajectories: training data : {err_train}")
        # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")
