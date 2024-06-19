@@ -274,3 +274,15 @@
 2024-06-18 15:32:24,950 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2024-06-18 15:32:24,950 - INFO - 
 
+2024-06-19 12:11:21,295 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 16, 'h_size': 48, 'l_num': 3, 'epochs': 100, 'learning_rate': 0.001, 'part_of_data': 50, 'weight_decay': 1e-05, 'percentage_of_data': 0.8, 'batch_size': 1000, 'cut_off_timesteps': 0, 'drop_half_timesteps': True, 'act_fn': 'relu'}
+2024-06-19 12:11:21,296 - INFO - Final train error over whole traj (average over some inits) []
+2024-06-19 12:11:21,296 - INFO - Final test error over whole traj (average over some inits) []
+2024-06-19 12:11:21,296 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-19 12:11:21,296 - INFO - 
+
+2024-06-19 12:32:13,952 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 16, 'h_size': 48, 'l_num': 3, 'epochs': 100, 'learning_rate': 0.001, 'part_of_data': 50, 'weight_decay': 1e-05, 'percentage_of_data': 0.8, 'batch_size': 1000, 'cut_off_timesteps': 0, 'drop_half_timesteps': True, 'act_fn': 'relu'}
+2024-06-19 12:32:13,952 - INFO - Final train error over whole traj (average over some inits) []
+2024-06-19 12:32:13,952 - INFO - Final test error over whole traj (average over some inits) []
+2024-06-19 12:32:13,952 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-19 12:32:13,952 - INFO - 
+

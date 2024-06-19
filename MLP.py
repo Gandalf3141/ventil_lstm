@@ -27,56 +27,6 @@ print(device)
 
 from torch.utils.data import Dataset, DataLoader
 
-class CustomDataset(Dataset):
-
-
-    def __init__(self, data, window_size, future=1):
-
-        self.data = data
-        self.ws = window_size
-        self.future = future
-
-    def __len__(self):
-        return self.data.size(0)*self.data.size(1) - (self.ws + 1) - (self.future-1)
-
-    def __getitem__(self, idx):
-
-        j = int(idx/self.data.size(1))  
-
-        k = int((idx + self.ws + (self.future-1)) / self.data.size(1))
-
-        m = (idx + self.ws) - k * self.data.size(1)
-
-        index = idx % self.data.size(1)
-
-        if j < k :
-            
-            if m < 0: 
-                inp = self.data[j, index : index + self.ws, :]
-            else: 
-                inp=torch.cat((self.data[j, index : self.data.size(1) , :],
-                          self.data[j, self.data.size(1) - 1, :].repeat(m, 1)))
-                
-            if self.future>1:
-                label = self.data[j, self.data.size(1) - 1, :].repeat(self.future, 1)        
-            else:
-                label = self.data[j, self.data.size(1) - 1, :]
-                
-        else:
-
-            inp = self.data[j, index : index + self.ws, :]
-
-            if self.future>1:
-                label = self.data[j, index + self.ws : index + self.ws + self.future  , :]
-            else:
-                label = self.data[j, index + self.ws, :]
-
-        last = inp[-1:,:]
-
-        inp = torch.cat((inp[:,0], inp[:,1], inp[:,2]))
-        
-        return inp, last, label
-
 def train(loader, model, weight_decay, learning_rate=0.001, ws=0, batch_size=1):
  
     loss_fn = nn.MSELoss()
@@ -118,39 +68,9 @@ def main():
                            "window_size" : 16,
                            "h_size" : 48,
                            "l_num" : 3,
-                           "epochs" : 2000,
+                           "epochs" : 100,
                            "learning_rate" : 0.001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "batch_size" : 1000,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True,
-                           "act_fn" : "relu"
-                        },
-                        {
-                           "experiment_number" : 2,
-                           "window_size" : 16,
-                           "h_size" : 48,
-                           "l_num" : 3,
-                           "epochs" : 2000,
-                           "learning_rate" : 0.001,
-                           "part_of_data" : 0, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "batch_size" : 1000,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True,
-                           "act_fn" : "tanh"
-                        },
-                        {
-                           "experiment_number" : 2,
-                           "window_size" : 32,
-                           "h_size" : 8,
-                           "l_num" : 5,
-                           "epochs" : 2000,
-                           "learning_rate" : 0.001,
-                           "part_of_data" : 0, 
+                           "part_of_data" : 50, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
                            "batch_size" : 1000,
@@ -203,6 +123,7 @@ def main():
 
 
         input_data = torch.cat((input_data1, input_data2, input_data3))
+        input_data = input_data1
 
 
         print(input_data.size())
@@ -218,7 +139,7 @@ def main():
         test_data = input_data[test_inits,:,:]
 
         # dataloader for batching during training
-        train_set = CustomDataset(train_data, window_size=params["window_size"])
+        train_set = CustomDataset_mlp(train_data, window_size=params["window_size"])
         train_loader = DataLoader(train_set)#, batch_size=params["batch_size"], pin_memory=True)
 
         losses = []

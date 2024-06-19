@@ -244,6 +244,9 @@ class MLP(nn.Module):
         # Output layer
         layers.append(nn.Linear(hidden_sizes[-1], output_size))
         
+        #Try final non linearity:
+       # layers.append(nn.Sigmoid())
+        
         # Use nn.Sequential to put together the layers
         self.network = nn.Sequential(*layers)
     
