@@ -66,37 +66,86 @@ def main():
     parameter_configs  = [
                         {
                            "experiment_number" : 2,
-                           "window_size" : 20,
-                           "h_size" : 64,
+                           "window_size" : 5,
+                           "h_size" : 8,
                            "l_num" : 3,
-                           "epochs" : 2000,
+                           "epochs" : 500,
                            "learning_rate" : 0.001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
-                           "batch_size" : 1000,
+                           "batch_size" : 200,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "tanh",
+                           "nonlin_at_out" : None #None if no nonlinearity at the end
+                        },
+                        {
+                           "experiment_number" : 2,
+                           "window_size" : 5,
+                           "h_size" : 8,
+                           "l_num" : 3,
+                           "epochs" : 500,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 200,
                            "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True,
                            "act_fn" : "relu",
-                           "nonlin_at_out" : "sigmoid" #None if no nonlinearity at the end
+                           "nonlin_at_out" : None #None if no nonlinearity at the end
                         },
-                        {
-                           "experiment_number" : 1,
-                           "window_size" : 20,
-                           "h_size" : 64,
+                                                {
+                           "experiment_number" : 2,
+                           "window_size" : 8,
+                           "h_size" : 8,
                            "l_num" : 3,
-                           "epochs" : 2000,
+                           "epochs" : 500,
                            "learning_rate" : 0.001,
                            "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
-                           "batch_size" : 1000,
+                           "batch_size" : 200,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "relu",
+                           "nonlin_at_out" : None #None if no nonlinearity at the end
+                        },
+                                                {
+                           "experiment_number" : 2,
+                           "window_size" : 5,
+                           "h_size" : 8,
+                           "l_num" : 3,
+                           "epochs" : 500,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 100,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "relu",
+                           "nonlin_at_out" : None #None if no nonlinearity at the end
+                        },
+                                                                        {
+                           "experiment_number" : 2,
+                           "window_size" : 5,
+                           "h_size" : 8,
+                           "l_num" : 3,
+                           "epochs" : 500,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 2000,
                            "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
                         }
                       ]
+    
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
@@ -104,7 +153,7 @@ def main():
     for k, params in enumerate(parameter_configs):
 
         # Configure logging
-        log_file = 'training.log'
+        log_file = 'training_mlp.log'
         filemode = 'a' if os.path.exists(log_file) else 'w'
         logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

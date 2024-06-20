@@ -6,6 +6,7 @@ from torch import nn
 import numpy as np
 import torchcde
 
+
 def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additional_data=None):
 
     if x.dim() == 3:
@@ -38,57 +39,64 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
                 additional_data[i,:,1] = additional_data[i,:,1]*(physics_rescaling[1] - physics_rescaling[4]) + physics_rescaling[4]
                 additional_data[i,:,2] = additional_data[i,:,2]*(physics_rescaling[2] - physics_rescaling[5]) + physics_rescaling[5]
 
-    figure , axs = plt.subplots(1,3,figsize=(20,8))
-    #figure , axs = plt.subplots(3,1, figsize=(25,12))
-    
+    #figure , axs = plt.subplots(1,3,figsize=(20,8))
+    figure , axs = plt.subplots(3,1, figsize=(16,9))
+    figure.tight_layout(pad=5.0)
 
+    greek_letterz=[chr(code) for code in range(945,970)]
+    mu = greek_letterz[11]
 
-    axs[0].plot(pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
-    axs[0].plot(x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
+    stepsize = 2e-5
+    time = np.linspace(0,x.size(dim=0)* stepsize, x.size(dim=0))
+
+    axs[0].plot(time, pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
+    axs[0].plot(time, x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
     if additional_data != None:
         for i in range(additional_data.size(dim=0)):
            names = ["simulink", "Hub im Regler"]
-           axs[0].plot(additional_data[i, :, 1], label=names[i])
+           axs[0].plot(time, additional_data[i, :, 1], label=names[i])
 
     axs[0].set_title("position")
     axs[0].set_ylabel("[m]")
-    axs[0].set_xlabel("time")
+    axs[0].set_xlabel(f"time [s]")
     axs[0].grid()
     axs[0].legend()
 
 
-    axs[1].plot(pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
-    axs[1].plot(x.detach().cpu().numpy()[:, 2], color="blue", label="true", linestyle="dashed")
+    axs[1].plot(time, pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
+    axs[1].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="true", linestyle="dashed")
     if additional_data != None:
         for i in range(additional_data.size(dim=0)):
            names = ["simulink", "Hub im Regler"]
-           axs[1].plot(additional_data[i, :, 2], label=names[i])
+           axs[1].plot(time, additional_data[i, :, 2], label=names[i])
     axs[1].set_title("speed")
     axs[1].set_ylabel("[m/s]")
-    axs[1].set_xlabel("time")
+    axs[1].set_xlabel(f"time [s]")
     axs[1].grid()
     axs[1].legend()
 
-    axs[2].plot(x.detach().cpu().numpy()[:,0], label="pressure")
+    axs[2].plot(time, x.detach().cpu().numpy()[:,0], label="pressure")
     if additional_data != None:
        for i in range(additional_data.size(dim=0)):
            names = ["simulink", "Hub im Regler"]
-           axs[2].plot(additional_data[i, :, 0], label=names[i])
+           axs[2].plot(time, additional_data[i, :, 0], label=names[i])
     axs[2].set_title("pressure")
-    axs[2].set_ylabel("[Pascal]")
-    axs[2].set_xlabel("time")
+    axs[2].set_ylabel("[Pa]")
+    axs[2].set_xlabel(f"time [s]")
     axs[2].grid()
     axs[2].legend()
 
 
     if pred_next_step != None:
-        axs[0].plot(pred_next_step.detach().cpu().numpy()[:, 1], color="green", label="next step from data")
-        axs[1].plot(pred_next_step.detach().cpu().numpy()[:, 2], color="green", label="next step from data")
+        axs[0].plot(time, pred_next_step.detach().cpu().numpy()[:, 1], color="green", label="next step from data")
+        axs[1].plot(time, pred_next_step.detach().cpu().numpy()[:, 2], color="green", label="next step from data")
 
 
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
 
 def test(data, model, model_type = "or_lstm", window_size=10, display_plots=False, num_of_inits = 5, set_rand_seed=True, physics_rescaling = 0, additional_data=None):
 
@@ -281,7 +289,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 for i in range(x.size(1) - window_size):
                     train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(pred[0:1, i:i+window_size, :])    
                     out = model(train_coeffs)
-                    pred[0:1, i+window_size, 2:] = out
+                    pred[0:1, i+window_size, 2:] = pred[0:1, i+window_size-1, 2:] + out.unsqueeze(1)
                 
                 test_loss += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[0, :, 3], x[0, :, 3]).detach().cpu().numpy()

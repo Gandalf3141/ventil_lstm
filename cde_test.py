@@ -101,57 +101,64 @@ class NeuralCDE(torch.nn.Module):
         pred_y = self.readout(z_T)
         return pred_y
 
-######################
-# Now we need some data.
-# Here we have a simple example which generates some spirals, some going clockwise, some going anticlockwise.
-######################
-def unused_get_data_(num_timepoints=100):
-    t = torch.linspace(0., 4 * math.pi, num_timepoints)
-
-    start = torch.rand(128) * 2 * math.pi
-    x_pos = torch.cos(start.unsqueeze(1) + t.unsqueeze(0)) / (1 + 0.5 * t)
-    x_pos[:64] *= -1
-    y_pos = torch.sin(start.unsqueeze(1) + t.unsqueeze(0)) / (1 + 0.5 * t)
-    x_pos += 0.01 * torch.randn_like(x_pos)
-    y_pos += 0.01 * torch.randn_like(y_pos)
-    ######################
-    # Easy to forget gotcha: time should be included as a channel; Neural CDEs need to be explicitly told the
-    # rate at which time passes. Here, we have a regularly sampled dataset, so appending time is pretty simple.
-    ######################
-    X = torch.stack([t.unsqueeze(0).repeat(128, 1), x_pos, y_pos], dim=2)
-    y = torch.zeros(128)
-    y[:64] = 1
-
-    perm = torch.randperm(128)
-    X = X[perm]
-    y = y[perm]
-
-    ######################
-    # X is a tensor of observations, of shape (batch=128, sequence=100, channels=3)
-    # y is a tensor of labels, of shape (batch=128,), either 0 or 1 corresponding to anticlockwise or clockwise
-    # respectively.
-    ######################
-    return X, y
 
 def main():
 
-    paramsliste =        [            {
+    parameter_configs =        [  
+        
+                      {
+                                "experiment_number" : 0,
+                                "window_size" : 10,
+                                "h_size" : 6,
+                                "h_width" : 12,
+                                "l_num" : 3,
+                                "epochs" : 100,
+                                "learning_rate" : 0.001,
+                                "part_of_data" : 50, 
+                                "percentage_of_data" : 0.8,
+                                "batch_size" : 200,
+                                "cut_off_timesteps" : 100,
+                                "drop_half_timesteps": True
+                                },
+        
+                  {
                                 "experiment_number" : 0,
                                 "window_size" : 20,
                                 "h_size" : 8,
+                                "h_width" : 14,
                                 "l_num" : 3,
-                                "epochs" : 80,
+                                "epochs" : 100,
                                 "learning_rate" : 0.001,
-                                "part_of_data" : 2, 
+                                "part_of_data" : 50, 
                                 "percentage_of_data" : 0.8,
                                 "batch_size" : 200,
-                                "cut_off_timesteps" : 300,
+                                "cut_off_timesteps" : 100,
                                 "drop_half_timesteps": True
                                 },
 
+
+                      {
+                                "experiment_number" : 0,
+                                "window_size" : 30,
+                                "h_size" : 10,
+                                "h_width" : 18,
+                                "l_num" : 3,
+                                "epochs" : 100,
+                                "learning_rate" : 0.001,
+                                "part_of_data" : 50, 
+                                "percentage_of_data" : 0.8,
+                                "batch_size" : 200,
+                                "cut_off_timesteps" : 100,
+                                "drop_half_timesteps": True
+                                }
+
                     ]
     
-    for params in paramsliste:
+    
+    for k, d in enumerate(parameter_configs):
+        d["experiment_number"] = k
+
+    for params in parameter_configs:
 
         input_data1, PSW_max = get_data_cde(path = "data\save_data_test_revised.csv", 
                                     timesteps_from_data=0, 
@@ -186,7 +193,7 @@ def main():
         # hidden_channels=8 is the number of hidden channels for the evolving z_t, which we get to choose.
         # output_channels=1 because we're doing binary classification.
         ######################
-        model = NeuralCDE(input_channels=4, hidden_channels=8, hidden_width = 16, output_channels=2).to(device)
+        model = NeuralCDE(input_channels=4, hidden_channels=params["h_size"], hidden_width = params["h_width"], output_channels=2).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=params["learning_rate"])
         loss_fn = torch.nn.MSELoss()
 
@@ -204,24 +211,24 @@ def main():
             for x, y in train_loader:
 
                 train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
-
                 batch_coeffs, batch_y = train_coeffs.to(device), y.to(device)
             
                 pred_y = model(batch_coeffs).squeeze(-1)
-
-                loss = loss_fn(pred_y, batch_y[:, 2:])
+                #out = x[:,-1,2:].squeeze(-1)+ pred_y
+                out = x[:,-1,2:] + pred_y
+                loss = loss_fn(out, batch_y[:, 2:])
                 loss.backward()
                 optimizer.step()
                 optimizer.zero_grad()
 
             #print('Epoch: {}   Training loss (next step): {}'.format(epoch, loss.item()))    
 
-            if (epoch+1) % 20 == 0:            
-                test_loss, test_loss_deriv, err_test = test(train_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
+            if (epoch+1) % 50 == 0:            
+                test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                         display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 print('Epoch: {}   Test loss (MSE over whole Traj.): {}'.format(epoch, err_test.item()))
 
-        path = f'Ventil_trained_NNs\cde{np.random.randint(0,100,1)[0]}.pth'
+        path = f'Ventil_trained_NNs\cde{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)
         print(f"Run finished, file saved as: \n {path}")
 
