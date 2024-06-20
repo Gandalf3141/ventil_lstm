@@ -204,7 +204,7 @@ def main():
             for x, y in train_loader:
 
                 train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
-
+                print(train_coeffs.size())
                 batch_coeffs, batch_y = train_coeffs.to(device), y.to(device)
             
                 pred_y = model(batch_coeffs).squeeze(-1)
