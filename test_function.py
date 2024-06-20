@@ -289,7 +289,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 for i in range(x.size(1) - window_size):
                     train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(pred[0:1, i:i+window_size, :])    
                     out = model(train_coeffs)
-                    pred[0:1, i+window_size, 2:] = out
+                    pred[0:1, i+window_size, 2:] = pred[0:1, i+window_size-1, 2:] + out.unsqueeze(1)
                 
                 test_loss += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[0, :, 3], x[0, :, 3]).detach().cpu().numpy()
