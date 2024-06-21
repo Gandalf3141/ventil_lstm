@@ -106,51 +106,20 @@ def main():
 
     parameter_configs =        [  
         
-                      {
-                                "experiment_number" : 0,
-                                "window_size" : 10,
-                                "h_size" : 6,
-                                "h_width" : 12,
-                                "l_num" : 3,
-                                "epochs" : 100,
-                                "learning_rate" : 0.001,
-                                "part_of_data" : 50, 
-                                "percentage_of_data" : 0.8,
-                                "batch_size" : 200,
-                                "cut_off_timesteps" : 100,
-                                "drop_half_timesteps": True
-                                },
-        
-                  {
-                                "experiment_number" : 0,
-                                "window_size" : 20,
-                                "h_size" : 8,
-                                "h_width" : 14,
-                                "l_num" : 3,
-                                "epochs" : 100,
-                                "learning_rate" : 0.001,
-                                "part_of_data" : 50, 
-                                "percentage_of_data" : 0.8,
-                                "batch_size" : 200,
-                                "cut_off_timesteps" : 100,
-                                "drop_half_timesteps": True
-                                },
-
-
-                      {
-                                "experiment_number" : 0,
-                                "window_size" : 30,
-                                "h_size" : 10,
-                                "h_width" : 18,
-                                "l_num" : 3,
-                                "epochs" : 100,
-                                "learning_rate" : 0.001,
-                                "part_of_data" : 50, 
-                                "percentage_of_data" : 0.8,
-                                "batch_size" : 200,
-                                "cut_off_timesteps" : 100,
-                                "drop_half_timesteps": True
-                                }
+                          {
+                        "experiment_number" : 0,
+                        "window_size" : 50,
+                        "h_size" : 8,
+                         "h_width" : 128,
+                        "l_num" : 3,
+                        "epochs" : 80,
+                        "learning_rate" : 0.001,
+                        "part_of_data" : 10, 
+                        "percentage_of_data" : 0.8,
+                        "batch_size" : 1000,
+                        "cut_off_timesteps" : 0,
+                        "drop_half_timesteps": True
+                        }
 
                     ]
     
