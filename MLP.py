@@ -65,55 +65,60 @@ def main():
                         
     parameter_configs  = [
 
-                        {
-                           "experiment_number" : 2,
-                           "window_size" : 25,
-                           "h_size" : 128,
-                           "l_num" : 1,
-                           "epochs" : 2000,
-                           "learning_rate" : 0.001,
-                           "part_of_data" : 10, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "batch_size" : 200,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True,
-                           "act_fn" : "relu",
-                           "nonlin_at_out" : None #None if no nonlinearity at the end
-                        },
-                                                {
-                           "experiment_number" : 2,
-                           "window_size" : 40,
-                           "h_size" : 128,
-                           "l_num" : 1,
-                           "epochs" : 2000,
-                           "learning_rate" : 0.001,
-                           "part_of_data" : 10, 
-                           "weight_decay" : 1e-5,
-                           "percentage_of_data" : 0.8,
-                           "batch_size" : 200,
-                           "cut_off_timesteps" : 0,
-                           "drop_half_timesteps": True,
-                           "act_fn" : "relu",
-                           "nonlin_at_out" : None #None if no nonlinearity at the end
-                        },
-                                                {
+
+                      
+                                            {
                            "experiment_number" : 2,
                            "window_size" : 25,
                            "h_size" : 256,
                            "l_num" : 1,
-                           "epochs" : 2000,
+                           "epochs" : 5000,
                            "learning_rate" : 0.001,
-                           "part_of_data" : 10, 
+                           "part_of_data" : 0, 
                            "weight_decay" : 1e-5,
                            "percentage_of_data" : 0.8,
-                           "batch_size" : 200,
+                           "batch_size" : 2000,
+                           "cut_off_timesteps" : 0,
+                           "drop_half_timesteps": True,
+                           "act_fn" : "relu",
+                           "nonlin_at_out" : None #None if no nonlinearity at the end
+                        },
+                        {
+                           "experiment_number" : 2,
+                           "window_size" : 5,
+                           "h_size" : 8,
+                           "l_num" : 1,
+                           "epochs" : 5000,
+                           "learning_rate" : 0.001,
+                           "part_of_data" : 0, 
+                           "weight_decay" : 1e-5,
+                           "percentage_of_data" : 0.8,
+                           "batch_size" : 2000,
                            "cut_off_timesteps" : 0,
                            "drop_half_timesteps": True,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
                         }
 
+                      
+                        #                     {
+                        #    "experiment_number" : 2,
+                        #    "window_size" : 25,
+                        #    "h_size" : 256,
+                        #    "l_num" : 1,
+                        #    "epochs" : 2000,
+                        #    "learning_rate" : 0.001,
+                        #    "part_of_data" : 100, 
+                        #    "weight_decay" : 1e-5,
+                        #    "percentage_of_data" : 0.8,
+                        #    "batch_size" : 2000,
+                        #    "cut_off_timesteps" : 0,
+                        #    "drop_half_timesteps": True,
+                        #    "act_fn" : "relu",
+                        #    "nonlin_at_out" : None #None if no nonlinearity at the end
+                        # }
+
+                      
                                
                       ]
     
@@ -161,7 +166,7 @@ def main():
 
 
         input_data = torch.cat((input_data1, input_data2, input_data3))
-        input_data = input_data1
+        #input_data = input_data1
         print(input_data.size())
 
         #Split data into train and test sets
