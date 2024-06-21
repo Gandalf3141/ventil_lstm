@@ -88,7 +88,7 @@ class NeuralCDE(torch.nn.Module):
         z_T = torchcde.cdeint(X=X,
                               z0=z0,
                               func=self.func,
-                              t=X.interval)
+                              t=X.interval, atol=1e-4)
 
         ######################
         # Both the initial value and the terminal value are returned from cdeint; extract just the terminal value,
@@ -101,34 +101,7 @@ class NeuralCDE(torch.nn.Module):
 ######################
 # Now we need some data.
 # Here we have a simple example which generates some spirals, some going clockwise, some going anticlockwise.
-######################
-def unused_get_data_(num_timepoints=100):
-    t = torch.linspace(0., 4 * math.pi, num_timepoints)
 
-    start = torch.rand(128) * 2 * math.pi
-    x_pos = torch.cos(start.unsqueeze(1) + t.unsqueeze(0)) / (1 + 0.5 * t)
-    x_pos[:64] *= -1
-    y_pos = torch.sin(start.unsqueeze(1) + t.unsqueeze(0)) / (1 + 0.5 * t)
-    x_pos += 0.01 * torch.randn_like(x_pos)
-    y_pos += 0.01 * torch.randn_like(y_pos)
-    ######################
-    # Easy to forget gotcha: time should be included as a channel; Neural CDEs need to be explicitly told the
-    # rate at which time passes. Here, we have a regularly sampled dataset, so appending time is pretty simple.
-    ######################
-    X = torch.stack([t.unsqueeze(0).repeat(128, 1), x_pos, y_pos], dim=2)
-    y = torch.zeros(128)
-    y[:64] = 1
-
-    perm = torch.randperm(128)
-    X = X[perm]
-    y = y[perm]
-
-    ######################
-    # X is a tensor of observations, of shape (batch=128, sequence=100, channels=3)
-    # y is a tensor of labels, of shape (batch=128,), either 0 or 1 corresponding to anticlockwise or clockwise
-    # respectively.
-    ######################
-    return X, y
 
 def main():
 
@@ -137,11 +110,11 @@ def main():
                                 "window_size" : 50,
                                 "h_size" : 8,
                                 "l_num" : 3,
-                                "epochs" : 50,
+                                "epochs" : 200,
                                 "learning_rate" : 0.001,
-                                "part_of_data" : 2, 
+                                "part_of_data" : 10, 
                                 "percentage_of_data" : 0.8,
-                                "batch_size" : 100,
+                                "batch_size" : 500,
                                 "cut_off_timesteps" : 0,
                                 "drop_half_timesteps": True
                                 }
@@ -196,6 +169,9 @@ def main():
     for epoch in range(params["epochs"]):
 
         for x, y in train_loader:
+            
+            x=x.to(device)
+            y=y.to(device)
 
             train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
 
@@ -208,9 +184,12 @@ def main():
             optimizer.step()
             optimizer.zero_grad()
 
-        print('Epoch: {}   Training loss: {}'.format(epoch, loss.item()))    
+        if (epoch+1) % 25 == 0: 
+            print('Epoch: {}   Training loss: {}'.format(epoch, loss.item())) 
+        if (epoch+1) % 100 == 0: 
 
-        if epoch % 25 == 0:            
+            print('Epoch: {}   Training loss: {}'.format(epoch, loss.item())) 
+
             test_loss, test_loss_deriv, err_test = test(train_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                     display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
             print('Epoch: {}   Test loss: {}'.format(epoch, err_test.item()))
@@ -219,7 +198,7 @@ def main():
     torch.save(model.state_dict(), path)
     print("Training finised!")
     test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
-                                                    display_plots=True, num_of_inits = 2, set_rand_seed=True, physics_rescaling = PSW_max)
+                                                    display_plots=True, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
 
 
 
