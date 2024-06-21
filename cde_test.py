@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
-#device = "cpu"
+device = "cpu"
 print(device)
 ######################
 # A CDE model looks like
@@ -91,7 +91,7 @@ class NeuralCDE(torch.nn.Module):
         z_T = torchcde.cdeint(X=X,
                               z0=z0,
                               func=self.func,
-                              t=X.interval)
+                              t=X.interval)#, atol = 1e-2, rtol = 1e-2)
 
         ######################
         # Both the initial value and the terminal value are returned from cdeint; extract just the terminal value,
@@ -105,52 +105,38 @@ class NeuralCDE(torch.nn.Module):
 def main():
 
     parameter_configs =        [  
-        
-                      {
+
+                                   {
                                 "experiment_number" : 0,
                                 "window_size" : 10,
                                 "h_size" : 6,
-                                "h_width" : 12,
+                                "h_width" : 128,
                                 "l_num" : 3,
-                                "epochs" : 100,
+                                "epochs" : 200,
                                 "learning_rate" : 0.001,
-                                "part_of_data" : 50, 
+                                "part_of_data" : 2, 
                                 "percentage_of_data" : 0.8,
                                 "batch_size" : 200,
                                 "cut_off_timesteps" : 100,
                                 "drop_half_timesteps": True
                                 },
         
-                  {
-                                "experiment_number" : 0,
-                                "window_size" : 20,
-                                "h_size" : 8,
-                                "h_width" : 14,
-                                "l_num" : 3,
-                                "epochs" : 100,
-                                "learning_rate" : 0.001,
-                                "part_of_data" : 50, 
-                                "percentage_of_data" : 0.8,
-                                "batch_size" : 200,
-                                "cut_off_timesteps" : 100,
-                                "drop_half_timesteps": True
-                                },
+                           {
+                        "experiment_number" : 0,
+                        "window_size" : 50,
+                        "h_size" : 8,
+                        "h_width" : 128,
+                        "l_num" : 3,
+                        "epochs" : 80,
+                        "learning_rate" : 0.001,
+                        "part_of_data" : 10, 
+                        "percentage_of_data" : 0.8,
+                        "batch_size" : 1000,
+                        "cut_off_timesteps" : 0,
+                        "drop_half_timesteps": True
+                        }
 
 
-                      {
-                                "experiment_number" : 0,
-                                "window_size" : 30,
-                                "h_size" : 10,
-                                "h_width" : 18,
-                                "l_num" : 3,
-                                "epochs" : 100,
-                                "learning_rate" : 0.001,
-                                "part_of_data" : 50, 
-                                "percentage_of_data" : 0.8,
-                                "batch_size" : 200,
-                                "cut_off_timesteps" : 100,
-                                "drop_half_timesteps": True
-                                }
 
                     ]
     
@@ -168,7 +154,8 @@ def main():
                                     normalise_s_w="minmax",
                                     rescale_p=False,
                                     num_inits=params["part_of_data"])
-        input_data = input_data1
+        input_data = input_data1.to(device)
+
         #cols = time_cols, pb_cols, sb_cols, wb_cols
 
             #Split data into train and test sets
@@ -185,7 +172,8 @@ def main():
         train_set = CustomDataset_cde(train_data, window_size=params["window_size"])
         train_loader = DataLoader(train_set, batch_size=params["batch_size"])  
         if device == "cuda:0":
-            train_loader = DataLoader(train_set, batch_size=params["batch_size"], pin_memory=True)  
+            print("gpu dataloader")
+            train_loader = DataLoader(train_set, batch_size=params["batch_size"])  
 
         print(train_data.size(), test_data.size())
         ######################
@@ -209,7 +197,7 @@ def main():
         for epoch in tqdm(range(params["epochs"])):
             
             for x, y in train_loader:
-
+                x = x.to(device)
                 train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
                 batch_coeffs, batch_y = train_coeffs.to(device), y.to(device)
             
@@ -223,7 +211,7 @@ def main():
 
             #print('Epoch: {}   Training loss (next step): {}'.format(epoch, loss.item()))    
 
-            if (epoch+1) % 50 == 0:            
+            if (epoch+1) % 20 == 0:            
                 test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                         display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 print('Epoch: {}   Test loss (MSE over whole Traj.): {}'.format(epoch, err_test.item()))
