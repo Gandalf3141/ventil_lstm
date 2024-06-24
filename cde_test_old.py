@@ -88,7 +88,7 @@ class NeuralCDE(torch.nn.Module):
         z_T = torchcde.cdeint(X=X,
                               z0=z0,
                               func=self.func,
-                              t=X.interval)#, atol=1e-4)
+                              t=X.interval, atol=1e-4)
 
         ######################
         # Both the initial value and the terminal value are returned from cdeint; extract just the terminal value,
@@ -112,9 +112,9 @@ def main():
                                 "l_num" : 3,
                                 "epochs" : 100,
                                 "learning_rate" : 0.001,
-                                "part_of_data" : 10, 
+                                "part_of_data" : 2, 
                                 "percentage_of_data" : 0.8,
-                                "batch_size" : 500,
+                                "batch_size" : 200,
                                 "cut_off_timesteps" : 0,
                                 "drop_half_timesteps": True
                                 }
@@ -186,7 +186,7 @@ def main():
 
         if (epoch+1) % 25 == 0: 
             print('Epoch: {}   Training loss: {}'.format(epoch, loss.item())) 
-        if (epoch+1) % 100 == 0: 
+        if (epoch+1) % 25 == 0: 
 
             print('Epoch: {}   Training loss: {}'.format(epoch, loss.item())) 
 
