@@ -1,0 +1,4 @@
+2024-06-25 16:35:02,235 - INFO - hyperparams: {'experiment_number': 0, 'window_size': 50, 'epochs': 50, 'learning_rate': 0.001, 'part_of_data': 10, 'percentage_of_data': 0.7, 'batch_size': 20, 'future': 1, 'drop_half_timesteps': True, 'cut_off_timesteps': 0, 'input_channels': 3, 'output': 2, 'n_hidden': 5, 'levels': 4, 'kernel_size': 5, 'dropout': 0}
+2024-06-25 16:35:02,235 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-06-25 16:35:02,235 - INFO - 
+

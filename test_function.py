@@ -50,6 +50,10 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
     stepsize = 2e-5
     time = np.linspace(0,x.size(dim=0)* stepsize, x.size(dim=0))
 
+    if pred_next_step != None:
+        axs[0].plot(time, pred_next_step.detach().cpu().numpy()[:, 1], color="green", label="next step from data")
+        axs[1].plot(time, pred_next_step.detach().cpu().numpy()[:, 2], color="green", label="next step from data")
+
     axs[0].plot(time, pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
     axs[0].plot(time, x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
     if additional_data != None:
@@ -88,9 +92,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
     axs[2].legend()
 
 
-    if pred_next_step != None:
-        axs[0].plot(time, pred_next_step.detach().cpu().numpy()[:, 1], color="green", label="next step from data")
-        axs[1].plot(time, pred_next_step.detach().cpu().numpy()[:, 2], color="green", label="next step from data")
+   
 
 
     plt.grid(True)
@@ -246,23 +248,16 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 x=x.to(device)        
                 x = x.view(1,x.size(dim=0), x.size(dim=1))
 
-                pred = torch.zeros((timesteps, 3), device=device)
-                pred_next_step = torch.zeros((timesteps, 3), device=device)
+                pred = torch.zeros_like(x, device=device)  
+                pred_next_step = torch.zeros_like(x, device=device)               
 
-                pred[0:window_size, :] = x[0, 0:window_size, :]
-                pred[:, 0] = x[0, :, 0]
-                pred_next_step[0:window_size, :] = x[0, 0:window_size, :]
-                pred_next_step[:, 0] = x[0, :, 0]
+                pred[:, 0:window_size, :] = x[0, 0:window_size, :]
+                pred[:, :, 0] = x[0, :, 0]
 
-                pred = pred.view(1,pred.size(dim=0), pred.size(dim=1))
+                for i in range(1,x.size(1) - window_size + 1):
 
+                    pred[:, window_size+(i-1):window_size+i,1:] =  pred[:, window_size+(i-2):window_size+(i-1):,1:] + model(pred[:,i:window_size+(i-1),:].transpose(1,2))    
 
-                for i in range(x.size(1) - window_size):
-
-                    out = model(pred[0:1, i:i+window_size, :])
-                    pred[0:1, i+window_size, 1:] = pred[0:1, i+window_size-1, 1:] + out[0, -1, :]
-                    pred_next_step[i+window_size, 1:] = x[0, i+window_size-1, 1:] + out[0, -1, :]
-                
                 test_loss += loss_fn(pred[0, :, 1], x[0, :, 1]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
 
