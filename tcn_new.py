@@ -49,81 +49,88 @@ def train(input_data, model, weight_decay=0, learning_rate=0.001):
     return np.mean(total_loss)
 
 # set some parameters for learning 
-parameter_configs =       [        {
-                            "window_size" : 50,
-                            "learning_rate" : 0.001,
-                            "batch_size" : 20,
-                            "cut_off_timesteps" : 0,
+parameter_configs =       [     
 
-                            "n_hidden" : 5,
-                            "levels" : 4,
-                            "kernel_size" : 5,
-                            "dropout" : 0
-                        },
+                        #         best
+                        #     {
+                        #     "window_size" : 25,
+                        #     "learning_rate" : 0.001,
+                        #     "batch_size" : 20,
+                        #     "cut_off_timesteps" : 0,
+
+                        #     "n_hidden" : 5,
+                        #     "levels" : 4,
+                        #     "kernel_size" : 7,
+                        #     "dropout" : 0
+                        # },
+    
+                      {
+                        "window_size" : 50,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 20,
+                        "cut_off_timesteps" : 0,
+
+                        "n_hidden" : 5,
+                        "levels" : 4,
+                        "kernel_size" : 7,
+                        "dropout" : 0
+                    },
+                                                 
+                    {
+                    "window_size" : 25,
+                    "learning_rate" : 0.001,
+                    "batch_size" : 20,
+                    "cut_off_timesteps" : 0,
+
+                    "n_hidden" : 5,
+                    "levels" : 4,
+                    "kernel_size" : 7,
+                    "dropout" : 0
+                },
+                      {
+                        "window_size" : 50,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 100,
+                        "cut_off_timesteps" : 0,
+
+                        "n_hidden" : 5,
+                        "levels" : 4,
+                        "kernel_size" : 7,
+                        "dropout" : 0
+                    },
+                                                 
+                    {
+                    "window_size" : 25,
+                    "learning_rate" : 0.001,
+                    "batch_size" : 200,
+                    "cut_off_timesteps" : 0,
+
+                    "n_hidden" : 5,
+                    "levels" : 4,
+                    "kernel_size" : 7,
+                    "dropout" : 0
+                },
+
                           {
-                            "window_size" : 25,
-                            "learning_rate" : 0.001,
-                            "batch_size" : 20,
-                            "cut_off_timesteps" : 0,
+                    "window_size" : 25,
+                    "learning_rate" : 0.001,
+                    "batch_size" : 100,
+                    "cut_off_timesteps" : 0,
 
-                            "n_hidden" : 5,
-                            "levels" : 4,
-                            "kernel_size" : 5,
-                            "dropout" : 0
-                        },
-                       {
-                            "window_size" : 25,
-                            "learning_rate" : 0.001,
-                            "batch_size" : 20,
-                            "cut_off_timesteps" : 0,
-
-                            "n_hidden" : 5,
-                            "levels" : 4,
-                            "kernel_size" : 2,
-                            "dropout" : 0
-                        },
-                        {
-                            "window_size" : 25,
-                            "learning_rate" : 0.001,
-                            "batch_size" : 20,
-                            "cut_off_timesteps" : 0,
-
-                            "n_hidden" : 5,
-                            "levels" : 4,
-                            "kernel_size" : 7,
-                            "dropout" : 0
-                        },
-                                                {
-                            "window_size" : 50,
-                            "learning_rate" : 0.001,
-                            "batch_size" : 20,
-                            "cut_off_timesteps" : 0,
-
-                            "n_hidden" : 6,
-                            "levels" : 8,
-                            "kernel_size" : 4,
-                            "dropout" : 0
-                        },
-                                                {
-                            "window_size" : 25,
-                            "learning_rate" : 0.001,
-                            "batch_size" : 20,
-                            "cut_off_timesteps" : 0,
-
-                            "n_hidden" : 5,
-                            "levels" : 7,
-                            "kernel_size" : 3,
-                            "dropout" : 0
-                        },
+                    "n_hidden" : 6,
+                    "levels" : 5,
+                    "kernel_size" : 7,
+                    "dropout" : 0
+                },   
                           
                 ]
 
 for k, d in enumerate(parameter_configs):
     d["experiment_number"] = k
-    d["epochs"] = 300
+    d["epochs"] = 500
     d["input_channels"] = 3
     d["output"] = 2
-    d["part_of_data"] = 100
+    d["part_of_data"] = 200
     d["percentage_of_data"] = 0.7
     d["future"] = 1
     d["drop_half_timesteps"] = True
