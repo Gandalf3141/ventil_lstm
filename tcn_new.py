@@ -7,10 +7,12 @@ from test_function import *
 from NN_classes import TCN
 import logging
 import os
+from tqdm import tqdm
+
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch.set_default_dtype(torch.float64)
-
+print(device)
 
 def train(input_data, model, weight_decay=0, learning_rate=0.001):
 
@@ -48,29 +50,83 @@ def train(input_data, model, weight_decay=0, learning_rate=0.001):
 
 # set some parameters for learning 
 parameter_configs =       [        {
-                            "experiment_number" : 4,
                             "window_size" : 50,
-                            "epochs" : 50,
                             "learning_rate" : 0.001,
-                            "part_of_data" : 10, 
-                            "percentage_of_data" : 0.7,
                             "batch_size" : 20,
-                            "future" : 1,
-                            "drop_half_timesteps" : True,
                             "cut_off_timesteps" : 0,
 
-                            "input_channels" : 3,
-                            "output" : 2,
                             "n_hidden" : 5,
                             "levels" : 4,
                             "kernel_size" : 5,
                             "dropout" : 0
+                        },
+                          {
+                            "window_size" : 25,
+                            "learning_rate" : 0.001,
+                            "batch_size" : 20,
+                            "cut_off_timesteps" : 0,
 
-                        }
+                            "n_hidden" : 5,
+                            "levels" : 4,
+                            "kernel_size" : 5,
+                            "dropout" : 0
+                        },
+                       {
+                            "window_size" : 25,
+                            "learning_rate" : 0.001,
+                            "batch_size" : 20,
+                            "cut_off_timesteps" : 0,
+
+                            "n_hidden" : 5,
+                            "levels" : 4,
+                            "kernel_size" : 2,
+                            "dropout" : 0
+                        },
+                        {
+                            "window_size" : 25,
+                            "learning_rate" : 0.001,
+                            "batch_size" : 20,
+                            "cut_off_timesteps" : 0,
+
+                            "n_hidden" : 5,
+                            "levels" : 4,
+                            "kernel_size" : 7,
+                            "dropout" : 0
+                        },
+                                                {
+                            "window_size" : 50,
+                            "learning_rate" : 0.001,
+                            "batch_size" : 20,
+                            "cut_off_timesteps" : 0,
+
+                            "n_hidden" : 6,
+                            "levels" : 8,
+                            "kernel_size" : 4,
+                            "dropout" : 0
+                        },
+                                                {
+                            "window_size" : 25,
+                            "learning_rate" : 0.001,
+                            "batch_size" : 20,
+                            "cut_off_timesteps" : 0,
+
+                            "n_hidden" : 5,
+                            "levels" : 7,
+                            "kernel_size" : 3,
+                            "dropout" : 0
+                        },
+                          
                 ]
 
 for k, d in enumerate(parameter_configs):
     d["experiment_number"] = k
+    d["epochs"] = 300
+    d["input_channels"] = 3
+    d["output"] = 2
+    d["part_of_data"] = 100
+    d["percentage_of_data"] = 0.7
+    d["future"] = 1
+    d["drop_half_timesteps"] = True
 
 for k, params in enumerate(parameter_configs):
 
@@ -108,7 +164,6 @@ for k, params in enumerate(parameter_configs):
                             num_inits=params["part_of_data"])
     
     input_data = torch.cat((input_data1, input_data2, input_data3))
-    input_data =  input_data1
 
     #Split data into train and test sets
     np.random.seed(1234)
@@ -133,13 +188,13 @@ for k, params in enumerate(parameter_configs):
     kernel_size = params["kernel_size"]
     dropout = params["dropout"]
 
-    model = TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout)
+    model = TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout).to(device)
 
 
 
-    for i in range(params["epochs"]):
+    for i in tqdm(range(params["epochs"])):
         err_train = train(train_dataloader, model)
-        if (i+1) % 5 ==0:
+        if (i+1) % 50 ==0:
             _, _, err_test = test(train_data.to(device), model=model, model_type="tcn", window_size=params["window_size"],
                             display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max, additional_data=None)
             
