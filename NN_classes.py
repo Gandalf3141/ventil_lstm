@@ -51,10 +51,7 @@ class LSTMmodel(nn.Module):
 
             for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
-                #wäre richtig!!!    
                 seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
-                #war falsch
-                #seq = torch.cat((out[:, t - self.ws : t , :],one_full_traj[:, t : t + self.ws, 0:1]), dim=2)
                 
                 lstm_out, hidden = self.lstm(seq)           
                 pred = self.linear(lstm_out)
@@ -277,13 +274,13 @@ class Chomp1d(nn.Module):
 class TemporalBlock(nn.Module):
     def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
         super(TemporalBlock, self).__init__()
-        self.conv1 = weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
+        self.conv1 = torch.nn.utils.parametrizations.weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
                                            stride=stride, padding=padding, dilation=dilation))
         self.chomp1 = Chomp1d(padding)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(dropout)
 
-        self.conv2 = weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
+        self.conv2 = torch.nn.utils.parametrizations.weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
                                            stride=stride, padding=padding, dilation=dilation))
         self.chomp2 = Chomp1d(padding)
         self.relu2 = nn.ReLU()
@@ -340,6 +337,61 @@ class TCN(nn.Module):
     def forward(self, x):
         y1 = self.tcn(x)
         return self.linear(y1[:, :, -1])
+
+
+class OR_TCN(nn.Module):
+    def __init__(self, input_size, output_size, num_channels, kernel_size, dropout, windowsize=5):
+        super(OR_TCN, self).__init__()
+        self.tcn = TemporalConvNet(input_size, num_channels, kernel_size=kernel_size, dropout=dropout)
+        self.linear = nn.Linear(num_channels[-1], output_size)
+        self.init_weights()
+        self.ws = windowsize
+
+    def init_weights(self):
+        self.linear.weight.data.normal_(0, 0.01)
+
+    def forward(self, one_full_traj):
+
+        seq = one_full_traj[:, 0:self.ws, :]
+        y1 = self.tcn(seq)
+        pred = self.linear(y1[:, :, -1])
+        #only update next step
+        out = one_full_traj[:, 1:, self.ws-1] + pred
+        out = out.unsqueeze(-1)
+        #derivatie_sv = pred
+
+        for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
+
+            tmp = torch.cat(( one_full_traj[:, 0:1, self.ws+t:self.ws+t+1] , out[:,:,-1:]), dim=1)
+            seq = torch.cat((one_full_traj[:, :, t:self.ws+(t-1)], tmp), dim=2)
+
+            y1 = self.tcn(seq)
+            pred = self.linear(y1[:, :, -1])
+
+            next_step = one_full_traj[:, 1:, self.ws+(t-1)] + pred
+            next_step = next_step.unsqueeze(-1)
+
+            out = torch.cat((out, next_step), dim=2)
+
+            #derivatie_sv = torch.cat((derivatie_sv, pred), dim=2)
+
+
+        for t in range(self.ws, one_full_traj.size(dim=2) - self.ws):
+
+            seq = torch.cat((one_full_traj[:, 0:1, t : t + self.ws], out[:, :, t - self.ws : t]), dim=1)
+            
+            y1 = self.tcn(seq)
+            pred = self.linear(y1[:, :, -1])
+
+            next_step = out[:, :, t-1] + pred
+            next_step = next_step.unsqueeze(-1)
+
+            out = torch.cat((out, next_step), dim=2)
+
+            #derivatie_sv = torch.cat((derivatie_sv, pred[:, -1: , :]), dim=1)
+
+        return out
+
 
 
 
@@ -413,10 +465,11 @@ class NeuralCDE(torch.nn.Module):
         z_T = torchcde.cdeint(X=X,
                               z0=z0,
                               func=self.func,
-                              t=X.interval, backend='torchdiffeq',
-                                method='dopri5', 
-                                options=dict(jump_t=X.grid_points),
-                                adjoint=False)#, atol = 1e-2, rtol = 1e-2)
+                              t=X.interval, backend='torchdiffeq', options=dict(jump_t=X.grid_points),)
+                                #method='rk4', 
+                                #options=dict(step_size=2e-4),
+                                
+                                #adjoint=False, atol = 1e-4, rtol = 1e-4)
 
         ######################
         # Both the initial value and the terminal value are returned from cdeint; extract just the terminal value,

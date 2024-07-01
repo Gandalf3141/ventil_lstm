@@ -23,22 +23,37 @@ def main():
 
     parameter_configs =        [  
 
-                            {
-                            "window_size" : 10,
+ {
+                            "window_size" : 50,
                             "h_size" : 8,
-                            "h_width" : 8,
-                            "epochs" : 100,
+                            "h_width" : 16,
                             "batch_size" : 50,
+                            "learning_rate" : 0.001
+                            },
+                            {
+                            "window_size" : 50,
+                            "h_size" : 8,
+                            "h_width" : 16,
+                            "batch_size" : 10,
+                            "learning_rate" : 0.001
                             }
+                            # {
+                            # "window_size" : 50,
+                            # "h_size" : 8,
+                            # "h_width" : 16,
+                            # "epochs" : 100,
+                            # "batch_size" : 50,
+                            # "learning_rate" : 0.001
+                            # }
                     ]
     
     
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
         d["epochs"] = 200
-        d["part_of_data"] = 100
+        d["part_of_data"] = 5
         d["percentage_of_data"] = 0.7
-        d["cut_off_timesteps"] = 100
+        d["cut_off_timesteps"] = 400
         d["future"] = 1
         d["drop_half_timesteps"] = True
 
@@ -79,7 +94,10 @@ def main():
         # hidden_channels=8 is the number of hidden channels for the evolving z_t, which we get to choose.
         # output_channels=1 because we're doing binary classification.
         ######################
-        model = NeuralCDE(input_channels=4, hidden_channels=params["h_size"], hidden_width = params["h_width"], output_channels=2).to(device)
+        
+        model = NeuralCDE(input_channels=4, hidden_channels=params["h_size"], hidden_width = params["h_width"], 
+                          output_channels=2, interpolation="linear").to(device)
+        
         optimizer = torch.optim.Adam(model.parameters(), lr=params["learning_rate"])
         loss_fn = torch.nn.MSELoss()
 
@@ -96,7 +114,8 @@ def main():
             
             for x, y in train_loader:
                 x = x.to(device)
-                train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
+                #train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
+                train_coeffs = torchcde.linear_interpolation_coeffs(x)
                 batch_coeffs, batch_y = train_coeffs.to(device), y.to(device)
             
                 pred_y = model(batch_coeffs).squeeze(-1)
@@ -109,7 +128,7 @@ def main():
 
             #print('Epoch: {}   Training loss (next step): {}'.format(epoch, loss.item()))    
 
-            if (epoch+1) % 50 == 0:            
+            if (epoch+1) % 20 == 0:            
                 test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                         display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 print('Epoch: {}   Test loss (MSE over whole Traj.): {}'.format(epoch, err_test.item()))
