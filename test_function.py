@@ -293,8 +293,8 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                     start=time.time()
                     out = model(train_coeffs)
-                    #pred[0:1, i+window_size, 2:] = pred[0:1, i+window_size-1, 2:] + out.unsqueeze(1)
-                    pred[0:1, i+window_size, 2:] = out
+                    pred[0:1, i+window_size, 2:] = pred[0:1, i+window_size-1, 2:] + out.unsqueeze(1)
+                    #pred[0:1, i+window_size, 2:] = out
                     stop=time.time()
                    #print(stop-start, "time: model calc step")
 

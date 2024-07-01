@@ -10,96 +10,13 @@ from get_data import *
 from dataloader import *
 from test_function import *
 from tqdm import tqdm
+from NN_classes import *
 
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 device = "cpu"
 print(device)
-######################
-# A CDE model looks like
-#
-# z_t = z_0 + \int_0^t f_\theta(z_s) dX_s
-#
-# Where X is your data and f_\theta is a neural network. So the first thing we need to do is define such an f_\theta.
-# That's what this CDEFunc class does.
-# Here we've built a small single-hidden-layer neural network, whose hidden layer is of width 128.
-######################
-class CDEFunc(torch.nn.Module):
-    def __init__(self, input_channels, hidden_channels, hidden_width=128):
-        ######################
-        # input_channels is the number of input channels in the data X. (Determined by the data.)
-        # hidden_channels is the number of channels for z_t. (Determined by you!)
-        ######################
-        super(CDEFunc, self).__init__()
-        self.input_channels = input_channels
-        self.hidden_channels = hidden_channels
-        self.hidden_width  = hidden_width
 
-        self.linear1 = torch.nn.Linear(hidden_channels, self.hidden_width)
-        self.linear2 = torch.nn.Linear(self.hidden_width, input_channels * hidden_channels)
-
-    ######################
-    # For most purposes the t argument can probably be ignored; unless you want your CDE to behave differently at
-    # different times, which would be unusual. But it's there if you need it!
-    ######################
-    def forward(self, t, z):
-        # z has shape (batch, hidden_channels)
-        z = self.linear1(z)
-        z = z.relu()
-        z = self.linear2(z)
-        ######################
-        # Easy-to-forget gotcha: Best results tend to be obtained by adding a final tanh nonlinearity.
-        ######################
-        z = z.tanh()
-        ######################
-        # Ignoring the batch dimension, the shape of the output tensor must be a matrix,
-        # because we need it to represent a linear map from R^input_channels to R^hidden_channels.
-        ######################
-        z = z.view(z.size(0), self.hidden_channels, self.input_channels)
-        return z
-
-
-######################
-# Next, we need to package CDEFunc up into a model that computes the integral.
-######################
-class NeuralCDE(torch.nn.Module):
-    def __init__(self, input_channels, hidden_channels, hidden_width, output_channels, interpolation="cubic"):
-        super(NeuralCDE, self).__init__()
-
-        self.func = CDEFunc(input_channels, hidden_channels, hidden_width)
-        self.initial = torch.nn.Linear(input_channels, hidden_channels)
-        self.readout = torch.nn.Linear(hidden_channels, output_channels)
-        self.interpolation = interpolation
-
-    def forward(self, coeffs):
-        if self.interpolation == 'cubic':
-            X = torchcde.CubicSpline(coeffs)
-        elif self.interpolation == 'linear':
-            X = torchcde.LinearInterpolation(coeffs)
-        else:
-            raise ValueError("Only 'linear' and 'cubic' interpolation methods are implemented.")
-
-        ######################
-        # Easy to forget gotcha: Initial hidden state should be a function of the first observation.
-        ######################
-        X0 = X.evaluate(X.interval[0])
-        z0 = self.initial(X0)
-
-        ######################
-        # Actually solve the CDE.
-        ######################
-        z_T = torchcde.cdeint(X=X,
-                              z0=z0,
-                              func=self.func,
-                              t=X.interval)#, atol = 1e-2, rtol = 1e-2)
-
-        ######################
-        # Both the initial value and the terminal value are returned from cdeint; extract just the terminal value,
-        # and then apply a linear map.
-        ######################
-        z_T = z_T[:, 1]
-        pred_y = self.readout(z_T)
-        return pred_y
 
 
 def main():
@@ -108,36 +25,17 @@ def main():
 
                                 {
                             "experiment_number" : 0,
-                            "window_size" : 10,
-                            "h_size" : 6,
-                            "h_width" : 128,
-                            "l_num" : 3,
-                            "epochs" : 200,
-                            "learning_rate" : 0.001,
-                            "part_of_data" : 2, 
-                            "percentage_of_data" : 0.8,
-                            "batch_size" : 200,
-                            "cut_off_timesteps" : 100,
-                            "drop_half_timesteps": True
-                            },
-            
-                            {
-                            "experiment_number" : 0,
                             "window_size" : 50,
                             "h_size" : 8,
-                            "h_width" : 128,
-                            "l_num" : 3,
-                            "epochs" : 80,
+                            "h_width" : 48,
+                            "epochs" : 500,
                             "learning_rate" : 0.001,
-                            "part_of_data" : 10, 
-                            "percentage_of_data" : 0.8,
-                            "batch_size" : 1000,
-                            "cut_off_timesteps" : 0,
+                            "part_of_data" : 0, 
+                            "percentage_of_data" : 0.7,
+                            "batch_size" : 50,
+                            "cut_off_timesteps" : 100,
                             "drop_half_timesteps": True
-                                }
-
-
-
+                            }
                     ]
     
     
@@ -211,7 +109,7 @@ def main():
 
             #print('Epoch: {}   Training loss (next step): {}'.format(epoch, loss.item()))    
 
-            if (epoch+1) % 20 == 0:            
+            if (epoch+1) % 50 == 0:            
                 test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                         display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 print('Epoch: {}   Test loss (MSE over whole Traj.): {}'.format(epoch, err_test.item()))
@@ -221,7 +119,7 @@ def main():
         print(f"Run finished, file saved as: \n {path}")
 
         test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
-                                                        display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max)
+                                                        display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
         print("Training finised! Final error:", err_test)        
 
 
