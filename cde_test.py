@@ -23,24 +23,24 @@ def main():
 
     parameter_configs =        [  
 
-                                {
-                            "experiment_number" : 0,
+                            {
                             "window_size" : 10,
                             "h_size" : 8,
                             "h_width" : 8,
                             "epochs" : 100,
-                            "learning_rate" : 0.001,
-                            "part_of_data" : 100, 
-                            "percentage_of_data" : 0.7,
                             "batch_size" : 50,
-                            "cut_off_timesteps" : 100,
-                            "drop_half_timesteps": True
                             }
                     ]
     
     
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
+        d["epochs"] = 200
+        d["part_of_data"] = 100
+        d["percentage_of_data"] = 0.7
+        d["cut_off_timesteps"] = 100
+        d["future"] = 1
+        d["drop_half_timesteps"] = True
 
     for params in parameter_configs:
 
