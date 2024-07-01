@@ -29,6 +29,7 @@ def main():
                             "h_width" : 8,
                             "epochs" : 100,
                             "batch_size" : 50,
+                            "learning_rate" : 0.001
                             }
                     ]
     
