@@ -65,7 +65,7 @@ parameter_configs =       [
                         # },
     
                       {
-                        "window_size" : 50,
+                        "window_size" : 25,
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
                         "cut_off_timesteps" : 0,
@@ -75,22 +75,10 @@ parameter_configs =       [
                         "kernel_size" : 7,
                         "dropout" : 0
                     },
-                                                 
                     {
-                    "window_size" : 25,
-                    "learning_rate" : 0.001,
-                    "batch_size" : 20,
-                    "cut_off_timesteps" : 0,
-
-                    "n_hidden" : 5,
-                    "levels" : 4,
-                    "kernel_size" : 7,
-                    "dropout" : 0
-                },
-                      {
-                        "window_size" : 50,
+                        "window_size" : 10,
                         "learning_rate" : 0.001,
-                        "batch_size" : 100,
+                        "batch_size" : 20,
                         "cut_off_timesteps" : 0,
 
                         "n_hidden" : 5,
@@ -98,39 +86,27 @@ parameter_configs =       [
                         "kernel_size" : 7,
                         "dropout" : 0
                     },
-                                                 
                     {
-                    "window_size" : 25,
-                    "learning_rate" : 0.001,
-                    "batch_size" : 200,
-                    "cut_off_timesteps" : 0,
+                        "window_size" : 25,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 20,
+                        "cut_off_timesteps" : 0,
 
-                    "n_hidden" : 5,
-                    "levels" : 4,
-                    "kernel_size" : 7,
-                    "dropout" : 0
-                },
-
-                          {
-                    "window_size" : 25,
-                    "learning_rate" : 0.001,
-                    "batch_size" : 100,
-                    "cut_off_timesteps" : 0,
-
-                    "n_hidden" : 6,
-                    "levels" : 5,
-                    "kernel_size" : 7,
-                    "dropout" : 0
-                },   
+                        "n_hidden" : 4,
+                        "levels" : 6,
+                        "kernel_size" : 8,
+                        "dropout" : 0.01
+                    }
+                                          
                           
                 ]
 
 for k, d in enumerate(parameter_configs):
     d["experiment_number"] = k
-    d["epochs"] = 500
+    d["epochs"] = 200
     d["input_channels"] = 3
     d["output"] = 2
-    d["part_of_data"] = 200
+    d["part_of_data"] = 100
     d["percentage_of_data"] = 0.7
     d["future"] = 1
     d["drop_half_timesteps"] = True

@@ -25,12 +25,12 @@ def main():
 
                                 {
                             "experiment_number" : 0,
-                            "window_size" : 50,
+                            "window_size" : 10,
                             "h_size" : 8,
-                            "h_width" : 48,
-                            "epochs" : 500,
+                            "h_width" : 8,
+                            "epochs" : 100,
                             "learning_rate" : 0.001,
-                            "part_of_data" : 0, 
+                            "part_of_data" : 100, 
                             "percentage_of_data" : 0.7,
                             "batch_size" : 50,
                             "cut_off_timesteps" : 100,
