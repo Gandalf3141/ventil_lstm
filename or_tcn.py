@@ -71,40 +71,50 @@ def train(input_data, model, learning_rate=0.001, ws=0):
 parameter_configs =       [     
 
                         #         best
-                        #     {
-                        #     "window_size" : 25,
-                        #     "learning_rate" : 0.001,
-                        #     "batch_size" : 20,
-                        #     "cut_off_timesteps" : 0,
+                    #    {
+                    #     "window_size" : 30,
+                    #     "learning_rate" : 0.001,
+                    #     "batch_size" : 20,
+                    #     "cut_off_timesteps" : 0,
 
-                        #     "n_hidden" : 5,
-                        #     "levels" : 4,
-                        #     "kernel_size" : 7,
-                        #     "dropout" : 0
-                        # },
-    
+                    #     "n_hidden" : 5,
+                    #     "levels" : 4,
+                    #     "kernel_size" : 7,
+                    #     "dropout" : 0
+                    # }  
+
                       {
+                        "window_size" : 40,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 30,
+                        "cut_off_timesteps" : 0,
+
+                        "n_hidden" : 6,
+                        "levels" : 5,
+                        "kernel_size" : 7,
+                        "dropout" : 0
+                    } ,
+                    {
                         "window_size" : 30,
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
-                        "cut_off_timesteps" : 100,
+                        "cut_off_timesteps" : 0,
 
                         "n_hidden" : 5,
                         "levels" : 4,
                         "kernel_size" : 7,
                         "dropout" : 0
-                    }                 
+                    }                  
                           
                 ]
 
 for k, d in enumerate(parameter_configs):
     d["experiment_number"] = k
-    d["epochs"] = 1000
+    d["epochs"] = 2000
     d["input_channels"] = 3
     d["output"] = 2
     d["part_of_data"] = 0
-    d["percentage_of_data"] = 0.7
-    d["future"] = 1
+    d["percentage_of_data"] = 0.8
     d["drop_half_timesteps"] = True
 
 for k, params in enumerate(parameter_configs):
@@ -172,7 +182,7 @@ for k, params in enumerate(parameter_configs):
 
     for i in tqdm(range(params["epochs"])):
         err_train = train(train_dataloader, model)
-        if (i+1) % 20 ==0:
+        if (i+1) % 100 ==0:
             _, _, err_test = test(train_data.to(device), model=model, model_type="or_tcn", window_size=params["window_size"],
                             display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max, additional_data=None)
             

@@ -352,7 +352,12 @@ class OR_TCN(nn.Module):
 
     def forward(self, one_full_traj):
 
-        seq = one_full_traj[:, 0:self.ws, :]
+        #print("This arrives at the forward pass", one_full_traj[:,:, 0:10])
+        
+        # war falsch ! (hat trotzdem funktioniert???)
+        #seq = one_full_traj[:, 0:self.ws, :]
+        seq = one_full_traj[:, :, 0:self.ws]
+
         y1 = self.tcn(seq)
         pred = self.linear(y1[:, :, -1])
         #only update next step

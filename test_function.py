@@ -285,8 +285,12 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[0, :] = x[0, 0, :]
                     pred[:, 0] = x[0, :, 0]
     
+                x_test = x.clone()
+                x_test[:,window_size:,1:] = 0
+                x_test = x_test.to(device)
+                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
 
-                out = model(x.transpose(1,2))
+                out = model(x_test.transpose(1,2))
                 
                 pred[window_size:,1:] = out.squeeze(0).transpose(0,1)
 
