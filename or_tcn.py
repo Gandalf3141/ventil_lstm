@@ -84,10 +84,10 @@ parameter_configs =       [
                         # },
     
                       {
-                        "window_size" : 20,
+                        "window_size" : 30,
                         "learning_rate" : 0.001,
-                        "batch_size" : 10,
-                        "cut_off_timesteps" : 200,
+                        "batch_size" : 20,
+                        "cut_off_timesteps" : 100,
 
                         "n_hidden" : 5,
                         "levels" : 4,
@@ -99,10 +99,10 @@ parameter_configs =       [
 
 for k, d in enumerate(parameter_configs):
     d["experiment_number"] = k
-    d["epochs"] = 100
+    d["epochs"] = 1000
     d["input_channels"] = 3
     d["output"] = 2
-    d["part_of_data"] = 50
+    d["part_of_data"] = 0
     d["percentage_of_data"] = 0.7
     d["future"] = 1
     d["drop_half_timesteps"] = True
@@ -172,7 +172,7 @@ for k, params in enumerate(parameter_configs):
 
     for i in tqdm(range(params["epochs"])):
         err_train = train(train_dataloader, model)
-        if (i) % 10 ==0:
+        if (i+1) % 20 ==0:
             _, _, err_test = test(train_data.to(device), model=model, model_type="or_tcn", window_size=params["window_size"],
                             display_plots=False, num_of_inits = 10, set_rand_seed=True, physics_rescaling = PSW_max, additional_data=None)
             
