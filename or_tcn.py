@@ -180,7 +180,7 @@ for k, params in enumerate(parameter_configs):
             print("test",err_test)
 
 
-    path = f'Ventil_trained_NNs\\tcn_{params["experiment_number"]}.pth'
+    path = f'Ventil_trained_NNs\\or_tcn_{params["experiment_number"]}.pth'
     torch.save(model.state_dict(), path)
     print(f"Run finished, file saved as: \n {path}")
 
