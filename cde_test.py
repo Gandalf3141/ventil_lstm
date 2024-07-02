@@ -45,6 +45,8 @@ def main():
                             # "batch_size" : 50,
                             # "learning_rate" : 0.001
                             # }
+                            "learning_rate" : 0.001
+                            }
                     ]
     
     
