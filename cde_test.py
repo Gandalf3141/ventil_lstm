@@ -47,6 +47,7 @@ class CDEFunc(torch.nn.Module):
         ######################
         # Easy-to-forget gotcha: Best results tend to be obtained by adding a final tanh nonlinearity.
         ######################
+        # try without?        
         z = z.tanh()
         ######################
         # Ignoring the batch dimension, the shape of the output tensor must be a matrix,
@@ -87,8 +88,8 @@ class NeuralCDE(torch.nn.Module):
         ######################
         z_T = torchcde.cdeint(X=X,
                               z0=z0,
-                              func=self.func,
-                              t=X.interval, backend='torchdiffeq', options=dict(jump_t=X.grid_points),)
+                              func=self.func
+                              ,t=X.interval, adjoint=False, backend='torchdiffeq',atol = 1e-4, rtol = 1e-4)#, options=dict(jump_t=X.grid_points),)
                                 #method='rk4', 
                                 #options=dict(step_size=2e-4),
                                 
@@ -111,50 +112,61 @@ def main():
 
                             {
                             "window_size" : 50,
-                            "h_size" : 8,
-                            "h_width" : 16,
-                            "batch_size" : 50,
-                            "learning_rate" : 0.001
-                            },
-                            {
-                            "window_size" : 50,
-                            "h_size" : 8,
-                            "h_width" : 16,
-                            "batch_size" : 10,
-                            "learning_rate" : 0.001
+                            "h_size" : 16,
+                            "h_width" : 128,
+                            "batch_size" : 300,
+                            "learning_rate" : 0.0005
                             }
-                            # {
-                            # "window_size" : 50,
+                            # this worked ... kind of
+                            #       "window_size" : 50,
                             # "h_size" : 8,
-                            # "h_width" : 16,
-                            # "epochs" : 100,
-                            # "batch_size" : 50,
-                            # "learning_rate" : 0.001
-                            # }
+                            # "h_width" : 128,
+                            # "batch_size" : 500,
+                            # "learning_rate" : 0.0005
                         ]
     
     
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
         d["epochs"] = 200
-        d["part_of_data"] = 5
+        d["part_of_data"] = 0
         d["percentage_of_data"] = 0.7
-        d["cut_off_timesteps"] = 400
+        d["cut_off_timesteps"] = 0
         d["future"] = 1
-        d["drop_half_timesteps"] = True
+        d["drop_half_timesteps"] = True 
 
     for params in parameter_configs:
 
+        # Generate input data (the data is normalized and some timesteps are cut off)
         input_data1, PSW_max = get_data_cde(path = "data\save_data_test_revised.csv", 
-                                    timesteps_from_data=0, 
-                                    skip_steps_start = 0,
-                                    skip_steps_end = 0, 
-                                    drop_half_timesteps = params["drop_half_timesteps"],
-                                    normalise_s_w="minmax",
-                                    rescale_p=False,
-                                    num_inits=params["part_of_data"])
-        input_data = input_data1.to(device)
+                                timesteps_from_data=0, 
+                                skip_steps_start = 0,
+                                skip_steps_end = 0, 
+                                drop_half_timesteps = params["drop_half_timesteps"],
+                                normalise_s_w="minmax",
+                                rescale_p=False,
+                                num_inits=params["part_of_data"])
 
+        input_data2, PSW_max = get_data_cde(path = "data\save_data_test5.csv", 
+                                timesteps_from_data=0, 
+                                skip_steps_start = 0,
+                                skip_steps_end = 0, 
+                                drop_half_timesteps = params["drop_half_timesteps"],
+                                normalise_s_w="minmax",
+                                rescale_p=False,
+                                num_inits=params["part_of_data"])
+
+        input_data3, PSW_max = get_data_cde(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+                                timesteps_from_data=0, 
+                                skip_steps_start = 0,
+                                skip_steps_end = 0, 
+                                drop_half_timesteps = params["drop_half_timesteps"],
+                                normalise_s_w="minmax",
+                                rescale_p=False,
+                                num_inits=params["part_of_data"])
+
+        input_data = torch.cat((input_data1, input_data2, input_data3)).to(device)
+    
         #cols = time_cols, pb_cols, sb_cols, wb_cols
 
             #Split data into train and test sets
@@ -182,7 +194,7 @@ def main():
         ######################
         
         model = NeuralCDE(input_channels=4, hidden_channels=params["h_size"], hidden_width = params["h_width"], 
-                          output_channels=2, interpolation="linear").to(device)
+                          output_channels=2, interpolation="cubic").to(device)
         
         optimizer = torch.optim.Adam(model.parameters(), lr=params["learning_rate"])
         loss_fn = torch.nn.MSELoss()
@@ -200,8 +212,8 @@ def main():
             
             for x, y in train_loader:
                 x = x.to(device)
-                #train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
-                train_coeffs = torchcde.linear_interpolation_coeffs(x)
+                train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(x)
+                #train_coeffs = torchcde.linear_interpolation_coeffs(x)
                 batch_coeffs, batch_y = train_coeffs.to(device), y.to(device)
             
                 pred_y = model(batch_coeffs).squeeze(-1)
@@ -212,9 +224,9 @@ def main():
                 optimizer.step()
                 optimizer.zero_grad()
 
-            #print('Epoch: {}   Training loss (next step): {}'.format(epoch, loss.item()))    
+            print('Epoch: {}   Training loss (next step): {}'.format(epoch, loss.item()))    
 
-            if (epoch+1) % 20 == 0:            
+            if (epoch+1) % 50 == 0:            
                 test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                         display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 print('Epoch: {}   Test loss (MSE over whole Traj.): {}'.format(epoch, err_test.item()))
@@ -224,7 +236,7 @@ def main():
         print(f"Run finished, file saved as: \n {path}")
 
         test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
-                                                        display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
+                                                        display_plots=False, num_of_inits = 2, set_rand_seed=True, physics_rescaling = PSW_max)
         print("Training finised! Final error:", err_test)        
 
 

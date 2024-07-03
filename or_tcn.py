@@ -124,8 +124,8 @@ for k, params in enumerate(parameter_configs):
     filemode = 'a' if os.path.exists(log_file) else 'w'
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         
-    # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
+   # Generate input data (the data is normalized and some timesteps are cut off)
+    input_data1, PSW_max = get_data_cde(path = "data\save_data_test_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -134,7 +134,7 @@ for k, params in enumerate(parameter_configs):
                             rescale_p=False,
                             num_inits=params["part_of_data"])
     
-    input_data2, PSW_max = get_data(path = "data\save_data_test5.csv", 
+    input_data2, PSW_max = get_data_cde(path = "data\save_data_test5.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -143,7 +143,7 @@ for k, params in enumerate(parameter_configs):
                             rescale_p=False,
                             num_inits=params["part_of_data"])
     
-    input_data3, PSW_max = get_data(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+    input_data3, PSW_max = get_data_cde(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -152,8 +152,8 @@ for k, params in enumerate(parameter_configs):
                             rescale_p=False,
                             num_inits=params["part_of_data"])
     
-    input_data = torch.cat((input_data1, input_data2, input_data3))
-
+    input_data = torch.cat((input_data1, input_data2, input_data3)).to(device)
+    
     #Split data into train and test sets
     np.random.seed(1234)
     num_of_inits_train = int(len(input_data)*params["percentage_of_data"])

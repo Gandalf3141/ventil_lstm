@@ -1,0 +1,57 @@
+ >>> Masterarbeit Aufbau <<<
+
+# Titelseite (1)
+# Einleitung (1)
+# Abstract (1)
+# Inhaltsverzeichnis (1)
+# Nomenklatur/Notation (1)
+--------------------------------------------------------------------------------------------(3)
+# Dynamische Systeme 
+#   - Grundlagen
+#   - Blackbox models
+#   - Beschreibung Pneumatik Ventil
+--------------------------------------------------------------------------------------------(5)
+# Neuronale Netze 
+#   - Grundlagen
+#   - Backpropagation
+#   - Function approx. theorem
+--------------------------------------------------------------------------------------------(5)
+# Simulation eines dynamischen Systems 
+#   - Modellieren von Zeitreihen
+#   - Modellieren nichtlinearer Probleme
+#   - Literatur (ähnliche Beispiele)
+#   - Simulation durch lernen der rechten Seite
+#       > Beispiel: Pendel mit Eingang
+#       > Umgang mit verrauschten Daten
+#   - Simulation Pneumatik Ventil
+#       > Stufen des Systems
+--------------------------------------------------------------------------------------------(10)
+# Netzwerk Architekturen 
+#   - MLP (Struktur / forward pass erklären)
+#   - LSTM with OR (Struktur / forward pass erklären)
+#       > exploding gradient problem für rekurrente Netze
+#   - TCN with OR (Struktur / forward pass erklären)
+#       > Backpropagation for networks with OR
+#   - NCDE (Struktur / forward pass erklären)
+#       > ODEINT
+#       > Adjoint Backpropagation algorithm
+--------------------------------------------------------------------------------------------(2)
+# Training 
+#   - Wählen von Hyperparametern
+#   - Unterschied OR vs TF
+#   - PINN 
+--------------------------------------------------------------------------------------------(2)
+# Daten 
+#   - Erzeugen von Daten
+#   - Messbarkeit im Bezug auf reale Systeme
+--------------------------------------------------------------------------------------------(3)
+# Experimente 
+#   - Vergleich der unterschiedlichen Architekturen
+#   - Performance gegen state of the art (Simulink)
+--------------------------------------------------------------------------------------------(1)
+# Ergebnisse 
+#   - Signifikanz von OR
+#   - Beste Architektur
+#   - Empfehlung von Netzwerk Architektur für ähnliche Probleme
+--------------------------------------------------------------------------------------------(2)
+# Literaturverzeichnis 

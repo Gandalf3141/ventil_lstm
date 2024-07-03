@@ -121,6 +121,8 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
     test_loss = 0
     test_loss_deriv = 0
     total_loss = 0
+    total_firsthalf = 0
+    total_secondhalf = 0
    
     if set_rand_seed:
      np.random.seed(1234)
@@ -154,10 +156,16 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 out, _, _ = model(x)
                 pred[window_size:,1:] = out
-            
+
+                print(x.size(), pred.size())
                 test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
                 total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
+
+                total_firsthalf += loss_fn(pred[window_size:int((timesteps-window_size)/2), 1:], 
+                        x[0, window_size:int((timesteps-window_size)/2), 1:]).detach().cpu().numpy()  
+                total_secondhalf += loss_fn(pred[int((timesteps-window_size)/2):, 1:],
+                            x[0, int((timesteps-window_size)/2):, 1:]).detach().cpu().numpy()
 
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
@@ -197,6 +205,14 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     test_loss += loss_fn(pred[window_size:, 1], x[window_size:, 1]).detach().cpu().numpy()
                     test_loss_deriv += loss_fn(pred[window_size:, 2], x[window_size:, 2]).detach().cpu().numpy()
                     total_loss += loss_fn(pred[window_size:, 1:], x[window_size:, 1:]).detach().cpu().numpy()
+
+                    
+                    total_firsthalf += loss_fn(pred[window_size:int((pred.size(dim=0)-window_size)/2), 1:], 
+                                            x[window_size:int((pred.size(dim=0)-window_size)/2), 1:]).detach().cpu().numpy()  
+                    total_secondhalf += loss_fn(pred[int((pred.size(dim=0)-window_size)/2):, 1:],
+                                                x[int((pred.size(dim=0)-window_size)/2):, 1:]).detach().cpu().numpy()  
+                    #print("Error first half: ", total_firsthalf)
+                    #print("Error second half: ", total_secondhalf)
 
                     if display_plots:
                         plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
@@ -319,32 +335,46 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 pred[:, 0:window_size, :] = x[0:1, 0:window_size, :]
                 pred[:, :, 0:2] = x[0:1, :, 0:2] # time, pressure
 
-                start_total=time.time()
+                #start_total=time.time()
 
                 for i in range(x.size(1) - window_size):
                     
-                    start_coeffs=time.time()
-                    #train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(pred[0:1, i:i+window_size, :]) 
-                    train_coeffs = torchcde.linear_interpolation_coeffs(pred[0:1, i:i+window_size, :])
+                    #start_coeffs=time.time()
+                    train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(pred[0:1, i:i+window_size, :]) 
+                    #train_coeffs = torchcde.linear_interpolation_coeffs(pred[0:1, i:i+window_size, :])
    
-                    stop_coeffs=time.time()
-                   # print(stop_coeffs-start_coeffs, "time: coeff calc one step")
+                    #stop_coeffs=time.time()
+                    #print(stop_coeffs-start_coeffs, "time: coeff calc one step")
+                    if (i+1)%20==0:
+                     print(i, " timessteps done")
+                    #start=time.time()
 
-                    start=time.time()
                     out = model(train_coeffs)
                     pred[0:1, i+window_size, 2:] = pred[0:1, i+window_size-1, 2:] + out.unsqueeze(1)
+
                     #pred[0:1, i+window_size, 2:] = out
-                    stop=time.time()
-                   #print(stop-start, "time: model calc step")
+                    #stop=time.time()
+                    #print(stop-start, "time: model calc step")
 
-                test_loss += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[0, :, 3], x[0, :, 3]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[0, :, 2:], x[0, :, 2:]).detach().cpu().numpy()
+                test_loss += loss_fn(pred[0, window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[0, window_size:, 3], x[0, window_size:, 3]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[0, window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
-                stop_total=time.time()
+                total_firsthalf += loss_fn(pred[0, window_size:int((pred.size(dim=1)-window_size)/2), 2:], 
+                                           x[0, window_size:int((pred.size(dim=1)-window_size)/2), 2:]).detach().cpu().numpy()  
+                total_secondhalf += loss_fn(pred[0, int((pred.size(dim=1)-window_size)/2):, 2:],
+                                             x[0, int((pred.size(dim=1)-window_size)/2):, 2:]).detach().cpu().numpy()  
+                #print("Error first half: ", total_firsthalf)
+                #print("Error second half: ", total_secondhalf)
+
+                #stop_total=time.time()
                # print(stop_total-start_total, "time: model calc step")
 
                 if display_plots:
                     plot_results(x[:,:,1:], pred[:,:,1:], pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
+    print("Error first half: ", np.mean(total_firsthalf))
+    print("Error second half: ", np.mean(total_secondhalf))
+    print("total loss full traj: ", np.mean(total_loss))
 
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
