@@ -345,7 +345,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
    
                     #stop_coeffs=time.time()
                     #print(stop_coeffs-start_coeffs, "time: coeff calc one step")
-                    if (i+1)%20==0:
+                    if (i+1)%100==0:
                      print(i, " timessteps done")
                     #start=time.time()
 
