@@ -54,7 +54,7 @@ def train(input_data, model, weight_decay, learning_rate=0.001, ws=0):
         x = x.to(device)
         y = y.to(device)
         
-        output, _, _ = model(x)
+        output, _ = model(x)
   
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)

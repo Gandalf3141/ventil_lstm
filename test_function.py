@@ -103,7 +103,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
 
 def test(data, model, model_type = "or_lstm", window_size=10, display_plots=False, num_of_inits = 5, set_rand_seed=True, physics_rescaling = 0, additional_data=None):
 
-    if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcn", "or_tcn", "neural_cde"]:
+    if model_type not in ["or_lstm", "lstm", "mlp", "gru", "tcn", "or_tcn", "neural_cde", "or_mlp"]:
         print("Error: model_type = ", model_type, "available options are: [or_lstm, lstm, mlp, gru, tcm]")
         return 0
 
@@ -154,7 +154,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[:, 0] = x[0, :, 0]
     
 
-                out, _, _ = model(x)
+                out, _ = model(x)
                 pred[window_size:,1:] = out
 
                 print(x.size(), pred.size())
@@ -317,8 +317,6 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
-
-
     if model_type == "neural_cde" :
          for i, x in enumerate(data):
             
@@ -372,6 +370,48 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 if display_plots:
                     plot_results(x[:,:,1:], pred[:,:,1:], pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
+
+    if model_type == "or_mlp" :
+         for i, x in enumerate(data):
+            
+            if i not in ids:
+                continue
+
+            with torch.inference_mode():
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))                
+                pred = torch.zeros((timesteps, 3), device=device)
+    
+                if window_size > 1:
+                    pred[0:window_size, :] = x[0, 0:window_size, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                else:
+                    pred[0, :] = x[0, 0, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                x_test = x.clone()
+                x_test[:,window_size:,1:] = 0
+                x_test = x_test.to(device)
+                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
+
+                out = model(x_test)
+                
+                pred[window_size:,1:] = out
+
+                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
+
+                total_firsthalf += loss_fn(pred[window_size:int((pred.size(dim=0)-window_size)/2), 1:], 
+                                            x[0, window_size:int((pred.size(dim=0)-window_size)/2), 1:]).detach().cpu().numpy()  
+                total_secondhalf += loss_fn(pred[int((pred.size(dim=0)-window_size)/2):, 1:],
+                                                x[0, int((pred.size(dim=0)-window_size)/2):, 1:]).detach().cpu().numpy()  
+
+                if display_plots:
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
 
     print("Error first half: ", np.mean(total_firsthalf))
     print("Error second half: ", np.mean(total_secondhalf))

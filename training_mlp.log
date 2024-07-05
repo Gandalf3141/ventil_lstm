@@ -124,3 +124,15 @@
 2024-06-23 05:28:52,609 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2024-06-23 05:28:52,609 - INFO - 
 
+2024-07-05 12:30:34,252 - INFO - hyperparams: {'window_size': 5, 'h_size': 8, 'l_num': 1, 'learning_rate': 0.001, 'part_of_data': 10, 'weight_decay': 1e-05, 'percentage_of_data': 0.8, 'batch_size': 10, 'cut_off_timesteps': 0, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 0, 'epochs': 20, 'input_channels': 3, 'output': 2, 'drop_half_timesteps': True}
+2024-07-05 12:30:34,263 - INFO - Final train error over whole traj (average over some inits) [6.663625866215458, 0.4353374643711598, 0.26089562213526446, 0.22441552912145074]
+2024-07-05 12:30:34,263 - INFO - Final test error over whole traj (average over some inits) []
+2024-07-05 12:30:34,263 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-05 12:30:34,263 - INFO - 
+
+2024-07-05 13:19:00,786 - INFO - hyperparams: {'window_size': 5, 'h_size': 8, 'l_num': 1, 'learning_rate': 0.001, 'weight_decay': 0, 'percentage_of_data': 0.8, 'batch_size': 5, 'cut_off_timesteps': 0, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 0, 'epochs': 200, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'drop_half_timesteps': True}
+2024-07-05 13:19:00,786 - INFO - Final train error over whole traj (average over some inits) [0.5868680640338254, 0.157253942772826, 0.11311929976211475, 0.11069429409374187]
+2024-07-05 13:19:00,786 - INFO - Final test error over whole traj (average over some inits) []
+2024-07-05 13:19:00,786 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-05 13:19:00,786 - INFO - 
+
