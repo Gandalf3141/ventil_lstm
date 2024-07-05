@@ -82,18 +82,6 @@ parameter_configs =       [
                     #     "kernel_size" : 7,
                     #     "dropout" : 0
                     # }  
-
-                      {
-                        "window_size" : 40,
-                        "learning_rate" : 0.001,
-                        "batch_size" : 30,
-                        "cut_off_timesteps" : 0,
-
-                        "n_hidden" : 6,
-                        "levels" : 5,
-                        "kernel_size" : 7,
-                        "dropout" : 0
-                    } ,
                     {
                         "window_size" : 30,
                         "learning_rate" : 0.001,
@@ -125,7 +113,7 @@ for k, params in enumerate(parameter_configs):
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         
    # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1, PSW_max = get_data_cde(path = "data\save_data_test_revised.csv", 
+    input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -134,7 +122,7 @@ for k, params in enumerate(parameter_configs):
                             rescale_p=False,
                             num_inits=params["part_of_data"])
     
-    input_data2, PSW_max = get_data_cde(path = "data\save_data_test5.csv", 
+    input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -143,7 +131,7 @@ for k, params in enumerate(parameter_configs):
                             rescale_p=False,
                             num_inits=params["part_of_data"])
     
-    input_data3, PSW_max = get_data_cde(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+    input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -168,7 +156,7 @@ for k, params in enumerate(parameter_configs):
     print(train_data.size())
 
     train_set = custom_simple_dataset(train_data, window_size=params["window_size"])
-    train_dataloader = DataLoader(train_set, batch_size=params["batch_size"], pin_memory=True)
+    train_dataloader = DataLoader(train_set, batch_size=params["batch_size"])#, pin_memory=True)
 
 
     input_channels = params["input_channels"]
@@ -190,7 +178,8 @@ for k, params in enumerate(parameter_configs):
             print("test",err_test)
 
 
-    path = f'Ventil_trained_NNs\\or_tcn_{params["experiment_number"]}.pth'
+
+    path = f'Ventil_trained_NNs/or_tcn_{params["experiment_number"]}.pth'
     torch.save(model.state_dict(), path)
     print(f"Run finished, file saved as: \n {path}")
 

@@ -114,7 +114,7 @@ def main():
                             "window_size" : 50,
                             "h_size" : 16,
                             "h_width" : 128,
-                            "batch_size" : 300,
+                            "batch_size" : 400,
                             "learning_rate" : 0.0005
                             }
                             # this worked ... kind of
@@ -128,7 +128,7 @@ def main():
     
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 200
+        d["epochs"] = 500
         d["part_of_data"] = 0
         d["percentage_of_data"] = 0.7
         d["cut_off_timesteps"] = 0
@@ -138,7 +138,7 @@ def main():
     for params in parameter_configs:
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data1, PSW_max = get_data_cde(path = "data\save_data_test_revised.csv", 
+        input_data1, PSW_max = get_data_cde(path = "data/save_data_test_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -147,7 +147,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        input_data2, PSW_max = get_data_cde(path = "data\save_data_test5.csv", 
+        input_data2, PSW_max = get_data_cde(path = "data/save_data_test5.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -156,7 +156,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
 
-        input_data3, PSW_max = get_data_cde(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+        input_data3, PSW_max = get_data_cde(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -231,9 +231,9 @@ def main():
                                                         display_plots=False, num_of_inits = 1, set_rand_seed=True, physics_rescaling = PSW_max)
                 print('Epoch: {}   Test loss (MSE over whole Traj.): {}'.format(epoch, err_test.item()))
 
-        path = f'Ventil_trained_NNs\cde{params["experiment_number"]}.pth'
+        path = f'Ventil_trained_NNs/cde{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)
-        print(f"Run finished, file saved as: \n {path}")
+        print(f"Run finished, file saved as: {path}")
 
         test_loss, test_loss_deriv, err_test = test(test_data.to(device), model, model_type = "neural_cde", window_size=params["window_size"], 
                                                         display_plots=False, num_of_inits = 2, set_rand_seed=True, physics_rescaling = PSW_max)
