@@ -112,9 +112,6 @@ def train_tcn(input_data, model, learning_rate=0.001):
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-    
-# return the average error of the next step prediction
-    return np.mean(total_loss)
 
 
 def main():
@@ -132,7 +129,7 @@ def main():
                            "h_size" : 8,
                            "l_num" : 1,
                            "learning_rate" : 0.001,
-                           "batch_size" : 5,
+                           "batch_size" : 20,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
                     }
@@ -152,13 +149,13 @@ def main():
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 2
+        d["epochs"] = 1000
         d["input_channels"] = 3
         d["output"] = 2
-        d["part_of_data"] = 2
-        d["percentage_of_data"] = 0.8
+        d["part_of_data"] = 0
+        d["percentage_of_data"] = 0.7
         d["drop_half_timesteps"] = True
-        d["cut_off_timesteps"] = 0
+        d["cut_off_timesteps"] = 100
 
     # Configure logging
     log_file = 'training_OR_nets.log'
@@ -181,7 +178,7 @@ def main():
     model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
+    input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -190,7 +187,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data2, PSW_max = get_data(path = "data\save_data_test5.csv", 
+    input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -199,7 +196,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data3, PSW_max = get_data(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+    input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -242,7 +239,7 @@ def main():
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
-        if (e+1)%2 == 0:
+        if (e+1)%200 == 0:
             _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
             _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
             _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
@@ -266,9 +263,9 @@ def main():
     # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")
     
     # Save trained model
-    path_lstm = f'Ventil_trained_NNs\OR_LSTM{params_lstm["experiment_number"]}.pth'
-    path_mlp = f'Ventil_trained_NNs\OR_MLP{params_mlp["experiment_number"]}.pth'
-    path_tcn = f'Ventil_trained_NNs\OR_TCN{params_tcn["experiment_number"]}.pth'
+    path_lstm = f'Ventil_trained_NNs/OR_LSTM{params_lstm["experiment_number"]}.pth'
+    path_mlp = f'Ventil_trained_NNs/OR_MLP{params_mlp["experiment_number"]}.pth'
+    path_tcn = f'Ventil_trained_NNs/OR_TCN{params_tcn["experiment_number"]}.pth'
 
     torch.save(model_lstm.state_dict(), path_lstm)
     torch.save(model_mlp.state_dict(), path_mlp)
