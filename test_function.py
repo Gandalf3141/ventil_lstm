@@ -56,6 +56,7 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
 
     axs[0].plot(time, pred.detach().cpu().numpy()[:, 1], color="red", label="pred")
     axs[0].plot(time, x.detach().cpu().numpy()[:, 1], color="blue", label="true", linestyle="dashed")
+
     if additional_data != None:
         for i in range(additional_data.size(dim=0)):
            names = ["simulink", "Hub im Regler"]
@@ -370,7 +371,6 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 if display_plots:
                     plot_results(x[:,:,1:], pred[:,:,1:], pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-
 
     if model_type == "or_mlp" :
          for i, x in enumerate(data):

@@ -36,7 +36,7 @@ class LSTMmodel(nn.Module):
 
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
-            out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, out[:, -1, :] + pred[:, -1: , :]), dim=1)
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
             seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
@@ -370,7 +370,8 @@ class OR_TCN(nn.Module):
             y1 = self.tcn(seq)
             pred = self.linear(y1[:, :, -1])
 
-            next_step = one_full_traj[:, 1:, self.ws+(t-1)] + pred
+            #next_step = one_full_traj[:, 1:, self.ws+(t-1)] + pred
+            next_step = out[:, :, t-1] + pred
             next_step = next_step.unsqueeze(-1)
 
             out = torch.cat((out, next_step), dim=2)
