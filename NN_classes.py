@@ -36,7 +36,7 @@ class LSTMmodel(nn.Module):
 
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
-            out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, out[:, -1, :] + pred[:, -1: , :]), dim=1)
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
             seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
