@@ -61,31 +61,27 @@ def main():
                         
     parameter_configs  = [
 
-
-                      
-                                            {
+                        {
                            "window_size" : 5,
-                           "h_size" : 8,
-                           "l_num" : 1,
+                           "h_size" : 25,
+                           "l_num" : 3,
                            "learning_rate" : 0.001,
                            "weight_decay" : 0,
-                           "percentage_of_data" : 0.8,
-                           "batch_size" : 5,
+                           "batch_size" : 20,
                            "cut_off_timesteps" : 0,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
-                        }
-  
+                        }  
                       ]
     
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 200
+        d["epochs"] = 1000
         d["input_channels"] = 3
         d["output"] = 2
-        d["part_of_data"] = 10
-        d["percentage_of_data"] = 0.8
+        d["part_of_data"] = 0
+        d["percentage_of_data"] = 0.7
         d["drop_half_timesteps"] = True
 
     for k, params in enumerate(parameter_configs):
@@ -100,7 +96,7 @@ def main():
                         output_size=2, act_fn = params["act_fn"], act_at_end = params["nonlin_at_out"], timesteps=params["window_size"]).to(device)
 
         # Generate input data (the data is normalized and some timesteps are cut off)
-        input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
+        input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -109,7 +105,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data2, PSW_max = get_data(path = "data\save_data_test5.csv", 
+        input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 
@@ -118,7 +114,7 @@ def main():
                                 rescale_p=False,
                                 num_inits=params["part_of_data"])
         
-        input_data3, PSW_max = get_data(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+        input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                                 timesteps_from_data=0, 
                                 skip_steps_start = 0,
                                 skip_steps_end = 0, 

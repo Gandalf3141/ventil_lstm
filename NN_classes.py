@@ -349,7 +349,6 @@ class OR_TCN(nn.Module):
 
     def forward(self, one_full_traj):
 
-        #print("This arrives at the forward pass", one_full_traj[:,:, 0:10])
         
         # war falsch ! (hat trotzdem funktioniert???)
         #seq = one_full_traj[:, 0:self.ws, :]
@@ -370,13 +369,12 @@ class OR_TCN(nn.Module):
             y1 = self.tcn(seq)
             pred = self.linear(y1[:, :, -1])
 
-            next_step = one_full_traj[:, 1:, self.ws+(t-1)] + pred
+            next_step = out[:, :, t-1] + pred
             next_step = next_step.unsqueeze(-1)
 
             out = torch.cat((out, next_step), dim=2)
 
             #derivatie_sv = torch.cat((derivatie_sv, pred), dim=2)
-
 
         for t in range(self.ws, one_full_traj.size(dim=2) - self.ws):
 
