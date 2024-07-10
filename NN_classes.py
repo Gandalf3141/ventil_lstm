@@ -232,8 +232,10 @@ class OR_MLP(nn.Module):
         inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
         pred = self.network(inp) 
         
+        
         out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred.view(one_full_traj.size(dim=0),1,2)
-
+        #out = one_full_traj[:, self.ws-1:self.ws, 1:]
+        print(out.size(),out)
 
         for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
 
@@ -257,7 +259,7 @@ class OR_MLP(nn.Module):
 
             out = torch.cat((out, out[:, -1:, 1:] + pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
 
-        return out        
+        return out
 
 
 

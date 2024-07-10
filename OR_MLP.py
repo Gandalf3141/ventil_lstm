@@ -62,13 +62,13 @@ def main():
     parameter_configs  = [
 
                         {
-                           "window_size" : 5,
+                           "window_size" : 20,
                            "h_size" : 25,
-                           "l_num" : 3,
-                           "learning_rate" : 0.001,
+                           "l_num" : 2,
+                           "learning_rate" : 0.0008,
                            "weight_decay" : 0,
                            "batch_size" : 20,
-                           "cut_off_timesteps" : 0,
+                           "cut_off_timesteps" : 100,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
                         }  
@@ -77,7 +77,7 @@ def main():
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 1000
+        d["epochs"] = 1500
         d["input_channels"] = 3
         d["output"] = 2
         d["part_of_data"] = 0
@@ -167,7 +167,7 @@ def main():
        # print(f"TRAINING FINISHED: Average error over full trajectories: testing data : {err_test}")
         
         # Save trained model
-        path = f'Ventil_trained_NNs\OR_MLP{params["experiment_number"]}.pth'
+        path = f'Ventil_trained_NNs/OR_MLP{params["experiment_number"]}.pth'
         torch.save(model.state_dict(), path)
         print(f"Run finished, file saved as: \n {path}")
 
