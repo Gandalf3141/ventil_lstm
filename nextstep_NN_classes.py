@@ -3,7 +3,6 @@ from torch import nn
 from torch.nn.utils import weight_norm
 import torchcde
 
-
 # OR - LSTM
 class LSTMmodel(nn.Module):
 
@@ -27,7 +26,7 @@ class LSTMmodel(nn.Module):
         lstm_out, hidden = self.lstm(seq)           
         pred = self.linear(lstm_out)
         #only update next step
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred[:, -1: , :]
+        out = pred[:, -1: , :]
 
         for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
 
@@ -36,7 +35,7 @@ class LSTMmodel(nn.Module):
 
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
-            out = torch.cat((out, out[:, -1:, :] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, pred[:, -1: , :]), dim=1)
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
             seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
@@ -44,145 +43,10 @@ class LSTMmodel(nn.Module):
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
 
-            out = torch.cat((out, out[:, t-1:t, :] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, pred[:, -1: , :]), dim=1)
             
         return out, hidden          
   
-# LSTM
-class LSTMmodel_nextstep(nn.Module):
-
-
-
-    def __init__(self, input_size, hidden_size, out_size, layers):
-        """
-        Initialize the LSTM model.
-
-        Args:
-        - input_size: Size of input
-        - hidden_size: Size of hidden layer
-        - out_size: Size of output
-        - layers: Number of layers
-        """
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.input_size = input_size
-        self.act = nn.ReLU()
-        # Define LSTM layer
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-
-        # Define linear layer
-        self.linear = nn.Linear(hidden_size, out_size)
-
-    def forward(self, seq):
-        """
-        Forward pass through the LSTM model.
-
-        Args:
-        - seq: Input sequence
-
-        Returns:
-        - pred: Model prediction
-        - hidden: Hidden state
-        """
-        lstm_out, hidden = self.lstm(seq)
-        #lstm_out = self.act(lstm_out)
-        pred = self.linear(lstm_out)
-
-        return pred, hidden
-
-# GRU 
-class GRUmodel(nn.Module):
-
-    def __init__(self, input_size, hidden_size, out_size, layers, window_size=4, stepsize=1):
-
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.input_size = input_size
-        self.ws = window_size
-
-        if stepsize==1:
-         self.step_size = 1
-        else:
-         self.step_size = torch.nn.parameter.Parameter(torch.rand(1))
-
-        # Define LSTM layer
-        self.GRU = nn.GRU(input_size, hidden_size, num_layers=layers, batch_first=True)
-
-        # Define linear layer
-        self.linear = nn.Linear(hidden_size, out_size)
-
-    def forward(self, one_full_traj):
-
-        seq = one_full_traj[:, 0:self.ws, :]
-        lstm_out, hidden = self.GRU(seq)           
-        pred = self.linear(lstm_out)
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + self.step_size * pred[:, -1: , :]
-
-        for t in range(1, self.ws):
-
-            tmp = torch.cat(( one_full_traj[:,self.ws+t:self.ws+t+1, 0:1] , out[:, (t-1):t,:]), dim=2)
-            seq = torch.cat((one_full_traj[:, t:self.ws+(t-1), :], tmp), dim=1)
-            lstm_out, hidden = self.GRU(seq)           
-            pred = self.linear(lstm_out)
-            out = torch.cat((out, one_full_traj[:, self.ws+(t-1): self.ws+t, 1:] + self.step_size * pred[:, -1: , :]), dim=1)
-
-        for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
-            seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
-            
-            lstm_out, hidden = self.GRU(seq)           
-            pred = self.linear(lstm_out)
-
-            out = torch.cat((out, out[:, t-1:t, :] + self.step_size * pred[:, -1: , :]), dim=1)
-
-
-        return out, hidden          
-
-# Multilayer perceptron
-class MLP(nn.Module):
-    
-    def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh", act_at_end = None):
-        super(MLP, self).__init__()
-        
-        if act_fn == "tanh":
-            fn = nn.Tanh()
-        else:
-            fn = nn.ReLU()
-
-        hidden_sizes = [hidden_size for x in range(l_num)]
-        # Create a list to hold the layers
-        layers = []
-        
-        # Input layer
-        layers.append(nn.Linear(input_size, hidden_sizes[0]))
-        layers.append(fn)
-        
-        # Hidden layers
-        for i in range(1, len(hidden_sizes)):
-            layers.append(nn.Linear(hidden_sizes[i-1], hidden_sizes[i]))
-            layers.append(fn)
-        
-        # Output layer
-        layers.append(nn.Linear(hidden_sizes[-1], output_size))
-        
-        #Try final non linearity:
-        if act_at_end != None:
-            if act_at_end == "tanh":
-                layers.append(nn.Tanh())
-            if act_at_end == "relu":
-                layers.append(nn.ReLU())
-            if act_at_end == "sigmoid":
-                layers.append(nn.Sigmoid())
-        
-        # Use nn.Sequential to put together the layers
-        self.network = nn.Sequential(*layers)
-        self.ws = input_size
-    
-    def forward(self, x):
-        
-        return self.network(x)         
-
 # Multilayer perceptron
 class OR_MLP(nn.Module):
     
@@ -233,7 +97,7 @@ class OR_MLP(nn.Module):
         pred = self.network(inp) 
         
         
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred.view(one_full_traj.size(dim=0),1,2)
+        out =  pred.view(one_full_traj.size(dim=0),1,2)
         #out = one_full_traj[:, self.ws-1:self.ws, 1:]
         print(out.size(),out)
 
@@ -247,7 +111,7 @@ class OR_MLP(nn.Module):
 
             pred = self.network(inp)
 
-            out = torch.cat((out, out[:, -1:, 1:] + pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
+            out = torch.cat((out, pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
 
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
@@ -257,10 +121,9 @@ class OR_MLP(nn.Module):
 
             pred = self.network(inp)
 
-            out = torch.cat((out, out[:, -1:, 1:] + pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
+            out = torch.cat((out, pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
 
         return out
-
 
 
 class Chomp1d(nn.Module):
@@ -322,22 +185,6 @@ class TemporalConvNet(nn.Module):
     def forward(self, x):
         return self.network(x)
     
-
-class TCN(nn.Module):
-    def __init__(self, input_size, output_size, num_channels, kernel_size, dropout):
-        super(TCN, self).__init__()
-        self.tcn = TemporalConvNet(input_size, num_channels, kernel_size=kernel_size, dropout=dropout)
-        self.linear = nn.Linear(num_channels[-1], output_size)
-        self.init_weights()
-
-    def init_weights(self):
-        self.linear.weight.data.normal_(0, 0.01)
-
-    def forward(self, x):
-        y1 = self.tcn(x)
-        return self.linear(y1[:, :, -1])
-
-
 class OR_TCN(nn.Module):
     def __init__(self, input_size, output_size, num_channels, kernel_size, dropout, windowsize=5):
         super(OR_TCN, self).__init__()
@@ -359,7 +206,7 @@ class OR_TCN(nn.Module):
         y1 = self.tcn(seq)
         pred = self.linear(y1[:, :, -1])
         #only update next step
-        out = one_full_traj[:, 1:, self.ws-1] + pred
+        out = pred
         out = out.unsqueeze(-1)
         #derivatie_sv = pred
 
@@ -371,7 +218,7 @@ class OR_TCN(nn.Module):
             y1 = self.tcn(seq)
             pred = self.linear(y1[:, :, -1])
 
-            next_step = out[:, :, t-1] + pred
+            next_step = pred
             next_step = next_step.unsqueeze(-1)
 
             out = torch.cat((out, next_step), dim=2)
@@ -385,7 +232,7 @@ class OR_TCN(nn.Module):
             y1 = self.tcn(seq)
             pred = self.linear(y1[:, :, -1])
 
-            next_step = out[:, :, t-1] + pred
+            next_step = pred
             next_step = next_step.unsqueeze(-1)
 
             out = torch.cat((out, next_step), dim=2)
@@ -393,8 +240,6 @@ class OR_TCN(nn.Module):
             #derivatie_sv = torch.cat((derivatie_sv, pred[:, -1: , :]), dim=1)
 
         return out
-
-
 
 ######################
 # A CDE model looks like
@@ -432,14 +277,10 @@ class CDEFunc(torch.nn.Module):
         ######################
         z = z.view(z.size(0), self.hidden_channels, self.input_channels)
         return z
-
-
 ######################
 # Next, we need to package CDEFunc up into a model that computes the integral.
 ######################
 class NeuralCDE(torch.nn.Module):
-
-
     def __init__(self, input_channels, hidden_channels, hidden_width, output_channels, interpolation="cubic"):
         super(NeuralCDE, self).__init__()
 
@@ -481,167 +322,3 @@ class NeuralCDE(torch.nn.Module):
         z_T = z_T[:, 1]
         pred_y = self.readout(z_T)
         return pred_y
-    
-#############################################################################################################################
-#                                Same networks no OR !
-#############################################################################################################################
-
-# LSTM
-class LSTMmodel_nextstep(nn.Module):
-
-    def __init__(self, input_size, hidden_size, out_size, layers):
-        """
-        Initialize the LSTM model.
-
-        Args:
-        - input_size: Size of input
-        - hidden_size: Size of hidden layer
-        - out_size: Size of output
-        - layers: Number of layers
-        """
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.input_size = input_size
-        self.act = nn.ReLU()
-        # Define LSTM layer
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-
-        # Define linear layer
-        self.linear = nn.Linear(hidden_size, out_size)
-
-    def forward(self, seq):
-        """
-        Forward pass through the LSTM model.
-
-        Args:
-        - seq: Input sequence
-
-        Returns:
-        - pred: Model prediction
-        - hidden: Hidden state
-        """
-        lstm_out, hidden = self.lstm(seq)
-        #lstm_out = self.act(lstm_out)
-        pred = self.linear(lstm_out)
-
-        return pred, hidden
-
-# Multilayer perceptron
-class MLP_nextstep(nn.Module):
-    
-    def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh", act_at_end = None):
-        super(MLP, self).__init__()
-        
-        if act_fn == "tanh":
-            fn = nn.Tanh()
-        else:
-            fn = nn.ReLU()
-
-        hidden_sizes = [hidden_size for x in range(l_num)]
-        # Create a list to hold the layers
-        layers = []
-        
-        # Input layer
-        layers.append(nn.Linear(input_size, hidden_sizes[0]))
-        layers.append(fn)
-        
-        # Hidden layers
-        for i in range(1, len(hidden_sizes)):
-            layers.append(nn.Linear(hidden_sizes[i-1], hidden_sizes[i]))
-            layers.append(fn)
-        
-        # Output layer
-        layers.append(nn.Linear(hidden_sizes[-1], output_size))
-        
-        #Try final non linearity:
-        if act_at_end != None:
-            if act_at_end == "tanh":
-                layers.append(nn.Tanh())
-            if act_at_end == "relu":
-                layers.append(nn.ReLU())
-            if act_at_end == "sigmoid":
-                layers.append(nn.Sigmoid())
-        
-        # Use nn.Sequential to put together the layers
-        self.network = nn.Sequential(*layers)
-        self.ws = input_size
-    
-    def forward(self, x):
-        
-        return self.network(x)         
-
-
-class Chomp1d(nn.Module):
-    def __init__(self, chomp_size):
-        super(Chomp1d, self).__init__()
-        self.chomp_size = chomp_size
-
-    def forward(self, x):
-        return x[:, :, :-self.chomp_size].contiguous()
-
-class TemporalBlock(nn.Module):
-    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2):
-        super(TemporalBlock, self).__init__()
-        self.conv1 = torch.nn.utils.parametrizations.weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
-        self.chomp1 = Chomp1d(padding)
-        self.relu1 = nn.ReLU()
-        self.dropout1 = nn.Dropout(dropout)
-
-        self.conv2 = torch.nn.utils.parametrizations.weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
-        self.chomp2 = Chomp1d(padding)
-        self.relu2 = nn.ReLU()
-        self.dropout2 = nn.Dropout(dropout)
-
-        self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
-                                 self.conv2, self.chomp2, self.relu2, self.dropout2)
-        self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
-        self.relu = nn.ReLU()
-        self.init_weights()
-
-    def init_weights(self):
-        self.conv1.weight.data.normal_(0, 0.01)
-        self.conv2.weight.data.normal_(0, 0.01)
-        if self.downsample is not None:
-            self.downsample.weight.data.normal_(0, 0.01)
-
-    def forward(self, x):
-        out = self.net(x)
-        res = x if self.downsample is None else self.downsample(x)
-        return self.relu(out + res)
-
-class TemporalConvNet(nn.Module):
-
-
-    def __init__(self, num_inputs, num_channels, kernel_size=2, dropout=0.2):
-        super(TemporalConvNet, self).__init__()
-        layers = []
-        num_levels = len(num_channels)
-        for i in range(num_levels):
-            dilation_size = 2 ** i
-            in_channels = num_inputs if i == 0 else num_channels[i-1]
-            out_channels = num_channels[i]
-            layers += [TemporalBlock(in_channels, out_channels, kernel_size, stride=1, dilation=dilation_size,
-                                     padding=(kernel_size-1) * dilation_size, dropout=dropout)]
-
-        self.network = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.network(x)
-    
-class TCN_nextstep(nn.Module):
-    def __init__(self, input_size, output_size, num_channels, kernel_size, dropout):
-        super(TCN, self).__init__()
-        self.tcn = TemporalConvNet(input_size, num_channels, kernel_size=kernel_size, dropout=dropout)
-        self.linear = nn.Linear(num_channels[-1], output_size)
-        self.init_weights()
-
-    def init_weights(self):
-        self.linear.weight.data.normal_(0, 0.01)
-
-    def forward(self, x):
-        y1 = self.tcn(x)
-        return self.linear(y1[:, :, -1])
-

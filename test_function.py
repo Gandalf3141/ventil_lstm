@@ -154,8 +154,9 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[0, :] = x[0, 0, :]
                     pred[:, 0] = x[0, :, 0]
     
-
+                
                 out, _ = model(x)
+                print(out.size())
                 pred[window_size:,1:] = out
 
                 print(x.size(), pred.size())

@@ -113,7 +113,6 @@ def train_tcn(input_data, model, learning_rate=0.001):
     return np.mean(total_loss)
 
 
-
 def main():
 
     params_lstm =   {
@@ -149,7 +148,7 @@ def main():
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 1000
+        d["epochs"] = 10
         d["input_channels"] = 3
         d["output"] = 2
         d["part_of_data"] = 0
@@ -178,7 +177,7 @@ def main():
     model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
+    input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -187,7 +186,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
+    input_data2, PSW_max = get_data(path = "data\save_data_test5.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -196,7 +195,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+    input_data3, PSW_max = get_data(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -205,7 +204,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])     
 
-    test_data, PSW_max = get_data(path="data/save_data_test_5xlonger_dyndyn.csv",
+    test_data, PSW_max = get_data(path="data\save_data_test_5xlonger_dyndyn.csv",
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -250,7 +249,7 @@ def main():
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
-        if (e+1)%200 == 0:
+        if (e+1)%2 == 0:
             _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
             _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
             _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
