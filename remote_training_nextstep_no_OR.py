@@ -120,23 +120,24 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 def main():
 
     # test settings
-    test_n = 1
-    epochs = 2
-    part_of_data = 10
-    test_every_epochs = 2
+    #test_n = 1
+    #epochs = 2
+    #part_of_data = 10
+    #test_every_epochs = 2
     
     # Experiment settings
-    # test_n = 100
-    # epochs = 2000
-    # part_of_data = 0
-    # test_every_epochs = 200
+    test_n = 100
+    epochs = 2000
+    part_of_data = 0
+    test_every_epochs = 200
+    batch_size_no_or = 800
 
     params_lstm =   {
                            "window_size" : 16,
                            "h_size" : 8,
                            "l_num" : 3,
                            "learning_rate" : 0.0008,
-                           "batch_size" : 20,
+                           "batch_size" : batch_size_no_or,
                     }
 
     params_mlp =    {
@@ -144,7 +145,7 @@ def main():
                            "h_size" : 24,
                            "l_num" : 3,
                            "learning_rate" : 0.001,
-                           "batch_size" : 20,
+                           "batch_size" : batch_size_no_or,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
                     }
@@ -152,7 +153,7 @@ def main():
     params_tcn =    {
                         "window_size" : 30,
                         "learning_rate" : 0.001,
-                        "batch_size" : 20,
+                        "batch_size" : batch_size_no_or,
                         "n_hidden" : 5,
                         "levels" : 4,
                         "kernel_size" : 7,
@@ -265,7 +266,7 @@ def main():
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
-        if (e)%test_every_epochs == 0:
+        if (e+1)%test_every_epochs == 0:
             _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
             _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
             _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
