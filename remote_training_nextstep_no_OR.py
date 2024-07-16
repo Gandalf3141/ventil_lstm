@@ -46,7 +46,7 @@ def train_lstm_no_or_nextstep(traindataloader, model, learning_rate=0.001):
         optimizer.zero_grad(set_to_none=True)
         # calculate the error
 
-        loss = loss_fn(out[:,-1,:], label[:, 0, 1:])
+        loss = loss_fn(out[:,-1,:], label[:, 1:])
 
         loss.backward(retain_graph=True)
         optimizer.step()
@@ -72,13 +72,12 @@ def train_mlp_no_or_nextstep(traindataloader, model, learning_rate=0.001):
         x_last = x_last.squeeze()
         
         output = model(x)
-        pred = output
 
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
         
         # calculate the error
-        loss = loss_fn(pred, y[:,1:])
+        loss = loss_fn(output[:, :], y[:,1:])
         loss.backward()
         optimizer.step()
  
@@ -101,15 +100,14 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
         y = y.to(device)
 
         x = x.transpose(1,2)
-        y = y.transpose(1,2)
-
+        
         out = model(x)
   
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
         
         # calculate the error
-        loss = loss_fn(out, y)
+        loss = loss_fn(out, y[:, 1:])
         loss.backward()
         optimizer.step()
  
@@ -267,10 +265,10 @@ def main():
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
-        if (e+1)%test_every_epochs == 0:
-            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+        if (e)%test_every_epochs == 0:
+            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
             average_traj_err_train_mlp.append(err_train_mlp)

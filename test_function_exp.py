@@ -531,7 +531,9 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 # Type 4: no OR next step prediction
     if model_type == "lstm_no_or_nextstep":
         for i, x in enumerate(data):
-            x=x.to(device)
+            x=x.to(device)        
+            x = x.view(1,x.size(dim=0), x.size(dim=1))
+
             if i not in ids:
                 continue
 
@@ -540,21 +542,21 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 pred = torch.zeros((timesteps, 3), device=device)
 
                 if window_size > 1:
-                    pred[0:window_size, :] = x[0:window_size, :]
-                    pred[:, 0] = x[:, 0]
+                    pred[0:window_size, :] = x[0, 0:window_size, :]
+                    pred[:, 0] = x[0, :, 0]
+    
                 else:
-                    pred[0, :] = x[0, :]
-                    pred[:, 0] = x[:, 0]
+                    pred[0, :] = x[0, 0, :]
+                    pred[:, 0] = x[0, :, 0]
 
                 for i in range(len(x) - window_size):
 
                     out, _ = model(pred[i:i+window_size, :])
                     pred[i+window_size, 1:] = out[-1, :]
                 
-                test_loss += loss_fn(pred[:, 1], x[:, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[:, 2], x[:, 2]).detach().cpu().numpy()
-
-                total_loss += loss_fn(pred[:, 1:], x[:, 1:]).detach().cpu().numpy()
+                test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[:, 1:], x[0, :, 1:]).detach().cpu().numpy()
 
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
