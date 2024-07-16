@@ -14,7 +14,7 @@ import os
 import cProfile
 import pstats
 from dataloader import *
-from test_function import *
+from test_function_exp import *
 from get_data import *
 from nextstep_NN_classes import *
 
@@ -121,6 +121,18 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 
 def main():
 
+    # test settings
+    test_n = 1
+    epochs = 2
+    part_of_data = 10
+    test_every_epochs = 2
+    
+    # Experiment settings
+    # test_n = 100
+    # epochs = 2000
+    # part_of_data = 0
+    # test_every_epochs = 200
+
     params_lstm =   {
                            "window_size" : 16,
                            "h_size" : 8,
@@ -154,10 +166,10 @@ def main():
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 10
+        d["epochs"] = epochs
         d["input_channels"] = 3
         d["output"] = 2
-        d["part_of_data"] = 0
+        d["part_of_data"] = part_of_data
         d["percentage_of_data"] = 0.8
         d["drop_half_timesteps"] = True
         d["cut_off_timesteps"] = 100
@@ -255,10 +267,10 @@ def main():
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
-        if (e+1)%2 == 0:
-            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
+        if (e+1)%test_every_epochs == 0:
+            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
             average_traj_err_train_mlp.append(err_train_mlp)
@@ -269,19 +281,11 @@ def main():
             print(f"Average error over full trajectories: training data MLP: {err_train_mlp}")
             print(f"Average error over full trajectories: training data TCN: {err_train_tcn}")
             
-            
-    _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
-    _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
-    _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)        
 
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data LSTM : {err_train_lstm}")
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data MLP  : {err_train_mlp}")
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data TCN  : {err_train_tcn}")
-    
     # Save trained model
-    path_lstm = f'Ventil_trained_NNs/LSTM_no_or_nextstep_exp{params_lstm["experiment_number"]}.pth'
-    path_mlp = f'Ventil_trained_NNs/MLP_no_or_nextstep_exp{params_mlp["experiment_number"]}.pth'
-    path_tcn = f'Ventil_trained_NNs/TCN_no_or_nextstep_exp{params_tcn["experiment_number"]}.pth'
+    path_lstm = f'Trained_NNs_exp/LSTM_no_or_nextstep_exp{params_lstm["experiment_number"]}.pth'
+    path_mlp = f'Trained_NNs_exp/MLP_no_or_nextstep_exp{params_mlp["experiment_number"]}.pth'
+    path_tcn = f'Trained_NNs_exp/TCN_no_or_nextstep_exp{params_tcn["experiment_number"]}.pth'
 
     torch.save(model_lstm.state_dict(), path_lstm)
     torch.save(model_mlp.state_dict(), path_mlp)

@@ -14,7 +14,7 @@ import os
 import cProfile
 import pstats
 from dataloader import *
-from test_function import *
+from test_function_exp import *
 from get_data import *
 from nextstep_NN_classes import *
 
@@ -39,14 +39,14 @@ def train_lstm_no_or_derivative(traindataloader, model, learning_rate=0.001):
 
         # Predict one timestep :
         output, _ = model(inp)
-        out = output
+        out = inp[:,-1:, 1:] + output[:, -1:, :]
 
         # reset the gradient
         
         optimizer.zero_grad(set_to_none=True)
         # calculate the error
 
-        loss = loss_fn(out[:,-1,:], label[:, 0, 1:])
+        loss = loss_fn(out[:,-1,:], label[:, 1:])
 
         loss.backward(retain_graph=True)
         optimizer.step()
@@ -72,7 +72,7 @@ def train_mlp_no_or_derivative(traindataloader, model, learning_rate=0.001):
         x_last = x_last.squeeze()
         
         output = model(x)
-        pred = output
+        pred = x_last[:,1:] + output[:, :]
 
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
@@ -101,15 +101,16 @@ def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
         y = y.to(device)
 
         x = x.transpose(1,2)
-        y = y.transpose(1,2)
+        #y = y.transpose(1,2)
 
-        out = model(x)
+        output = model(x)
+        out = x[:, 1:, -1] + output[:, -1].unsqueeze(-1)
   
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
         
         # calculate the error
-        loss = loss_fn(out, y)
+        loss = loss_fn(out, y[:, 1:])
         loss.backward()
         optimizer.step()
  
@@ -121,12 +122,24 @@ def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
 
 def main():
 
+    # test settings
+    test_n = 1
+    epochs = 2
+    part_of_data = 10
+    test_every_epochs = 2
+    
+    # Experiment settings
+    # test_n = 100
+    # epochs = 2000
+    # part_of_data = 0
+    # test_every_epochs = 200
+
     params_lstm =   {
                            "window_size" : 16,
                            "h_size" : 8,
                            "l_num" : 3,
                            "learning_rate" : 0.0008,
-                           "batch_size" : 20,
+                           "batch_size" : 200,
                     }
 
     params_mlp =    {
@@ -134,7 +147,7 @@ def main():
                            "h_size" : 24,
                            "l_num" : 3,
                            "learning_rate" : 0.001,
-                           "batch_size" : 20,
+                           "batch_size" : 200,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
                     }
@@ -142,7 +155,7 @@ def main():
     params_tcn =    {
                         "window_size" : 30,
                         "learning_rate" : 0.001,
-                        "batch_size" : 20,
+                        "batch_size" : 200,
                         "n_hidden" : 5,
                         "levels" : 4,
                         "kernel_size" : 7,
@@ -153,11 +166,12 @@ def main():
 
 
     for k, d in enumerate(parameter_configs):
+        
         d["experiment_number"] = k
-        d["epochs"] = 10
+        d["epochs"] = epochs 
         d["input_channels"] = 3
         d["output"] = 2
-        d["part_of_data"] = 0
+        d["part_of_data"] = part_of_data
         d["percentage_of_data"] = 0.8
         d["drop_half_timesteps"] = True
         d["cut_off_timesteps"] = 100
@@ -168,10 +182,10 @@ def main():
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Initialize the LSTM model
-    model_lstm = LSTMmodel_no_or_nextstep(input_size=3, hidden_size=params_lstm["h_size"], out_size=2, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
+    model_lstm = LSTMmodel_derivative(input_size=3, hidden_size=params_lstm["h_size"], out_size=2, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
     
     # Initialize the MLP model
-    model_mlp = MLP_no_or_nextstep(input_size=3*params_mlp["window_size"], hidden_size = params_mlp["h_size"], l_num=params_mlp["l_num"],
+    model_mlp = MLP_derivative(input_size=3*params_mlp["window_size"], hidden_size = params_mlp["h_size"], l_num=params_mlp["l_num"],
                     output_size=2, act_fn = params_mlp["act_fn"], act_at_end = params_mlp["nonlin_at_out"], timesteps=params_mlp["window_size"]).to(device)
     
     # Initialize the TCN model
@@ -180,7 +194,7 @@ def main():
     num_channels = [params_tcn["n_hidden"]] * params_tcn["levels"]
     kernel_size = params_tcn["kernel_size"]
     dropout = params_tcn["dropout"]
-    model_tcn = TCN_no_or_nextstep(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
+    model_tcn = TCN_derivative(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
     input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
@@ -235,7 +249,7 @@ def main():
     # dataloader for batching during training
     train_set_lstm = CustomDataset(train_data, window_size=params_lstm["window_size"])
     train_loader_lstm = DataLoader(train_set_lstm, batch_size=params_lstm["batch_size"], pin_memory=True)
-    train_set_mlp = CustomDataset(train_data, window_size=params_mlp["window_size"])
+    train_set_mlp = CustomDataset_mlp(train_data, window_size=params_mlp["window_size"])
     train_loader_mlp = DataLoader(train_set_mlp, batch_size=params_mlp["batch_size"], pin_memory=True)
     train_set_tcn = CustomDataset(train_data, window_size=params_tcn["window_size"])
     train_loader_tcn = DataLoader(train_set_tcn, batch_size=params_tcn["batch_size"], pin_memory=True)
@@ -255,10 +269,10 @@ def main():
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
-        if (e+1)%2 == 0:
-            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
+        if (e)%test_every_epochs == 0:
+            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
             average_traj_err_train_mlp.append(err_train_mlp)
@@ -269,19 +283,11 @@ def main():
             print(f"Average error over full trajectories: training data MLP: {err_train_mlp}")
             print(f"Average error over full trajectories: training data TCN: {err_train_tcn}")
             
-            
-    _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
-    _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
-    _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)        
 
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data LSTM : {err_train_lstm}")
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data MLP  : {err_train_mlp}")
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data TCN  : {err_train_tcn}")
-    
     # Save trained model
-    path_lstm = f'Ventil_trained_NNs/LSTM_derivative_exp{params_lstm["experiment_number"]}.pth'
-    path_mlp = f'Ventil_trained_NNs/MLP_derivative_exp{params_mlp["experiment_number"]}.pth'
-    path_tcn = f'Ventil_trained_NNs/TCN_derivative_exp{params_tcn["experiment_number"]}.pth'
+    path_lstm = f'Trained_NNs_exp/LSTM_derivative_exp{params_lstm["experiment_number"]}.pth'
+    path_mlp = f'Trained_NNs_exp/MLP_derivative_exp{params_mlp["experiment_number"]}.pth'
+    path_tcn = f'Trained_NNs_exp/TCN_derivative_exp{params_tcn["experiment_number"]}.pth'
 
     torch.save(model_lstm.state_dict(), path_lstm)
     torch.save(model_mlp.state_dict(), path_mlp)

@@ -105,7 +105,6 @@ class MLP_or_nextstep(nn.Module):
         
         out =  pred.view(one_full_traj.size(dim=0),1,2)
         #out = one_full_traj[:, self.ws-1:self.ws, 1:]
-        print(out.size(),out)
 
         for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
 
@@ -407,7 +406,7 @@ class TCN_derivative(nn.Module):
         y1 = self.tcn(seq)
         pred = self.linear(y1[:, :, -1])
 
-        return pred.unsqueeze(-1)
+        return pred
 
 
 #############################################################################################
