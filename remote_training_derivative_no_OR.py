@@ -123,16 +123,16 @@ def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
 def main():
 
     # test settings
-    #test_n = 1
-    #epochs = 2
-    #part_of_data = 10
-    #test_every_epochs = 2
+    test_n = 1
+    epochs = 10
+    part_of_data = 10
+    test_every_epochs = 100
     
     # Experiment settings
-    test_n = 100
-    epochs = 2000
-    part_of_data = 0
-    test_every_epochs = 200
+    # test_n = 100
+    # epochs = 2000
+    # part_of_data = 0
+    # test_every_epochs = 200
     batch_size_no_or = 800
 
     params_lstm =   {
