@@ -113,7 +113,6 @@ def train_tcn(input_data, model, learning_rate=0.001):
     return np.mean(total_loss)
 
 
-
 def main():
 
     params_lstm =   {
@@ -149,11 +148,11 @@ def main():
 
     for k, d in enumerate(parameter_configs):
         d["experiment_number"] = k
-        d["epochs"] = 1000
+        d["epochs"] = 2000
         d["input_channels"] = 3
         d["output"] = 2
         d["part_of_data"] = 0
-        d["percentage_of_data"] = 0.8
+        d["percentage_of_data"] = 0.7
         d["drop_half_timesteps"] = True
         d["cut_off_timesteps"] = 100
 
@@ -239,7 +238,6 @@ def main():
     average_traj_err_train_mlp = []
     average_traj_err_train_tcn = []
     epochs = []
-    average_traj_err_test = []
 
     #Training loop
     for e in tqdm(range(params_tcn["epochs"])):
@@ -251,9 +249,9 @@ def main():
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
         if (e+1)%200 == 0:
-            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 100, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 50, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 50, set_rand_seed=True, physics_rescaling = PSW_max)
+            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 50, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
             average_traj_err_train_mlp.append(err_train_mlp)
@@ -265,13 +263,13 @@ def main():
             print(f"Average error over full trajectories: training data TCN: {err_train_tcn}")
             
             
-    _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
-    _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
-    _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)        
+    # _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "or_lstm", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
+    # _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "or_mlp", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)
+    # _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "or_tcn", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = 20, set_rand_seed=True, physics_rescaling = PSW_max)        
 
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data LSTM : {err_train_lstm}")
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data MLP  : {err_train_mlp}")
-    print(f"TRAINING FINISHED: Average error over full trajectories: training data TCN  : {err_train_tcn}")
+    # print(f"TRAINING FINISHED: Average error over full trajectories: training data LSTM : {err_train_lstm}")
+    # print(f"TRAINING FINISHED: Average error over full trajectories: training data MLP  : {err_train_mlp}")
+    # print(f"TRAINING FINISHED: Average error over full trajectories: training data TCN  : {err_train_tcn}")
 
     
     # Save trained model
