@@ -195,7 +195,7 @@ def main():
     model_tcn = TCN_no_or_nextstep(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1, PSW_max = get_data(path = "data\save_data_test_revised.csv", 
+    input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -204,7 +204,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data2, PSW_max = get_data(path = "data\save_data_test5.csv", 
+    input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -213,7 +213,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data3, PSW_max = get_data(path = "data\Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+    input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -222,7 +222,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])     
 
-    test_data, PSW_max = get_data(path="data\save_data_test_5xlonger_dyndyn.csv",
+    test_data, PSW_max = get_data(path="data/save_data_test_5xlonger_dyndyn.csv",
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
