@@ -484,8 +484,7 @@ class MLP_no_or_nextstep(nn.Module):
         #inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
         pred = self.network(seq) 
     
-        out =  pred.view(seq.size(dim=0),1,2)
-        return out
+        return pred
 
 class Chomp1d(nn.Module):
     def __init__(self, chomp_size):
@@ -564,9 +563,6 @@ class TCN_no_or_nextstep(nn.Module):
         seq = one_full_traj[:, :, 0:self.ws]
         y1 = self.tcn(seq)
         pred = self.linear(y1[:, :, -1])
-        #only update next step
-        out = pred
-        out = out.unsqueeze(-1)
-
-        return out
+        
+        return pred
 
