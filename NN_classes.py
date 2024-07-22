@@ -53,49 +53,6 @@ class LSTMmodel(nn.Module):
 
         return out, hidden          
   
-# LSTM
-class LSTMmodel_nextstep(nn.Module):
-
-
-
-    def __init__(self, input_size, hidden_size, out_size, layers):
-        """
-        Initialize the LSTM model.
-
-        Args:
-        - input_size: Size of input
-        - hidden_size: Size of hidden layer
-        - out_size: Size of output
-        - layers: Number of layers
-        """
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.input_size = input_size
-        self.act = nn.ReLU()
-        # Define LSTM layer
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-
-        # Define linear layer
-        self.linear = nn.Linear(hidden_size, out_size)
-
-    def forward(self, seq):
-        """
-        Forward pass through the LSTM model.
-
-        Args:
-        - seq: Input sequence
-
-        Returns:
-        - pred: Model prediction
-        - hidden: Hidden state
-        """
-        lstm_out, hidden = self.lstm(seq)
-        #lstm_out = self.act(lstm_out)
-        pred = self.linear(lstm_out)
-
-        return pred, hidden
-
 # GRU 
 class GRUmodel(nn.Module):
 

@@ -17,6 +17,9 @@ Train all networks (LSTM, MLP, TCN) with 4 Settings:
 ALL experiments are performed on these (fixed) networks 
 !!!
 
+Note on OR vs. No OR:
+> Training with No OR will always be much faster since larger batchsizes allow for more parallelized computations  
+
 ---------------------------------------------------------------------------------------
 
 1. experiment:
