@@ -48,7 +48,7 @@ def train_lstm_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 
         loss = loss_fn(out[:,-1,:], label[:, 1:])
 
-        loss.backward(retain_graph=True)
+        loss.backward()
         optimizer.step()
 
         total_loss.append(loss.detach().cpu().numpy())
