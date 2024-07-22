@@ -434,9 +434,8 @@ class LSTMmodel_no_or_nextstep(nn.Module):
 
         lstm_out, hidden = self.lstm(seq)           
         pred = self.linear(lstm_out)
-        out = pred[:, -1: , :]
-
-        return out, hidden          
+        
+        return pred, hidden          
   
 # Multilayer perceptron
 class MLP_no_or_nextstep(nn.Module):

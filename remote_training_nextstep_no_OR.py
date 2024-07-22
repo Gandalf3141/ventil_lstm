@@ -120,17 +120,18 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 def main():
 
     # test settings
-    #test_n = 1
-    #epochs = 2
+    #test_n = 2
+    #epochs = 20
     #part_of_data = 10
     #test_every_epochs = 2
     
     # Experiment settings
     test_n = 100
+    
     epochs = 2000
     part_of_data = 0
     test_every_epochs = 200
-    batch_size_no_or = 800
+    batch_size_no_or = 4000
 
     params_lstm =   {
                            "window_size" : 16,
