@@ -269,7 +269,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 #start_total=time.time()
 
-                for i in range(x.size(1) - window_size):
+                for i in range(timesteps - window_size):
                     
                     #start_coeffs=time.time()
                     train_coeffs = torchcde.hermite_cubic_coefficients_with_backward_differences(pred[0:1, i:i+window_size, :]) 
@@ -440,10 +440,10 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[0, :] = x[0, 0, :]
                     pred[:, 0] = x[0, :, 0]
 
-                for i in range(len(x) - window_size):
+                for i in range(timesteps - window_size):
 
                     out, _ = model(pred[i:i+window_size, :])
-                    pred[i+window_size, 1:] = pred[i+window_size-1, 1:] + out[:, -1:, :]
+                    pred[i+window_size, 1:] = pred[i+window_size-1, 1:] + out[-1:, :]
                 
                 test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
@@ -516,7 +516,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 pred[:, 0:window_size, :] = x[0, 0:window_size, :]
                 pred[:, :, 0] = x[0, :, 0]
 
-                for i in range(1,x.size(1) - window_size + 1):
+                for i in range(1, timesteps - window_size + 1):
 
                     pred[:, window_size+(i-1):window_size+i,1:] =  pred[:, window_size+(i-2):window_size+(i-1):,1:] + model(pred[:,i:window_size+(i-1),:].transpose(1,2))    
 
@@ -549,7 +549,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[0, :] = x[0, 0, :]
                     pred[:, 0] = x[0, :, 0]
 
-                for i in range(len(x) - window_size):
+                for i in range(timesteps - window_size):
 
                     out, _ = model(pred[i:i+window_size, :])
                     pred[i+window_size, 1:] = out[-1, :]
@@ -625,7 +625,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 pred[:, 0:window_size, :] = x[0, 0:window_size, :]
                 pred[:, :, 0] = x[0, :, 0]
 
-                for i in range(1,x.size(1) - window_size + 1):
+                for i in range(1, timesteps - window_size + 1):
 
                     pred[:, window_size+(i-1):window_size+i,1:] = model(pred[:,i:window_size+(i-1),:].transpose(1,2))    
 
@@ -637,8 +637,8 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
   
 
-    print("Error first half: ", np.mean(total_firsthalf))
-    print("Error second half: ", np.mean(total_secondhalf))
-    print("total loss full traj: ", np.mean(total_loss))
+    #print("Error first half: ", np.mean(total_firsthalf))
+    #print("Error second half: ", np.mean(total_secondhalf))
+    #print("total loss full traj: ", np.mean(total_loss))
 
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
