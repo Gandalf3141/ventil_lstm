@@ -1,4 +1,6 @@
 {
     "editor.minimap.enabled": true,
-    "notebook.lineNumbers": "on"
+    "notebook.lineNumbers": "on",
+    "editor.folding": true,
+    "editor.foldingStrategy": "indentation",    
 }

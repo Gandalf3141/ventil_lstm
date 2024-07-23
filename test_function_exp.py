@@ -109,7 +109,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                           "lstm_no_or_nextstep", "mlp_no_or_nextstep", "tcn_no_or_nextstep",
                           "lstm_derivative", "mlp_derivative", "tcn_derivative",
                           "or_lstm", "lstm", "mlp", "gru", "tcn", "or_tcn", "neural_cde", "or_mlp"]
-    
+   
     if model_type not in modeltypes:
         
         print("Error: model_type = ", model_type, "available options are: ", modeltypes)
@@ -137,7 +137,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
     test_inits = data.size(dim=0)
     ids = np.random.choice(test_inits, min([num_of_inits, test_inits]), replace=False)
     ids = np.unique(ids)
-    
+   
 # Type 1: OR derivative prediction 
     if model_type in ["or_lstm", "gru"]:
         for i, x in enumerate(data):
