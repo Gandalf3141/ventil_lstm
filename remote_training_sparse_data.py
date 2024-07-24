@@ -93,16 +93,16 @@ def train_tcn_nextstep(input_data, model, learning_rate=0.001):
 def main():
 
     # test settings
-    test_n = 1
-    epochs = 20
-    part_of_data = 20
-    test_every_epochs = 4
+    #test_n = 1
+    #epochs = 20
+    #part_of_data = 20
+    #test_every_epochs = 4
     
     # Experiment settings
-    # test_n = 100
-    # epochs = 2000
-    # part_of_data = 0
-    # test_every_epochs = 200
+    test_n = 50
+    epochs = 1000
+    part_of_data = 0
+    test_every_epochs = 200
 
     params_tcn =    {
                         "window_size" : 30,
@@ -177,7 +177,7 @@ def main():
 
     #Use a mask to select trajectories where the initial position is smaller then 0.6
     ####
-    mask = input_data[:, 0, 1] < 0.6
+    mask = input_data[:, 0, 1] < 0.5
 
     train_data = input_data[mask]
 
