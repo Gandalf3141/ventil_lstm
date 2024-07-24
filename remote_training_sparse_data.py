@@ -93,16 +93,16 @@ def train_tcn_nextstep(input_data, model, learning_rate=0.001):
 def main():
 
     # test settings
-    test_n = 1
-    epochs = 20
-    part_of_data = 20
-    test_every_epochs = 4
+    #test_n = 1
+    #epochs = 20
+    #part_of_data = 20
+    #test_every_epochs = 4
     
     # Experiment settings
-    # test_n = 100
-    # epochs = 2000
-    # part_of_data = 0
-    # test_every_epochs = 200
+    test_n = 50
+    epochs = 1000
+    part_of_data = 0
+    test_every_epochs = 200
 
     params_tcn =    {
                         "window_size" : 30,
@@ -169,14 +169,6 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])     
 
-    test_data, PSW_max = get_data(path="data/save_data_test_5xlonger_dyndyn.csv",
-                            timesteps_from_data=0, 
-                            skip_steps_start = 0,
-                            skip_steps_end = 0, 
-                            drop_half_timesteps = True,
-                            normalise_s_w="minmax",
-                            rescale_p=False,
-                            num_inits=0) 
     
     input_data = torch.cat((input_data1, input_data2, input_data3))
     print(input_data.size())
@@ -185,7 +177,7 @@ def main():
 
     #Use a mask to select trajectories where the initial position is smaller then 0.6
     ####
-    mask = input_data[:, 0, 1] < 0.6
+    mask = input_data[:, 0, 1] < 0.5
 
     train_data = input_data[mask]
 
