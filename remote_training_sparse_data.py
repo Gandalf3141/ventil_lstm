@@ -169,14 +169,6 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])     
 
-    test_data, PSW_max = get_data(path="data/save_data_test_5xlonger_dyndyn.csv",
-                            timesteps_from_data=0, 
-                            skip_steps_start = 0,
-                            skip_steps_end = 0, 
-                            drop_half_timesteps = True,
-                            normalise_s_w="minmax",
-                            rescale_p=False,
-                            num_inits=0) 
     
     input_data = torch.cat((input_data1, input_data2, input_data3))
     print(input_data.size())
