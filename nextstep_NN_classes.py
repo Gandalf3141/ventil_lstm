@@ -557,10 +557,10 @@ class TCN_no_or_nextstep(nn.Module):
     def init_weights(self):
         self.linear.weight.data.normal_(0, 0.01)
 
-    def forward(self, one_full_traj):
+    def forward(self, x):
 
-        seq = one_full_traj[:, :, 0:self.ws]
-        y1 = self.tcn(seq)
+        #seq = one_full_traj[:, :, 0:self.ws]
+        y1 = self.tcn(x)
         pred = self.linear(y1[:, :, -1])
         
         return pred
