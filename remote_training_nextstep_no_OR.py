@@ -128,10 +128,10 @@ def main():
     # Experiment settings
     test_n = 100
     
-    epochs = 500
+    epochs = 2000
     part_of_data = 0
     test_every_epochs = 200
-    batch_size_no_or = 2000
+    batch_size_no_or = 10000
 
     params_lstm =   {
                            "window_size" : 16,

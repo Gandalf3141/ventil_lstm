@@ -124,7 +124,7 @@ def main():
         d["part_of_data"] = part_of_data
         d["percentage_of_data"] = 0.99
         d["drop_half_timesteps"] = True
-        d["cut_off_timesteps"] = 100
+        d["cut_off_timesteps"] = 200
 
     # Configure logging
     log_file = 'training_OR_nets.log'
@@ -177,12 +177,13 @@ def main():
 
     #Use a mask to select trajectories where the initial position is smaller then 0.6
     ####
-    mask = input_data[:, 0, 1] < 0.5
+    mask = input_data[:, 0, 1] < 0.4
+    mask2 = input_data[:, 0, 1] > 0.7
 
     train_data = input_data[mask]
 
     train_data = train_data[:,:train_data.size(dim=1)-params_tcn["cut_off_timesteps"], :]
-    test_data = input_data[~mask]
+    test_data = input_data[mask2]
     print("Size of training data:" , train_data.size())
     print("Size of testing data:" , test_data.size())
 

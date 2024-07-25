@@ -627,7 +627,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 for i in range(1, timesteps - window_size + 1):
 
-                    pred[:, window_size+(i-1):window_size+i,1:] = model(pred[:,i:window_size+(i-1),:].transpose(1,2))    
+                    pred[:, window_size+(i-1):window_size+i,1:] = model(pred[:,i-1:window_size+(i-1),:].transpose(1,2))    
 
                 test_loss += loss_fn(pred[0, :, 1], x[0, :, 1]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()

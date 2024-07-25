@@ -132,16 +132,16 @@ def main():
     # Experiment settings
     test_n = 50
     
-    epochs = 500
-    part_of_data = 100
+    epochs = 2000
+    part_of_data = 0
     test_every_epochs = 100
-    batch_size_no_or = 2000
+    batch_size_no_or = 10000
 
     params_lstm =   {
                            "window_size" : 16,
                            "h_size" : 8,
                            "l_num" : 3,
-                           "learning_rate" : 0.0008,
+                           "learning_rate" : 0.008,
                            "batch_size" : batch_size_no_or,
                     }
 
