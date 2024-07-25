@@ -103,14 +103,24 @@ def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
         x = x.transpose(1,2)
         #y = y.transpose(1,2)
 
+
         output = model.simple_forward(x)
-        out = x[:, 1:, -1:] + output[:, -1:].unsqueeze(-1)
-  
+        #out = x[:, 1:, -1:] + output[:, -1:].unsqueeze(-1)
+        out = x[:, 1:, -1] + output
+
+        #print("out", out)
+        #print("out", out.size())
+        #print("x[:, 1:, -1]", x[:, 1:, -1])
+        #print("x[:, 1:, -1]", x.size())
+        #print("output[:, -1:]",  output)
+        #print("output[:, -1:]",  output[:, -1:])
+        #print("output[:, -1:]",  output.size())
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
         
         # calculate the error
-        loss = loss_fn(out[:,:,-1], y[:, 1:])
+        #loss = loss_fn(out[:,:,-1], y[:, 1:])
+        loss = loss_fn(out, y[:, 1:])
         loss.backward()
         optimizer.step()
  
@@ -123,18 +133,18 @@ def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
 def main():
 
     # test settings
-    test_n = 2
-    epochs = 20
-    part_of_data = 10
-    test_every_epochs = 5
+    #test_n = 2
+    #epochs = 200
+    #part_of_data = 20
+    #test_every_epochs = 50
     
     # Experiment settings
-    # test_n = 50
-    # epochs = 500
-    # part_of_data = 100
-    # test_every_epochs = 100
+    test_n = 50
+    epochs = 1000
+    part_of_data = 0
+    test_every_epochs = 100
 
-    batch_size_no_or = 500
+    batch_size_no_or = 200 #256 ok for mlp and lstm?
 
     params_lstm =   {
                            "window_size" : 16,
@@ -156,7 +166,7 @@ def main():
 
     params_tcn =    {
                         "window_size" : 30,
-                        "learning_rate" : 0.0005,
+                        "learning_rate" : 0.001,
                         "batch_size" : batch_size_no_or,
                         "n_hidden" : 5,
                         "levels" : 4,
@@ -265,8 +275,8 @@ def main():
     #Training loop
     for e in tqdm(range(params_tcn["epochs"])):
         
-        #train_lstm_no_or_derivative(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"])
-        #train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"])
+        train_lstm_no_or_derivative(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"])
+        train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"])
         train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"])
 
         # Every few epochs get the error MSE of the true data
@@ -275,6 +285,10 @@ def main():
             _, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
             _, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
             _, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+
+            #_, err_train_lstm = test(train_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            #_, err_train_mlp = test(train_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            #_, err_train_tcn = test(train_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
             average_traj_err_train_mlp.append(err_train_mlp)

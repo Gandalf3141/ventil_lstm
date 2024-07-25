@@ -120,17 +120,17 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 def main():
 
     # test settings
-    test_n = 2
-    epochs = 20
-    part_of_data = 10
-    test_every_epochs = 2
+    #test_n = 2
+    #epochs = 200
+    #part_of_data = 20
+    #test_every_epochs = 50
     
-    # # Experiment settings
-    # test_n = 100
+    # Experiment settings
+    test_n = 50
+    epochs = 1000
+    part_of_data = 0
+    test_every_epochs = 100
     
-    # epochs = 500
-    # part_of_data = 0
-    # test_every_epochs = 200
     batch_size_no_or = 2000
 
     params_lstm =   {
@@ -268,9 +268,9 @@ def main():
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
         if (e+1)%test_every_epochs == 0:
-            _,_, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
-            _,_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_no_or_nextstep", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_no_or_nextstep", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            _, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_no_or_nextstep", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
             average_traj_err_train_mlp.append(err_train_mlp)

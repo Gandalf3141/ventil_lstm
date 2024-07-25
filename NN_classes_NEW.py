@@ -511,7 +511,6 @@ class NeuralCDE(torch.nn.Module):
 
 
 
-
 ### TCN helper classes ###
 class Chomp1d(nn.Module):
     def __init__(self, chomp_size):

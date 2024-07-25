@@ -81,3 +81,123 @@
 2024-07-25 16:44:48,328 - INFO - 
 
 >>>>>>> 4807033bb265b097a7e6e3fd4e8dbcb3634a99c2
+2024-07-25 16:48:56,001 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 10000, 'experiment_number': 0, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 16:48:56,001 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 10000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 16:48:56,001 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.0005, 'batch_size': 10000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 16:48:56,001 - INFO - Epochs [5, 10, 15, 20]
+2024-07-25 16:48:56,001 - INFO - LSTM_derivative [85598.67170828357, 85598.67170828357, 85598.67170828357, 85598.67170828357]
+2024-07-25 16:48:56,001 - INFO - MLP_derivative [27615809224.991592, 27615809224.991592, 27615809224.991592, 27615809224.991592]
+2024-07-25 16:48:56,001 - INFO - TCN_derivative [2007230.279303474, 810518.4208358494, 583009.8308848252, 609163.961777126]
+2024-07-25 16:48:56,001 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 16:48:56,001 - INFO - 
+
+2024-07-25 17:00:40,088 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 256, 'experiment_number': 0, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 20, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:00:40,088 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 256, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 20, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:00:40,088 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 256, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 20, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:00:40,088 - INFO - Epochs [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+2024-07-25 17:00:40,088 - INFO - LSTM_derivative [0.554228232539655, 0.43033595789108947, 0.08624506619920533, 0.09111037715252386, 0.015277122554121048, 0.05994953725833213, 0.0036223231670172345, 0.004919149357270393, 0.005903644992718656, 0.010767915035010796]
+2024-07-25 17:00:40,088 - INFO - MLP_derivative [0.12493168727029084, 0.08273269511021328, 0.0782037309727913, 0.06757069139585722, 0.05436754252934221, 0.05371307113197608, 0.06038392775834678, 0.0586833573753173, 0.06016811708071355, 0.0602172550790674]
+2024-07-25 17:00:40,088 - INFO - TCN_derivative [1723.7214388835687, 803280936.3934737, 665831175.4799869, 611589235.4232651, 149889932.1690702, 3586121.300912706, 75010981.53574753, 350569959.8863818, 1349869743.6417434, 2403353608.0252247]
+2024-07-25 17:00:40,088 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:00:40,088 - INFO - 
+
+2024-07-25 17:07:15,489 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 256, 'experiment_number': 0, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:07:15,489 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 256, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:07:15,489 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 256, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:07:15,489 - INFO - Epochs [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+2024-07-25 17:07:15,489 - INFO - LSTM_derivative [278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135, 278.07717634651135]
+2024-07-25 17:07:15,489 - INFO - MLP_derivative [78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664, 78.23400344137664]
+2024-07-25 17:07:15,489 - INFO - TCN_derivative [1023.2076721166936, 1557.2489976118154, 3449.7306411890995, 5082.2772757826715, 7381.531824056506, 10267.781591580684, 15865.611446447989, 25443.696665629504, 40490.68494468799, 53019.85815526646]
+2024-07-25 17:07:15,489 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:07:15,489 - INFO - 
+
+2024-07-25 17:19:39,763 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 500, 'experiment_number': 0, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 200, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:19:39,764 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 500, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 200, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:19:39,764 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 500, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 200, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:19:39,764 - INFO - Epochs [20, 40, 60, 80, 100]
+2024-07-25 17:19:39,764 - INFO - LSTM_derivative [6013.901332480356, 6013.901332480356, 6013.901332480356, 6013.901332480356, 6013.901332480356]
+2024-07-25 17:19:39,764 - INFO - MLP_derivative [5.260396238591147, 5.260396238591147, 5.260396238591147, 5.260396238591147, 5.260396238591147]
+2024-07-25 17:19:39,764 - INFO - TCN_derivative [1.04896072569535e+18, 1.086259729603726e+19, 41743738173416.2, 15121.308977523464, 15144.714038157756]
+2024-07-25 17:19:39,764 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:19:39,764 - INFO - 
+
+2024-07-25 17:36:52,934 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 256, 'experiment_number': 0, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 200, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:36:52,934 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 256, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 200, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:36:52,934 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 256, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 200, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:36:52,934 - INFO - Epochs [50, 100]
+2024-07-25 17:36:52,934 - INFO - LSTM_derivative [1311.386450030635, 1311.386450030635]
+2024-07-25 17:36:52,934 - INFO - MLP_derivative [209.87144882015497, 209.87144882015497]
+2024-07-25 17:36:52,934 - INFO - TCN_derivative [9.088481591828341e+21, 7.0580455640041595e+22]
+2024-07-25 17:36:52,935 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:36:52,935 - INFO - 
+
+2024-07-25 17:38:52,848 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 256, 'experiment_number': 0, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:38:52,848 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 256, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:38:52,848 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 256, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:38:52,848 - INFO - Epochs []
+2024-07-25 17:38:52,848 - INFO - LSTM_derivative []
+2024-07-25 17:38:52,848 - INFO - MLP_derivative []
+2024-07-25 17:38:52,848 - INFO - TCN_derivative []
+2024-07-25 17:38:52,848 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:38:52,848 - INFO - 
+
+2024-07-25 17:42:25,910 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 12, 'experiment_number': 0, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:42:25,910 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 12, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:42:25,910 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 12, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:42:25,910 - INFO - Epochs []
+2024-07-25 17:42:25,910 - INFO - LSTM_derivative []
+2024-07-25 17:42:25,910 - INFO - MLP_derivative []
+2024-07-25 17:42:25,910 - INFO - TCN_derivative []
+2024-07-25 17:42:25,910 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:42:25,910 - INFO - 
+
+2024-07-25 17:44:47,021 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 12, 'experiment_number': 0, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:44:47,021 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 12, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:44:47,022 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 12, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:44:47,022 - INFO - Epochs []
+2024-07-25 17:44:47,022 - INFO - LSTM_derivative []
+2024-07-25 17:44:47,022 - INFO - MLP_derivative []
+2024-07-25 17:44:47,022 - INFO - TCN_derivative []
+2024-07-25 17:44:47,022 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:44:47,022 - INFO - 
+
+2024-07-25 17:49:54,127 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 12, 'experiment_number': 0, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:49:54,127 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 12, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:49:54,127 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 12, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:49:54,128 - INFO - Epochs []
+2024-07-25 17:49:54,128 - INFO - LSTM_derivative []
+2024-07-25 17:49:54,128 - INFO - MLP_derivative []
+2024-07-25 17:49:54,128 - INFO - TCN_derivative []
+2024-07-25 17:49:54,128 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:49:54,128 - INFO - 
+
+2024-07-25 17:50:26,236 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 12, 'experiment_number': 0, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:50:26,236 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 12, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:50:26,236 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 12, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 1, 'input_channels': 3, 'output': 2, 'part_of_data': 2, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:50:26,236 - INFO - Epochs []
+2024-07-25 17:50:26,236 - INFO - LSTM_derivative []
+2024-07-25 17:50:26,237 - INFO - MLP_derivative []
+2024-07-25 17:50:26,237 - INFO - TCN_derivative []
+2024-07-25 17:50:26,237 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:50:26,237 - INFO - 
+
+2024-07-25 17:53:10,260 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 2000, 'experiment_number': 0, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:53:10,260 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 2000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:53:10,260 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 2000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 100, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:53:10,260 - INFO - Epochs [50, 100]
+2024-07-25 17:53:10,260 - INFO - LSTM_derivative [15962.275579130408, 15962.275579130408]
+2024-07-25 17:53:10,260 - INFO - MLP_derivative [44979265.996836, 44979265.996836]
+2024-07-25 17:53:10,260 - INFO - TCN_derivative [9.058612897768676, 2.5558682955180365]
+2024-07-25 17:53:10,260 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:53:10,260 - INFO - 
+
+2024-07-25 17:55:39,055 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.008, 'batch_size': 2000, 'experiment_number': 0, 'epochs': 200, 'input_channels': 3, 'output': 2, 'part_of_data': 20, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:55:39,055 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 2000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 200, 'input_channels': 3, 'output': 2, 'part_of_data': 20, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:55:39,055 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 2000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 200, 'input_channels': 3, 'output': 2, 'part_of_data': 20, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-25 17:55:39,055 - INFO - Epochs [50, 100, 150, 200]
+2024-07-25 17:55:39,055 - INFO - LSTM_derivative [6292.198866977802, 6292.198866977802, 6292.198866977802, 6292.198866977802]
+2024-07-25 17:55:39,055 - INFO - MLP_derivative [1537.9952877351743, 1537.9952877351743, 1537.9952877351743, 1537.9952877351743]
+2024-07-25 17:55:39,055 - INFO - TCN_derivative [0.6529557675909148, 16537.439301167833, 105717.1539707321, 25804748.74811585]
+2024-07-25 17:55:39,055 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-25 17:55:39,055 - INFO - 
+

@@ -342,7 +342,6 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-
    
 
     if model_type == "neural_cde" :
