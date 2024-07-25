@@ -93,10 +93,6 @@ def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additiona
     axs[2].grid()
     axs[2].legend()
 
-
-   
-
-
     plt.grid(True)
     plt.legend()
     plt.show()
@@ -131,22 +127,18 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
     total_firsthalf = 0
     total_secondhalf = 0
    
+    data = data[:num_of_inits,:, :]
+
     if set_rand_seed:
      np.random.seed(1234)
 
-    test_inits = data.size(dim=0)
-    ids = np.random.choice(test_inits, min([num_of_inits, test_inits]), replace=False)
-    ids = np.unique(ids)
-   
-# Type 1: OR derivative prediction 
-    if model_type in ["or_lstm", "gru"]:
+    # Type 1: OR derivative prediction 
+    if model_type in ["or_lstm", "lstm_derivative"]:
         for i, x in enumerate(data):
 
             x=x.to(device)        
             x = x.view(1,x.size(dim=0), x.size(dim=1))
 
-            if i not in ids:
-                continue
     
             with torch.inference_mode():
     
@@ -176,11 +168,9 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
 
-    if model_type in ["or_mlp", "mlp_no_or_derivative"] :
+    if model_type in ["or_mlp", "mlp_derivative"] :
          for i, x in enumerate(data):
             
-            if i not in ids:
-                continue
 
             with torch.inference_mode():
                 x=x.to(device)        
@@ -216,11 +206,9 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
-    if model_type == "or_tcn" :
+    if model_type in ["or_tcn", "tcn_derivative"] :
          for i, x in enumerate(data):
-            
-            if i not in ids:
-                continue
+
 
             with torch.inference_mode():
                 x=x.to(device)        
@@ -250,12 +238,116 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
+    # Type 2: next step prediction 
+    if model_type in ["lstm_or_nextstep", "lstm_no_or_nextstep"]:
+        for i, x in enumerate(data):
+
+            x=x.to(device)        
+            x = x.view(1,x.size(dim=0), x.size(dim=1))
    
-    if model_type == "neural_cde" :
+            with torch.inference_mode():
+    
+                pred = torch.zeros((timesteps, 3), device=device)
+    
+                if window_size > 1:
+                    pred[0:window_size, :] = x[0, 0:window_size, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                else:
+                    pred[0, :] = x[0, 0, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                
+                out, _ = model(x)
+                pred[window_size:,1:] = out
+
+                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
+
+                total_firsthalf += loss_fn(pred[window_size:int((timesteps-window_size)/2), 1:], 
+                        x[0, window_size:int((timesteps-window_size)/2), 1:]).detach().cpu().numpy()  
+                total_secondhalf += loss_fn(pred[int((timesteps-window_size)/2):, 1:],
+                            x[0, int((timesteps-window_size)/2):, 1:]).detach().cpu().numpy()
+
+                if display_plots:
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
+
+    if model_type in ["mlp_or_nextstep", "mlp_no_or_nextstep"] :
+         for i, x in enumerate(data):
+
+            with torch.inference_mode():
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))                
+                pred = torch.zeros((timesteps, 3), device=device)
+    
+                if window_size > 1:
+                    pred[0:window_size, :] = x[0, 0:window_size, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                else:
+                    pred[0, :] = x[0, 0, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                x_test = x.clone()
+                x_test[:,window_size:,1:] = 0
+                x_test = x_test.to(device)
+                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
+
+                out = model(x_test)
+                
+                pred[window_size:,1:] = out
+
+                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
+
+                total_firsthalf += loss_fn(pred[window_size:int((pred.size(dim=0)-window_size)/2), 1:], 
+                                            x[0, window_size:int((pred.size(dim=0)-window_size)/2), 1:]).detach().cpu().numpy()  
+                total_secondhalf += loss_fn(pred[int((pred.size(dim=0)-window_size)/2):, 1:],
+                                                x[0, int((pred.size(dim=0)-window_size)/2):, 1:]).detach().cpu().numpy()  
+
+                if display_plots:
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
+    if model_type in ["tcn_or_nextstep", "tcn_no_or_nextstep"] :
          for i, x in enumerate(data):
             
-            if i not in ids:
-                continue
+            with torch.inference_mode():
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))                
+                pred = torch.zeros((timesteps, 3), device=device)
+    
+                if window_size > 1:
+                    pred[0:window_size, :] = x[0, 0:window_size, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                else:
+                    pred[0, :] = x[0, 0, :]
+                    pred[:, 0] = x[0, :, 0]
+    
+                x_test = x.clone()
+                x_test[:,window_size:,1:] = 0
+                x_test = x_test.to(device)
+                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
+
+                out = model(x_test.transpose(1,2))
+                
+                pred[window_size:,1:] = out.squeeze(0).transpose(0,1)
+
+                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
+                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
+                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
+
+                if display_plots:
+                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
+   
+
+    if model_type == "neural_cde" :
+         for i, x in enumerate(data):
+        
 
             with torch.inference_mode():
 
@@ -305,336 +397,5 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                 if display_plots:
                     plot_results(x[:,:,1:], pred[:,:,1:], pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
-# Type 2: next step prediction 
-    if model_type in ["lstm_or_nextstep", "lstm_no_or_nextstep"]:
-        for i, x in enumerate(data):
 
-            x=x.to(device)        
-            x = x.view(1,x.size(dim=0), x.size(dim=1))
-
-            if i not in ids:
-                continue
-    
-            with torch.inference_mode():
-    
-                pred = torch.zeros((timesteps, 3), device=device)
-    
-                if window_size > 1:
-                    pred[0:window_size, :] = x[0, 0:window_size, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                else:
-                    pred[0, :] = x[0, 0, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                
-                out, _ = model(x)
-                pred[window_size:,1:] = out
-
-                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
-
-                total_firsthalf += loss_fn(pred[window_size:int((timesteps-window_size)/2), 1:], 
-                        x[0, window_size:int((timesteps-window_size)/2), 1:]).detach().cpu().numpy()  
-                total_secondhalf += loss_fn(pred[int((timesteps-window_size)/2):, 1:],
-                            x[0, int((timesteps-window_size)/2):, 1:]).detach().cpu().numpy()
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
-
-    if model_type in ["mlp_or_nextstep", "mlp_no_or_nextstep"] :
-         for i, x in enumerate(data):
-            
-            if i not in ids:
-                continue
-
-            with torch.inference_mode():
-                x=x.to(device)        
-                x = x.view(1,x.size(dim=0), x.size(dim=1))                
-                pred = torch.zeros((timesteps, 3), device=device)
-    
-                if window_size > 1:
-                    pred[0:window_size, :] = x[0, 0:window_size, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                else:
-                    pred[0, :] = x[0, 0, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                x_test = x.clone()
-                x_test[:,window_size:,1:] = 0
-                x_test = x_test.to(device)
-                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
-
-                out = model(x_test)
-                
-                pred[window_size:,1:] = out
-
-                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
-
-                total_firsthalf += loss_fn(pred[window_size:int((pred.size(dim=0)-window_size)/2), 1:], 
-                                            x[0, window_size:int((pred.size(dim=0)-window_size)/2), 1:]).detach().cpu().numpy()  
-                total_secondhalf += loss_fn(pred[int((pred.size(dim=0)-window_size)/2):, 1:],
-                                                x[0, int((pred.size(dim=0)-window_size)/2):, 1:]).detach().cpu().numpy()  
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-
-    if model_type in ["tcn_or_nextstep", "tcn_no_or_nextstep"] :
-         for i, x in enumerate(data):
-            
-            if i not in ids:
-                continue
-
-            with torch.inference_mode():
-                x=x.to(device)        
-                x = x.view(1,x.size(dim=0), x.size(dim=1))                
-                pred = torch.zeros((timesteps, 3), device=device)
-    
-                if window_size > 1:
-                    pred[0:window_size, :] = x[0, 0:window_size, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                else:
-                    pred[0, :] = x[0, 0, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                x_test = x.clone()
-                x_test[:,window_size:,1:] = 0
-                x_test = x_test.to(device)
-                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
-
-                out = model(x_test.transpose(1,2))
-                
-                pred[window_size:,1:] = out.squeeze(0).transpose(0,1)
-
-                test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-
-# Type 3: no OR derivative prediction 
-    if model_type == "lstm_derivative":
-        for i, x in enumerate(data):
-
-            x=x.to(device)        
-            x = x.view(1,x.size(dim=0), x.size(dim=1))
-
-            if i not in ids:
-                continue
-
-            with torch.inference_mode():
-
-                pred = torch.zeros((timesteps, 3), device=device)
-
-                if window_size > 1:
-                    pred[0:window_size, :] = x[0, 0:window_size, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                else:
-                    pred[0, :] = x[0, 0, :]
-                    pred[:, 0] = x[0, :, 0]
-
-                for i in range(timesteps - window_size):
-
-                    out, _ = model(pred[i:i+window_size, :])
-                    pred[i+window_size, 1:] = pred[i+window_size-1, 1:] + out[-1:, :]
-                
-                test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[:, 1:], x[0, :, 1:]).detach().cpu().numpy()
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-
-    if model_type == "mlp_derivative":
-        for i, x in enumerate(data):
-
-                x=x.to(device)
-                
-                if i not in ids:
-                    continue
-        
-                with torch.inference_mode():
-        
-                    pred = torch.zeros((timesteps, 3), device=device)
-        
-                    if window_size > 1:
-                        pred[0:window_size, :] = x[0:window_size, :]
-                        pred[:, 0] = x[ :, 0]
-        
-                    else:
-                        pred[0, :] = x[0, :]
-                        pred[:, 0] = x[:, 0]
-
-                    inp = torch.cat((x[:window_size,0], x[:window_size,1], x[:window_size,2]))
-
-                    for t in range(1,timesteps - window_size + 1 ): 
-
-                        out = model(inp)
-                        pred[window_size+(t-1):window_size+t,1:] =  pred[window_size+(t-2):window_size+(t-1):,1:] + out
-                        new_p = pred[t:t+window_size,0]
-                        new_s = pred[t:t+window_size,1]
-                        new_v = pred[t:t+window_size,2]
-                        
-                        inp = torch.cat((new_p, new_s, new_v))
-
-                    test_loss += loss_fn(pred[window_size:, 1], x[window_size:, 1]).detach().cpu().numpy()
-                    test_loss_deriv += loss_fn(pred[window_size:, 2], x[window_size:, 2]).detach().cpu().numpy()
-                    total_loss += loss_fn(pred[window_size:, 1:], x[window_size:, 1:]).detach().cpu().numpy()
-
-                    
-                    total_firsthalf += loss_fn(pred[window_size:int((pred.size(dim=0)-window_size)/2), 1:], 
-                                            x[window_size:int((pred.size(dim=0)-window_size)/2), 1:]).detach().cpu().numpy()  
-                    total_secondhalf += loss_fn(pred[int((pred.size(dim=0)-window_size)/2):, 1:],
-                                                x[int((pred.size(dim=0)-window_size)/2):, 1:]).detach().cpu().numpy()  
-                    #print("Error first half: ", total_firsthalf)
-                    #print("Error second half: ", total_secondhalf)
-
-                    if display_plots:
-                        plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
-   
-    if model_type == "tcn_derivative" :
-         for i, x in enumerate(data):
-            
-            if i not in ids:
-                continue
-
-            with torch.inference_mode():
-
-                x=x.to(device)        
-                x = x.view(1,x.size(dim=0), x.size(dim=1))
-
-                pred = torch.zeros_like(x, device=device)  
-                pred_next_step = torch.zeros_like(x, device=device)               
-
-                pred[:, 0:window_size, :] = x[0, 0:window_size, :]
-                pred[:, :, 0] = x[0, :, 0]
-
-                for i in range(1, timesteps - window_size + 1):
-
-                    pred[:, window_size+(i-1):window_size+i,1:] =  pred[:, window_size+(i-2):window_size+(i-1):,1:] + model(pred[:,i:window_size+(i-1),:].transpose(1,2))    
-
-                test_loss += loss_fn(pred[0, :, 1], x[0, :, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
-
-                total_loss += loss_fn(pred[0, :, 1:], x[0, :, 1:]).detach().cpu().numpy()
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-  
-# Type 4: no OR next step prediction
-    if model_type == "lstm_no_or_nextstep":
-        for i, x in enumerate(data):
-            x=x.to(device)        
-            x = x.view(1,x.size(dim=0), x.size(dim=1))
-
-            if i not in ids:
-                continue
-
-            with torch.inference_mode():
-
-                pred = torch.zeros((timesteps, 3), device=device)
-
-                if window_size > 1:
-                    pred[0:window_size, :] = x[0, 0:window_size, :]
-                    pred[:, 0] = x[0, :, 0]
-    
-                else:
-                    pred[0, :] = x[0, 0, :]
-                    pred[:, 0] = x[0, :, 0]
-
-                for i in range(timesteps - window_size):
-
-                    out, _ = model(pred[i:i+window_size, :])
-                    pred[i+window_size, 1:] = out[-1, :]
-                
-                test_loss += loss_fn(pred[:, 1], x[0, :, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[:, 2], x[0, :, 2]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[:, 1:], x[0, :, 1:]).detach().cpu().numpy()
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
- 
-    if model_type == "mlp_no_or_nextstep":
-        for i, x in enumerate(data):
-
-                x=x.to(device)
-                
-                if i not in ids:
-                    continue
-        
-                with torch.inference_mode():
-        
-                    pred = torch.zeros((timesteps, 3), device=device)
-        
-                    if window_size > 1:
-                        pred[0:window_size, :] = x[0:window_size, :]
-                        pred[:, 0] = x[ :, 0]
-        
-                    else:
-                        pred[0, :] = x[0, :]
-                        pred[:, 0] = x[:, 0]
-
-                    inp = torch.cat((x[:window_size,0], x[:window_size,1], x[:window_size,2]))
-
-                    for t in range(1,timesteps - window_size + 1 ): 
-
-                        out = model(inp)
-                        pred[window_size+(t-1):window_size+t,1:] = out
-                        new_p = pred[t:t+window_size,0]
-                        new_s = pred[t:t+window_size,1]
-                        new_v = pred[t:t+window_size,2]
-                        
-                        inp = torch.cat((new_p, new_s, new_v))
-
-                    test_loss += loss_fn(pred[window_size:, 1], x[window_size:, 1]).detach().cpu().numpy()
-                    test_loss_deriv += loss_fn(pred[window_size:, 2], x[window_size:, 2]).detach().cpu().numpy()
-                    total_loss += loss_fn(pred[window_size:, 1:], x[window_size:, 1:]).detach().cpu().numpy()
-
-                    
-                    total_firsthalf += loss_fn(pred[window_size:int((pred.size(dim=0)-window_size)/2), 1:], 
-                                            x[window_size:int((pred.size(dim=0)-window_size)/2), 1:]).detach().cpu().numpy()  
-                    total_secondhalf += loss_fn(pred[int((pred.size(dim=0)-window_size)/2):, 1:],
-                                                x[int((pred.size(dim=0)-window_size)/2):, 1:]).detach().cpu().numpy()  
-                    #print("Error first half: ", total_firsthalf)
-                    #print("Error second half: ", total_secondhalf)
-
-                    if display_plots:
-                        plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling, additional_data=additional_data)
-
-    if model_type == "tcn_no_or_nextstep" :
-         for i, x in enumerate(data):
-            
-            if i not in ids:
-                continue
-
-            with torch.inference_mode():
-
-                x=x.to(device)        
-                x = x.view(1,x.size(dim=0), x.size(dim=1))
-
-                pred = torch.zeros_like(x, device=device)  
-                pred_next_step = torch.zeros_like(x, device=device)               
-
-                pred[:, 0:window_size, :] = x[0, 0:window_size, :]
-                pred[:, :, 0] = x[0, :, 0]
-
-                for i in range(1, timesteps - window_size + 1):
-
-                    pred[:, window_size+(i-1):window_size+i,1:] = model(pred[:,i:window_size+(i-1),:].transpose(1,2))    
-
-                test_loss += loss_fn(pred[0, :, 1], x[0, :, 1]).detach().cpu().numpy()
-                test_loss_deriv += loss_fn(pred[0, :, 2], x[0, :, 2]).detach().cpu().numpy()
-                total_loss += loss_fn(pred[0, :, 1:], x[0, :, 1:]).detach().cpu().numpy()
-
-                if display_plots:
-                    plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
-  
-
-    return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)
+    return pred, total_loss

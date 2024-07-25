@@ -14,9 +14,9 @@ import os
 import cProfile
 import pstats
 from dataloader import *
-from test_function_exp import *
+from test_function_exp_NEW import *
 from get_data import *
-from nextstep_NN_classes import *
+from NN_classes_NEW import *
 
 #Define the LSTM model class
 torch.set_default_dtype(torch.float64)
@@ -38,7 +38,7 @@ def train_lstm_no_or_nextstep(traindataloader, model, learning_rate=0.001):
         label=label.to(device)
 
         # Predict one timestep :
-        output, _ = model(inp)
+        output, _ = model.simple_forward(inp)
         out = output
 
         # reset the gradient
@@ -71,7 +71,7 @@ def train_mlp_no_or_nextstep(traindataloader, model, learning_rate=0.001):
         x_last = x_last.to(device)
         x_last = x_last.squeeze()
         
-        output = model(x)
+        output = model.simple_forward(x)
 
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
@@ -101,7 +101,7 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 
         x = x.transpose(1,2)
         
-        out = model(x)
+        out = model.simple_forward(x)
   
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
@@ -120,17 +120,17 @@ def train_tcn_no_or_nextstep(traindataloader, model, learning_rate=0.001):
 def main():
 
     # test settings
-    #test_n = 2
-    #epochs = 20
-    #part_of_data = 10
-    #test_every_epochs = 2
+    test_n = 2
+    epochs = 20
+    part_of_data = 10
+    test_every_epochs = 2
     
-    # Experiment settings
-    test_n = 100
+    # # Experiment settings
+    # test_n = 100
     
-    epochs = 500
-    part_of_data = 0
-    test_every_epochs = 200
+    # epochs = 500
+    # part_of_data = 0
+    # test_every_epochs = 200
     batch_size_no_or = 2000
 
     params_lstm =   {
@@ -180,10 +180,10 @@ def main():
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     # Initialize the LSTM model
-    model_lstm = LSTMmodel_no_or_nextstep(input_size=3, hidden_size=params_lstm["h_size"], out_size=2, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
+    model_lstm = LSTM_or_nextstep(input_size=3, hidden_size=params_lstm["h_size"], out_size=2, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
     
     # Initialize the MLP model
-    model_mlp = MLP_no_or_nextstep(input_size=3*params_mlp["window_size"], hidden_size = params_mlp["h_size"], l_num=params_mlp["l_num"],
+    model_mlp = MLP_or_nextstep(input_size=3*params_mlp["window_size"], hidden_size = params_mlp["h_size"], l_num=params_mlp["l_num"],
                     output_size=2, act_fn = params_mlp["act_fn"], act_at_end = params_mlp["nonlin_at_out"], timesteps=params_mlp["window_size"]).to(device)
     
     # Initialize the TCN model
@@ -192,7 +192,7 @@ def main():
     num_channels = [params_tcn["n_hidden"]] * params_tcn["levels"]
     kernel_size = params_tcn["kernel_size"]
     dropout = params_tcn["dropout"]
-    model_tcn = TCN_no_or_nextstep(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
+    model_tcn = TCN_or_nextstep(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
     input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
