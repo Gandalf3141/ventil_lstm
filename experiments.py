@@ -289,7 +289,7 @@ def exp1(models: dict, data, window_sizes, plot_errs=False, set_random=False):
                             
                         predictionary[model_type] = pred
 
-# Type 2: next step prediction 
+ # Type 2: next step prediction 
             if model_type == "lstm_or_nextstep":
                 for i, x in enumerate(data):
 
