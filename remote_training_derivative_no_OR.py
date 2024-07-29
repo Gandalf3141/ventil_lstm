@@ -144,7 +144,7 @@ def main(a,b, c):
     part_of_data = 0
     test_every_epochs = 200
     lr = a#0.001
-    weight_decay = 0.001
+    weight_decay = 0.0001
 
     batch_size_no_or = b #200 #256 ok for mlp and lstm?
 
@@ -330,7 +330,4 @@ if __name__ == "__main__":
     #    print(a,b)
         #main(a, b)
         # main(0.0005,200)
-    main(0.0005,2000, 1)
-    main(0.0005,200, 2)
     main(0.001,2000, 3)
-    main(0.001,200, 4)
