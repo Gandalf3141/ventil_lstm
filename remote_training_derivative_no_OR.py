@@ -139,10 +139,10 @@ def main(a,b, c):
     #test_every_epochs = 50
     
     # Experiment settings
-    test_n = 50
-    epochs = 2000
-    part_of_data = 0
-    test_every_epochs = 200
+    test_n = 2
+    epochs = 200
+    part_of_data = 5
+    test_every_epochs = 10
     lr = a#0.001
     weight_decay = 0.0001
 
@@ -278,28 +278,28 @@ def main(a,b, c):
     for e in tqdm(range(params_tcn["epochs"])):
         
         train_lstm_no_or_derivative(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"], weight_decay=weight_decay)
-        train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
-        train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
+        #train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
+        #train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
         if (e+1)%test_every_epochs == 0:
             _, err_train_lstm = test(test_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
-            _, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
-            _, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            #_, err_train_mlp = test(test_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
+            #_, err_train_tcn = test(test_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             #_, err_train_lstm = test(train_data.to(device), model_lstm, model_type = "lstm_derivative", window_size=params_lstm["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
             #_, err_train_mlp = test(train_data.to(device), model_mlp, model_type = "mlp_derivative", window_size=params_mlp["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
             #_, err_train_tcn = test(train_data.to(device), model_tcn, model_type = "tcn_derivative", window_size=params_tcn["window_size"], display_plots=False, num_of_inits = test_n, set_rand_seed=True, physics_rescaling = PSW_max)
 
             average_traj_err_train_lstm.append(err_train_lstm)
-            average_traj_err_train_mlp.append(err_train_mlp)
-            average_traj_err_train_tcn.append(err_train_tcn)
+            #average_traj_err_train_mlp.append(err_train_mlp)
+            #average_traj_err_train_tcn.append(err_train_tcn)
             epochs.append(e+1)
             
             print(f"Average error over full trajectories: training data LSTM: {err_train_lstm}")
-            print(f"Average error over full trajectories: training data MLP: {err_train_mlp}")
-            print(f"Average error over full trajectories: training data TCN: {err_train_tcn}")
+            #print(f"Average error over full trajectories: training data MLP: {err_train_mlp}")
+            #print(f"Average error over full trajectories: training data TCN: {err_train_tcn}")
             
 
     # Save trained model
