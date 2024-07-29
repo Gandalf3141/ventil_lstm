@@ -126,8 +126,12 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
     total_loss = 0
     total_firsthalf = 0
     total_secondhalf = 0
-   
-    data = data[:num_of_inits,:, :]
+
+    np.random.seed(1234)
+    test_inits = data.size(dim=0)
+    ids = np.random.choice(test_inits, min([50, test_inits]), replace=False)
+    ids = np.unique(ids)
+    data = data[ids,:, :]
 
     if set_rand_seed:
      np.random.seed(1234)
@@ -238,6 +242,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
 
                 if display_plots:
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
+
 
     # Type 2: next step prediction 
     if model_type in ["lstm_or_nextstep", "lstm_no_or_nextstep"]:

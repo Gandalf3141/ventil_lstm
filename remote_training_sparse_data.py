@@ -102,7 +102,7 @@ def main():
     test_n = 50
     epochs = 1000
     part_of_data = 0
-    test_every_epochs = 200
+    test_every_epochs = 2
 
     params_tcn =    {
                         "window_size" : 30,
