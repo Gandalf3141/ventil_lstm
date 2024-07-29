@@ -14,7 +14,7 @@ import os
 import cProfile
 import pstats
 from dataloader import *
-from test_function_exp import *
+from test_function_exp_NEW import *
 from get_data import *
 from nextstep_NN_classes import *
 

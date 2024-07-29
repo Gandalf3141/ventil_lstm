@@ -137,6 +137,7 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
     test_inits = data.size(dim=0)
     ids = np.random.choice(test_inits, min([num_of_inits, test_inits]), replace=False)
     ids = np.unique(ids)
+    print(ids)
    
 # Type 1: OR derivative prediction 
     if model_type in ["or_lstm", "gru"]:
