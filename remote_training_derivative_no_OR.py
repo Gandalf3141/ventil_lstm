@@ -24,10 +24,10 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 print(device)
 
-def train_lstm_no_or_derivative(traindataloader, model, learning_rate=0.001):
+def train_lstm_no_or_derivative(traindataloader, model, learning_rate=0.001, weight_decay=0.01):
    
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
 
     model.train()
     total_loss = []
@@ -56,10 +56,10 @@ def train_lstm_no_or_derivative(traindataloader, model, learning_rate=0.001):
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-def train_mlp_no_or_derivative(traindataloader, model, learning_rate=0.001):
+def train_mlp_no_or_derivative(traindataloader, model, learning_rate=0.001, weight_decay=0.01):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
  
     model.train()
     total_loss = []
@@ -87,10 +87,10 @@ def train_mlp_no_or_derivative(traindataloader, model, learning_rate=0.001):
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
+def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001, weight_decay=0.01):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
  
     model.train()
     total_loss = []
@@ -130,7 +130,7 @@ def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001):
     return np.mean(total_loss)
 
 
-def main():
+def main(a,b, c):
 
     # test settings
     #test_n = 2
@@ -140,17 +140,19 @@ def main():
     
     # Experiment settings
     test_n = 50
-    epochs = 1000
+    epochs = 2000
     part_of_data = 0
-    test_every_epochs = 100
+    test_every_epochs = 200
+    lr = a#0.001
+    weight_decay = 0.0001
 
-    batch_size_no_or = 200 #256 ok for mlp and lstm?
+    batch_size_no_or = b #200 #256 ok for mlp and lstm?
 
     params_lstm =   {
                            "window_size" : 16,
                            "h_size" : 8,
                            "l_num" : 3,
-                           "learning_rate" : 0.008,
+                           "learning_rate" : lr,
                            "batch_size" : batch_size_no_or,
                     }
 
@@ -158,7 +160,7 @@ def main():
                            "window_size" : 20,
                            "h_size" : 24,
                            "l_num" : 3,
-                           "learning_rate" : 0.001,
+                           "learning_rate" : lr,
                            "batch_size" : batch_size_no_or,
                            "act_fn" : "relu",
                            "nonlin_at_out" : None #None if no nonlinearity at the end
@@ -166,7 +168,7 @@ def main():
 
     params_tcn =    {
                         "window_size" : 30,
-                        "learning_rate" : 0.001,
+                        "learning_rate" : lr,
                         "batch_size" : batch_size_no_or,
                         "n_hidden" : 5,
                         "levels" : 4,
@@ -186,10 +188,10 @@ def main():
         d["part_of_data"] = part_of_data
         d["percentage_of_data"] = 0.8
         d["drop_half_timesteps"] = True
-        d["cut_off_timesteps"] = 0
+        d["cut_off_timesteps"] = 100
 
     # Configure logging
-    log_file = 'training_no_OR_derivative.log'
+    log_file = f"training_no_OR_derivative_{c}.log"
     filemode = 'a' if os.path.exists(log_file) else 'w'
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -275,9 +277,9 @@ def main():
     #Training loop
     for e in tqdm(range(params_tcn["epochs"])):
         
-        train_lstm_no_or_derivative(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"])
-        train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"])
-        train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"])
+        train_lstm_no_or_derivative(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"], weight_decay=weight_decay)
+        train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
+        train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
@@ -301,9 +303,9 @@ def main():
             
 
     # Save trained model
-    path_lstm = f'Trained_NNs_exp/LSTM_derivative_exp{params_lstm["experiment_number"]}.pth'
-    path_mlp = f'Trained_NNs_exp/MLP_derivative_exp{params_mlp["experiment_number"]}.pth'
-    path_tcn = f'Trained_NNs_exp/TCN_derivative_exp{params_tcn["experiment_number"]}.pth'
+    path_lstm = f'Trained_NNs_exp/LSTM_derivative_{c}_exp{params_lstm["experiment_number"]}.pth'
+    path_mlp = f'Trained_NNs_exp/MLP_derivative_{c}exp{params_mlp["experiment_number"]}.pth'
+    path_tcn = f'Trained_NNs_exp/TCN_derivative_{c}exp{params_tcn["experiment_number"]}.pth'
 
     torch.save(model_lstm.state_dict(), path_lstm)
     torch.save(model_mlp.state_dict(), path_mlp)
@@ -323,4 +325,9 @@ def main():
     logging.info("\n")
 
 if __name__ == "__main__":
-    main()
+
+    # for a,b in [(0.001, 200), (0.0005,200), (0.001, 500), (0.001, 1000), (0.0005, 1000), (0.0005, 2000), (0.0005, 4000),(0.001, 4000) ]: 
+    #    print(a,b)
+        #main(a, b)
+        # main(0.0005,200)
+    main(0.001,2000, 3)

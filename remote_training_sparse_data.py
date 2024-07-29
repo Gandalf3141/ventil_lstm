@@ -124,7 +124,7 @@ def main():
         d["part_of_data"] = part_of_data
         d["percentage_of_data"] = 0.99
         d["drop_half_timesteps"] = True
-        d["cut_off_timesteps"] = 200
+        d["cut_off_timesteps"] = 100
 
     # Configure logging
     log_file = 'training_OR_nets.log'
@@ -142,7 +142,7 @@ def main():
     model_tcn_or_nextstep = TCN_or_nextstep(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
+    input_data1, PSW_max = get_data(path = "data/save_data_test_randomwalk_low_pressure.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -151,7 +151,7 @@ def main():
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
     
-    input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
+    input_data2, PSW_max = get_data(path = "data/save_data_test_t2_t6_low_pressure.csv", 
                             timesteps_from_data=0, 
                             skip_steps_start = 0,
                             skip_steps_end = 0, 
@@ -159,18 +159,9 @@ def main():
                             normalise_s_w="minmax",
                             rescale_p=False,
                             num_inits=params_tcn["part_of_data"])
-    
-    input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
-                            timesteps_from_data=0, 
-                            skip_steps_start = 0,
-                            skip_steps_end = 0, 
-                            drop_half_timesteps = params_tcn["drop_half_timesteps"],
-                            normalise_s_w="minmax",
-                            rescale_p=False,
-                            num_inits=params_tcn["part_of_data"])     
 
     
-    input_data = torch.cat((input_data1, input_data2, input_data3))
+    input_data = torch.cat((input_data1, input_data2))
     print(input_data.size())
 
     #Split data into train and test sets
@@ -226,8 +217,8 @@ def main():
             print(f"Average error over full trajectories: train data TCN_OR_nextstep: {err_train_tcn_nextstep}")    
 
     # Save trained model
-    path_tcn = f'Ventil_trained_NNs/OR_TCN_sparsedata_exp{params_tcn["experiment_number"]}.pth'
-    path_tcn_nextstep = f'Ventil_trained_NNs/TCN_or_nextstep_sparsedata_exp{params_tcn["experiment_number"]}.pth'
+    path_tcn = f'Trained_NNs_exp/OR_TCN_sparsedata_exp{params_tcn["experiment_number"]}.pth'
+    path_tcn_nextstep = f'Trained_NNs_exp/TCN_or_nextstep_sparsedata_exp{params_tcn["experiment_number"]}.pth'
 
     torch.save(model_tcn.state_dict(), path_tcn)
     torch.save(model_tcn_or_nextstep.state_dict(), path_tcn_nextstep)
