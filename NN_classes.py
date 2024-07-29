@@ -4,6 +4,10 @@ from torch.nn.utils import weight_norm
 import torchcde
 
 
+#############################################################################################
+###                  >>>       OR - derivative prediction       <<<                       ###
+#############################################################################################
+
 # OR - LSTM
 class LSTMmodel(nn.Module):
 
@@ -36,7 +40,8 @@ class LSTMmodel(nn.Module):
 
             lstm_out, hidden = self.lstm(seq)           
             pred = self.linear(lstm_out)
-            out = torch.cat((out, out[:, -1, :] + pred[:, -1: , :]), dim=1)
+            out = torch.cat((out, out[:, -1:, :] + pred[:, -1: , :]), dim=1)
+            
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
             seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
@@ -45,52 +50,9 @@ class LSTMmodel(nn.Module):
             pred = self.linear(lstm_out)
 
             out = torch.cat((out, out[:, t-1:t, :] + pred[:, -1: , :]), dim=1)
-            
+
         return out, hidden          
   
-# LSTM
-class LSTMmodel_nextstep(nn.Module):
-
-
-
-    def __init__(self, input_size, hidden_size, out_size, layers):
-        """
-        Initialize the LSTM model.
-
-        Args:
-        - input_size: Size of input
-        - hidden_size: Size of hidden layer
-        - out_size: Size of output
-        - layers: Number of layers
-        """
-        super().__init__()
-
-        self.hidden_size = hidden_size
-        self.input_size = input_size
-        self.act = nn.ReLU()
-        # Define LSTM layer
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
-
-        # Define linear layer
-        self.linear = nn.Linear(hidden_size, out_size)
-
-    def forward(self, seq):
-        """
-        Forward pass through the LSTM model.
-
-        Args:
-        - seq: Input sequence
-
-        Returns:
-        - pred: Model prediction
-        - hidden: Hidden state
-        """
-        lstm_out, hidden = self.lstm(seq)
-        #lstm_out = self.act(lstm_out)
-        pred = self.linear(lstm_out)
-
-        return pred, hidden
-
 # GRU 
 class GRUmodel(nn.Module):
 
@@ -232,10 +194,9 @@ class OR_MLP(nn.Module):
         inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
         pred = self.network(inp) 
         
-        
         out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred.view(one_full_traj.size(dim=0),1,2)
         #out = one_full_traj[:, self.ws-1:self.ws, 1:]
-        print(out.size(),out)
+        #print(out.size(),out)
 
         for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
 
@@ -438,6 +399,8 @@ class CDEFunc(torch.nn.Module):
 # Next, we need to package CDEFunc up into a model that computes the integral.
 ######################
 class NeuralCDE(torch.nn.Module):
+
+
     def __init__(self, input_channels, hidden_channels, hidden_width, output_channels, interpolation="cubic"):
         super(NeuralCDE, self).__init__()
 
@@ -479,3 +442,5 @@ class NeuralCDE(torch.nn.Module):
         z_T = z_T[:, 1]
         pred_y = self.readout(z_T)
         return pred_y
+    
+

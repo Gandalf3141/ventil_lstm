@@ -154,11 +154,11 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     pred[0, :] = x[0, 0, :]
                     pred[:, 0] = x[0, :, 0]
     
-
+                
                 out, _ = model(x)
+                print(out.size())
                 pred[window_size:,1:] = out
 
-                print(x.size(), pred.size())
                 test_loss += loss_fn(pred[window_size:, 1], x[0, window_size:, 1]).detach().cpu().numpy()
                 test_loss_deriv += loss_fn(pred[window_size:, 2], x[0, window_size:, 2]).detach().cpu().numpy()
                 total_loss += loss_fn(pred[window_size:, 1:], x[0, window_size:, 1:]).detach().cpu().numpy()
@@ -413,8 +413,8 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                     plot_results(x, pred, pred_next_step=None, physics_rescaling=physics_rescaling , additional_data=additional_data)
 
 
-    print("Error first half: ", np.mean(total_firsthalf))
-    print("Error second half: ", np.mean(total_secondhalf))
-    print("total loss full traj: ", np.mean(total_loss))
+    #print("Error first half: ", np.mean(total_firsthalf))
+    #print("Error second half: ", np.mean(total_secondhalf))
+    #print("total loss full traj: ", np.mean(total_loss))
 
     return np.mean(test_loss), np.mean(test_loss_deriv), np.mean(total_loss)

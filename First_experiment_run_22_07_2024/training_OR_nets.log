@@ -1,0 +1,20 @@
+2024-07-12 14:26:32,901 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0008, 'batch_size': 20, 'experiment_number': 0, 'epochs': 2, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-12 14:26:32,902 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 20, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-12 14:26:32,902 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 20, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 0}
+2024-07-12 14:26:32,902 - INFO - Epochs [2]
+2024-07-12 14:26:32,902 - INFO - LSTM [658483.8073765285]
+2024-07-12 14:26:32,902 - INFO - MLP [28.81085627717921]
+2024-07-12 14:26:32,902 - INFO - TCN [25404.76826323591]
+2024-07-12 14:26:32,902 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-12 14:26:32,902 - INFO - 
+
+2024-07-16 02:37:33,764 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0008, 'batch_size': 20, 'experiment_number': 0, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.7, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-16 02:37:33,764 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 20, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.7, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-16 02:37:33,764 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 20, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.7, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-16 02:37:33,764 - INFO - Epochs [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
+2024-07-16 02:37:33,764 - INFO - LSTM [0.028456646258258722, 0.022694337263373117, 0.026009841374953605, 0.03045055947042709, 0.019146433432510185, 0.0076781917215315715, 0.00730898111993305, 0.007876552085049473, 0.007547752849599885, 0.006278254707170924]
+2024-07-16 02:37:33,764 - INFO - MLP [0.01856441755029323, 0.013231895836598232, 0.010403810288739296, 0.008548521189701832, 0.009579918550359865, 0.008980504622523996, 0.009289483926369347, 0.006702352100843063, 3599.2784327571107, 0.009543711781792218]
+2024-07-16 02:37:33,764 - INFO - TCN [0.03306022808310429, 0.012185637813547628, 0.008335839578852183, 0.0038785364358451145, 0.0031343244156947217, 0.003462088193589699, 0.003981136428790162, 0.002496261116017282, 0.0026503715556096402, 0.0020942350182145074]
+2024-07-16 02:37:33,764 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-16 02:37:33,765 - INFO - 
+

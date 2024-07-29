@@ -1,0 +1,40 @@
+2024-07-17 18:48:08,403 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0008, 'batch_size': 800, 'experiment_number': 0, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-17 18:48:08,403 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 800, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-17 18:48:08,403 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 800, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-17 18:48:08,403 - INFO - Epochs [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
+2024-07-17 18:48:08,403 - INFO - LSTM_derivative [13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897, 13.940492357718897]
+2024-07-17 18:48:08,403 - INFO - MLP_derivative [299.65792424119275, 8.538176897318323e+40, 2.1196173898408988e+262, 4.873863791152908e+257, 18.618884222529427, 4.648430212439689e+230, 15.353471348211023, 3.868160667391194e+49, 5.682275142613878e+62, 1.0146067674428287e+57]
+2024-07-17 18:48:08,403 - INFO - TCN_derivative [1.0468552394517281e+191, 3.4800062594261974e+218, 3.9839561968279344e+223, 6.239769777801018e+125, 5.1995407215321925e+178, 1.2933112482217e+216, 2.4437518946219046e+235, 9.1220133726909e+231, 2.3082991028286293e+258, 1.0865094372932642e+296]
+2024-07-17 18:48:08,403 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-17 18:48:08,403 - INFO - 
+
+2024-07-22 15:09:33,605 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0008, 'batch_size': 4000, 'experiment_number': 0, 'epochs': 2, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:09:33,606 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 4000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:09:33,606 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 4000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:09:33,606 - INFO - Epochs [2]
+2024-07-22 15:09:33,606 - INFO - LSTM_derivative [0.23930577117046783]
+2024-07-22 15:09:33,606 - INFO - MLP_derivative [3.51202655938806e+45]
+2024-07-22 15:09:33,606 - INFO - TCN_derivative [2509244.9462982994]
+2024-07-22 15:09:33,606 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-22 15:09:33,606 - INFO - 
+
+2024-07-22 15:10:30,168 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0008, 'batch_size': 4000, 'experiment_number': 0, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:10:30,168 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 4000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:10:30,168 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 4000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:10:30,168 - INFO - Epochs [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+2024-07-22 15:10:30,168 - INFO - LSTM_derivative [0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783, 0.23930577117046783]
+2024-07-22 15:10:30,169 - INFO - MLP_derivative [7.423986062439656e+75, 1.7818195262893501e+62, 1.468618212176233e+60, 9.944759823449681e+47, 2.2581690777402934e+51, 4.589534516673576e+45, 2.213963111263287e+42, 1.963461558119464e+41, 1.7773781673145375e+40, 2.5689305923501227e+39]
+2024-07-22 15:10:30,169 - INFO - TCN_derivative [149791.194721904, 142582.30381008986, 140480.12525181824, 144608.85178399438, 2250299.688311629, 199685648932.02386, 1.2908003634960282e+19, 3.543700977227417e+25, 2.8253585081079196e+30, 1.9011242444325063e+34]
+2024-07-22 15:10:30,169 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-22 15:10:30,169 - INFO - 
+
+2024-07-22 15:27:09,748 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0008, 'batch_size': 4000, 'experiment_number': 0, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:27:09,748 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 4000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:27:09,748 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'batch_size': 4000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 20, 'input_channels': 3, 'output': 2, 'part_of_data': 10, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-22 15:27:09,748 - INFO - Epochs [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+2024-07-22 15:27:09,748 - INFO - LSTM_derivative [159544.1246555855, 125388.31940238694, 94424.32025773783, 66021.86263096705, 41084.26962414305, 20356.710604128166, 5068.471612323767, 0.5288300313314974, 1.3592949224044357, 9.644576828310539]
+2024-07-22 15:27:09,748 - INFO - MLP_derivative [5.692102506997579e+23, 5.560286216193462e+35, 1.3500377401542038e+55, 2.472082983024769e+54, 6.126043317821687e+54, 6.032253560060404e+52, 2.8926557782512067e+49, 6.555044219462851e+48, 4.687310110415068e+49, 1.7833271198657177e+50]
+2024-07-22 15:27:09,748 - INFO - TCN_derivative [1784140988.1633742, 136039689.45897704, 27380428.827074017, 15395603.661000658, 663073861.9829556, 9.489453357797658e+23, 2.9868779316383682e+53, 1.6020427582670086e+73, 2.0625208064076258e+94, 1.5244518398575676e+110]
+2024-07-22 15:27:09,748 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-22 15:27:09,748 - INFO - 
+

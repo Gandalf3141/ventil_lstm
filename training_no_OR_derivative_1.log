@@ -1,0 +1,20 @@
+2024-07-27 19:12:48,356 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0005, 'batch_size': 2000, 'experiment_number': 0, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-27 19:12:48,356 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.0005, 'batch_size': 2000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-27 19:12:48,356 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.0005, 'batch_size': 2000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-27 19:12:48,356 - INFO - Epochs [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
+2024-07-27 19:12:48,356 - INFO - LSTM_derivative [13.442538891209013, 13.442540749610659, 13.442538109392927, 13.4425412867343, 13.442546238554655, 13.442518840724539, 13.44254452544137, 13.442539973340144, 13.442539143153645, 13.442558068859718]
+2024-07-27 19:12:48,356 - INFO - MLP_derivative [3.003403060623481, 3.0031924638571, 3.003202096137654, 3.003153331755968, 3.00320038840593, 3.003248763994537, 3.0032918904542525, 3.003180691419516, 3.0033612151385367, 3.003257992865281]
+2024-07-27 19:12:48,356 - INFO - TCN_derivative [14.29354228103336, 14.291939268393874, 14.291916894959021, 14.289008314009628, 14.294568162688911, 14.293146206234368, 14.296195150671142, 14.293075048946989, 14.295761398893093, 14.292419093680767]
+2024-07-27 19:12:48,356 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-27 19:12:48,356 - INFO - 
+
+2024-07-28 17:57:50,011 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.0005, 'batch_size': 200, 'experiment_number': 0, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-28 17:57:50,011 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.0005, 'batch_size': 200, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-28 17:57:50,011 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.0005, 'batch_size': 200, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-28 17:57:50,011 - INFO - Epochs [200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
+2024-07-28 17:57:50,011 - INFO - LSTM_derivative [72.68672356778784, 72.68778197908729, 72.6844656259768, 72.68698470159941, 72.68662494020457, 72.68741818519194, 72.68549160004684, 72.68629461977258, 71.93849129199181, 71.11023494440056]
+2024-07-28 17:57:50,011 - INFO - MLP_derivative [23.66345255038607, 23.66925975752209, 24.019739623516887, 23.81427135987791, 23.821010408838625, 23.789477557983023, 23.73627085034615, 23.836852188058963, 23.828089863314702, 23.73832423094623]
+2024-07-28 17:57:50,011 - INFO - TCN_derivative [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]
+2024-07-28 17:57:50,011 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-28 17:57:50,011 - INFO - 
+

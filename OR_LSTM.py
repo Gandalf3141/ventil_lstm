@@ -78,7 +78,7 @@ def main():
                                 "window_size" : 16,
                                 "h_size" : 8,
                                 "l_num" : 3,
-                                "epochs" : 4000,
+                                "epochs" : 2,
                                 "learning_rate" : 0.0008,
                                 "part_of_data" : 0, 
                                 "weight_decay" : 0,
