@@ -132,13 +132,13 @@ def main():
 
     # tcn done 
 
-    test_n = 50
+    test_n = 20
     epochs = 2000
     part_of_data = 100
-    test_every_epochs = 50
+    test_every_epochs = 100
 
     weight_decay = 0
-    batch_size_no_or = 2000
+    batch_size_no_or = 3000
 
     params_lstm =   {
                            "window_size" : 16,
@@ -265,12 +265,54 @@ def main():
     epochs = []
     average_traj_err_test = []
 
+    ###
+        # dataloader after pretraining
+    input_data1, PSW_max = get_data(path = "data/save_data_test_revised.csv", 
+                            timesteps_from_data=0, 
+                            skip_steps_start = 0,
+                            skip_steps_end = 0, 
+                            drop_half_timesteps = params_tcn["drop_half_timesteps"],
+                            normalise_s_w="minmax",
+                            rescale_p=False,
+                            num_inits=0)
+    
+    input_data2, PSW_max = get_data(path = "data/save_data_test5.csv", 
+                            timesteps_from_data=0, 
+                            skip_steps_start = 0,
+                            skip_steps_end = 0, 
+                            drop_half_timesteps = params_tcn["drop_half_timesteps"],
+                            normalise_s_w="minmax",
+                            rescale_p=False,
+                            num_inits=0)
+    
+    input_data3, PSW_max = get_data(path = "data/Testruns_from_trajectory_generator_t2_t6_revised.csv", 
+                            timesteps_from_data=0, 
+                            skip_steps_start = 0,
+                            skip_steps_end = 0, 
+                            drop_half_timesteps = params_tcn["drop_half_timesteps"],
+                            normalise_s_w="minmax",
+                            rescale_p=False,
+                            num_inits=0) 
+    ###
+    input_data = torch.cat((input_data1, input_data2, input_data3))
+
+        
+    train_set_lstm_fulldata = CustomDataset(train_data, window_size=params_lstm["window_size"])
+    train_loader_lstm_fulldata = DataLoader(train_set_lstm_fulldata, batch_size=params_lstm["batch_size"], pin_memory=True)
+    train_set_mlp_fulldata = CustomDataset_mlp(train_data, window_size=params_mlp["window_size"])
+    train_loader_mlp_fulldata = DataLoader(train_set_mlp_fulldata, batch_size=params_mlp["batch_size"], pin_memory=True)
+
     #Training loop
     for e in tqdm(range(params_tcn["epochs"])):
         
         train_lstm_no_or_nextstep(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"], weight_decay=weight_decay)
         train_mlp_no_or_nextstep(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
         #train_tcn_no_or_nextstep(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
+
+        if epochs > 200:
+
+            train_lstm_no_or_nextstep(train_loader_lstm_fulldata, model_lstm, learning_rate= params_lstm["learning_rate"], weight_decay=weight_decay)
+            train_mlp_no_or_nextstep(train_loader_mlp_fulldata, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
 
         # Every few epochs get the error MSE of the true data
         # compared to the network prediction starting from some initial conditions
@@ -284,7 +326,7 @@ def main():
            # average_traj_err_train_tcn.append(err_train_tcn)
             epochs.append(e+1)
 
-            if err_train_lstm < 0.1 and err_train_mlp < 0.1:
+            if err_train_lstm < 0.01 and err_train_mlp < 0.01:
                 break
             
             print(f"Average error over full trajectories: training data LSTM: {err_train_lstm}")
@@ -295,11 +337,11 @@ def main():
     # Save trained model
     path_lstm = f'Trained_NNs_exp/LSTM_no_or_nextstep_exp{params_lstm["experiment_number"]}.pth'
     path_mlp = f'Trained_NNs_exp/MLP_no_or_nextstep_exp{params_mlp["experiment_number"]}.pth'
-    path_tcn = f'Trained_NNs_exp/TCN_no_or_nextstep_exp{params_tcn["experiment_number"]}.pth'
+   # path_tcn = f'Trained_NNs_exp/TCN_no_or_nextstep_exp{params_tcn["experiment_number"]}.pth'
 
     torch.save(model_lstm.state_dict(), path_lstm)
     torch.save(model_mlp.state_dict(), path_mlp)
-    torch.save(model_tcn.state_dict(), path_tcn)
+   # torch.save(model_tcn.state_dict(), path_tcn)
 
     print(f"Run finished!")
     # Log parameters
