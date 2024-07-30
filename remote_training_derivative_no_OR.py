@@ -195,7 +195,7 @@ def main(a,b, c):
         d["cut_off_timesteps"] = 100
 
     # Configure logging
-    log_file = f"training_no_OR_derivative_{c}.log"
+    log_file = f"training_no_OR_derivative_MLP_{c}.log"
     filemode = 'a' if os.path.exists(log_file) else 'w'
     logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
