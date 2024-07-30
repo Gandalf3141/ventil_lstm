@@ -321,8 +321,8 @@ def main(a,b, c):
     np.random.shuffle(test_inits)
     train_data = input_data[train_inits,:input_data.size(dim=1)-params_tcn["cut_off_timesteps"],:]
 
-    train_set_mlp = CustomDataset(train_data, window_size=params_mlp["window_size"])
-    train_loader_mlp_fulldata = DataLoader(train_set_mlp, batch_size=params_mlp["batch_size"], pin_memory=True)
+    train_set_mlp = CustomDataset_mlp(train_data, window_size=params_mlp["window_size"])
+    train_loader_mlp_fulldata = DataLoader(train_set_mlp, batch_size=params_mlp["batch_size_fulldata"], pin_memory=True)
 
     #Training loop
     for e in tqdm(range(params_tcn["epochs"])):
