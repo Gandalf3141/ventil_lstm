@@ -340,7 +340,7 @@ def main(a,b, c):
             #average_traj_err_train_tcn.append(err_train_tcn)
             epochs.append(e+1)
 
-            if err_test_lstm<0.05 and e>200:
+            if err_test_lstm<0.01 and e>200:
                 break
             
             print(f"Average error over full trajectories: test data LSTM: {err_test_lstm}")

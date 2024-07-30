@@ -309,7 +309,7 @@ def main():
         train_mlp_no_or_nextstep(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
         #train_tcn_no_or_nextstep(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
 
-        if epochs > 200:
+        if e > 200:
 
             train_lstm_no_or_nextstep(train_loader_lstm_fulldata, model_lstm, learning_rate= params_lstm["learning_rate"], weight_decay=weight_decay)
             train_mlp_no_or_nextstep(train_loader_mlp_fulldata, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)

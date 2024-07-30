@@ -332,7 +332,7 @@ def main(a,b, c):
             train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
             #train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
         else:
-            train_lstm_no_or_derivative(train_loader_mlp_fulldata, model_mlp, learning_rate=params_mlp["learning_rate_fulldata"], weight_decay=weight_decay)
+            train_mlp_no_or_derivative(train_loader_mlp_fulldata, model_mlp, learning_rate=params_mlp["learning_rate_fulldata"], weight_decay=weight_decay)
         
 
         # Every few epochs get the error MSE of the true data
