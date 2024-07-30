@@ -150,7 +150,7 @@ def main(a,b, c):
     batch_size_no_or = b #200 #256 ok for mlp and lstm?
 
     lr_fulldata = 0.001
-    batch_size_no_or_fulldata = 20000
+    batch_size_no_or_fulldata = 3000
     
     params_lstm =   {
                            "window_size" : 16,
@@ -388,4 +388,4 @@ if __name__ == "__main__":
         #main(a, b)
         # main(0.0005,200)
         #main(0.001,2000, 3) works for less data LSTM!! 
-    main(0.005,4000, 3)
+    main(0.001,3000, 3)
