@@ -28,3 +28,13 @@
 2024-07-29 16:38:19,022 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2024-07-29 16:38:19,022 - INFO - 
 
+2024-07-31 01:45:17,691 - INFO - hyperparams lstm: {'window_size': 16, 'h_size': 8, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 3000, 'experiment_number': 0, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 100, 'part_of_data_fulldata': 0, 'learning_rate_fulldata': 0.001, 'batch_size_fulldata': 3000, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-31 01:45:17,692 - INFO - hyperparams tcn: {'window_size': 20, 'h_size': 24, 'l_num': 3, 'learning_rate': 0.001, 'batch_size': 3000, 'act_fn': 'relu', 'nonlin_at_out': None, 'experiment_number': 1, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 100, 'part_of_data_fulldata': 0, 'learning_rate_fulldata': 0.001, 'batch_size_fulldata': 3000, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-31 01:45:17,692 - INFO - hyperparams tcn: {'window_size': 30, 'learning_rate': 0.001, 'learning_rate_fulldata': 0.001, 'batch_size': 3000, 'batch_size_fulldata': 3000, 'n_hidden': 5, 'levels': 4, 'kernel_size': 7, 'dropout': 0, 'experiment_number': 2, 'epochs': 2000, 'input_channels': 3, 'output': 2, 'part_of_data': 100, 'part_of_data_fulldata': 0, 'percentage_of_data': 0.8, 'drop_half_timesteps': True, 'cut_off_timesteps': 100}
+2024-07-31 01:45:17,692 - INFO - Epochs [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000]
+2024-07-31 01:45:17,692 - INFO - LSTM_derivative []
+2024-07-31 01:45:17,692 - INFO - MLP_derivative [1.7363843490199495, 1.7586054594536034, 1.7599706298893665, 1.8282542411882745, 1.7759790083598623, 1.7623781977079682, 1.7507171803890222, 1.8798281082895223, 1.7964315867409204, 1.7326556069223338, 1.719823059596304, 1.954984967046569, 2.2005025892104673, 3.509102401264119, 2.4019413822999227, 2.752347577755049, 1.6446381936838912, 1.649486062818516, 1.6578844485166702, 1.6860195805982594]
+2024-07-31 01:45:17,692 - INFO - TCN_derivative []
+2024-07-31 01:45:17,692 - INFO - --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-31 01:45:17,692 - INFO - 
+
