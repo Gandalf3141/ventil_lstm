@@ -27,7 +27,7 @@ print(device)
 def train_lstm_no_or_derivative(traindataloader, model, learning_rate=0.001, weight_decay=0.01):
    
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
     model.train()
     total_loss = []
@@ -59,7 +59,7 @@ def train_lstm_no_or_derivative(traindataloader, model, learning_rate=0.001, wei
 def train_mlp_no_or_derivative(traindataloader, model, learning_rate=0.001, weight_decay=0.01):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
  
     model.train()
     total_loss = []
@@ -90,7 +90,7 @@ def train_mlp_no_or_derivative(traindataloader, model, learning_rate=0.001, weig
 def train_tcn_no_or_derivative(traindataloader, model, learning_rate=0.001, weight_decay=0.01):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, weight_decay=weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
  
     model.train()
     total_loss = []
@@ -143,14 +143,14 @@ def main(a,b, c):
     epochs = 2000
     part_of_data = 100
     part_of_data_fulldata = 0
-    test_every_epochs = 100
+    test_every_epochs = 200
     lr = a#0.001
     weight_decay = 0
 
     batch_size_no_or = b #200 #256 ok for mlp and lstm?
 
     lr_fulldata = 0.001
-    batch_size_no_or_fulldata = 3000
+    batch_size_no_or_fulldata = 6000
     
     params_lstm =   {
                            "window_size" : 16,
@@ -327,7 +327,7 @@ def main(a,b, c):
     #Training loop
     for e in tqdm(range(params_tcn["epochs"])):
         
-        if e < 200:
+        if e < 600:
             #train_lstm_no_or_derivative(train_loader_lstm, model_lstm, learning_rate= params_lstm["learning_rate"], weight_decay=weight_decay)
             train_mlp_no_or_derivative(train_loader_mlp, model_mlp, learning_rate= params_mlp["learning_rate"], weight_decay=weight_decay)
             #train_tcn_no_or_derivative(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"], weight_decay=weight_decay)
@@ -388,4 +388,4 @@ if __name__ == "__main__":
         #main(a, b)
         # main(0.0005,200)
         #main(0.001,2000, 3) works for less data LSTM!! 
-    main(0.001,3000, 3)
+    main(0.001,1000, 3)

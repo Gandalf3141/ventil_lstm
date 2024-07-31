@@ -105,6 +105,20 @@ def test(data, model, model_type = "or_lstm", window_size=10, display_plots=Fals
                           "lstm_no_or_nextstep", "mlp_no_or_nextstep", "tcn_no_or_nextstep",
                           "lstm_derivative", "mlp_derivative", "tcn_derivative",
                           "or_lstm", "lstm", "mlp", "gru", "tcn", "or_tcn", "neural_cde", "or_mlp"]
+    
+    modeltypes_keys ={ "lstm_or_nextstep" : "OR-LSTM", 
+                    "mlp_or_nextstep" : "OR-MLP", 
+                    "tcn_or_nextstep" : "OR-TCN", 
+                    "lstm_no_or_nextstep" : "LSTM", 
+                    "mlp_no_or_nextstep" : "MLP",
+                    "tcn_no_or_nextstep" : "TCN",
+                    "lstm_derivative" : "LSTM-dt",
+                    "mlp_derivative" : "MLP-dt",
+                    "tcn_derivative" : "TCN-dt",            
+                    "or_lstm" : "OR-LSTM-dt",
+                    "or_tcn": "OR-TCN-dt", 
+                    "or_mlp": "OR-MLP-dt"
+                }
    
     if model_type not in modeltypes:
         
