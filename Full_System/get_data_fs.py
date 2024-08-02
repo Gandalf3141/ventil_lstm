@@ -122,7 +122,7 @@ def visualise(data, num_inits):
     plt.show()
 
 
-data = get_data(path=r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system.csv", num_inits=4)
-visualise(data, num_inits=3)
-visualise(normalize_invert(data), num_inits=3)
+# data = get_data(path=r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system.csv", num_inits=4)
+# visualise(data, num_inits=3)
+# visualise(normalize_invert(data), num_inits=3)
 
