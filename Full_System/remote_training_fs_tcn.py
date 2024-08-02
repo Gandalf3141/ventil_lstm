@@ -8,7 +8,7 @@ import logging
 
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
+print("this device is available : ", device)
 
 # train function
 
@@ -43,8 +43,6 @@ def train_tcn(input_data, model, learning_rate=0.001):
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
-
-# test  
 # test  
 
 def plot_results(x, pred, rescale=False):
@@ -143,11 +141,11 @@ params_tcn =    {
                         "window_size" : 30,
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
-                        "percentage_of_data" : 0.9,
-                        "cut_off_timesteps" : 300,
+                        "percentage_of_data" : 0.8,
+                        "cut_off_timesteps" : 100,
                         "part_of_data" : 0,
-                        "epochs" : 4,
-                        "test_every_epochs" : 2,
+                        "epochs" : 1000,
+                        "test_every_epochs" : 20,
 
                         "kernel_size" : 7,
                         "dropout" : 0,
@@ -171,8 +169,8 @@ dropout = params_tcn["dropout"]
 model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
 # Generate input data (the data is normalized and some timesteps are cut off)
-input_data1 = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_100.csv", num_inits=params_tcn["part_of_data"])
-input_data2 = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_randomwalks.csv", num_inits=params_tcn["part_of_data"])
+input_data1 = get_data(path = "data_fs/training_data_full_system_100.csv", num_inits=params_tcn["part_of_data"])
+input_data2 = get_data(path = "data_fs/training_data_full_system_randomwalks.csv", num_inits=params_tcn["part_of_data"])
 
 input_data = torch.cat((input_data1, input_data2))
 print(input_data.size())
@@ -197,15 +195,15 @@ average_traj_err_train_tcn = []
 for e in tqdm(range(params_tcn["epochs"])):
     
     train_error = train_tcn(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"])
-    if e % 10:
+    if (e+1) % 50:
         print("Training error : ", train_error)
 
     # Every few epochs get the error MSE of the true data
     # compared to the network prediction starting from some initial conditions
-    if (e)%params_tcn["test_every_epochs"] == 0:
+    if (e+1)%params_tcn["test_every_epochs"] == 0:
         err_test_tcn = test(test_data.to(device), model_tcn, window_size=params_tcn["window_size"], display_plots=False, numb_of_inits = 10)
         average_traj_err_train_tcn.append(err_test_tcn)
-        print(f"Average error over full trajectories: training data TCN: {err_test_tcn}")
+        print(f"Average error over full trajectories: test data TCN: {err_test_tcn}")
         
 # Save trained model
 path_tcn = f'or_tcn.pth'
