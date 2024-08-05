@@ -152,7 +152,8 @@ params_tcn =    {
                         "n_hidden" : 5,
                         "levels" : 4,
                         "input_channels" : 5,
-                        "output" : 3
+                        "output" : 3,
+                        "experiment_number" : np.random.randint(0,100)
                     }
 
 # Configure logging
@@ -206,7 +207,7 @@ for e in tqdm(range(params_tcn["epochs"])):
         print(f"Average error over full trajectories: test data TCN: {err_test_tcn}")
         
 # Save trained model
-path_tcn = f'or_tcn.pth'
+path_tcn = f'or_tcn{params_tcn["experiment_number"]}.pth'
 
 torch.save(model_tcn.state_dict(), path_tcn)
 
@@ -215,6 +216,6 @@ print(f"Run finished!")
 # Log parameters
 
 logging.info(f"hyperparams tcn: {params_tcn}")
-logging.info(f"TCN {average_traj_err_train_tcn}")   
+logging.info(f"TCN - Experiment number {params_tcn["experiment_number"]} {average_traj_err_train_tcn}")   
 logging.info("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 logging.info("\n")
