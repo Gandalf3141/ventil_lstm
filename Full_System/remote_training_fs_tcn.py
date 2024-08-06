@@ -51,9 +51,9 @@ params_tcn =    {
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
                         "percentage_of_data" : 0.9,
-                        "cut_off_timesteps" : 100,
+                        "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
-                        "epochs" : 1000,
+                        "epochs" : 2000,
                         "test_every_epochs" : 20,
 
                         "kernel_size" : 7,
@@ -62,7 +62,7 @@ params_tcn =    {
                         "levels" : 4,
                         "input_channels" : 5,
                         "output" : 3,
-                        "experiment_number" : np.random.randint(0,100)
+                        "experiment_number" : np.random.randint(0,1000)
                     }
 
 # Configure logging
@@ -80,10 +80,10 @@ model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size
 
 # Generate input data (the data is normalized and some timesteps are cut off)
 input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_tcn["part_of_data"])
-input_data1 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_tcn["part_of_data"])
-input_data2 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_tcn["part_of_data"])
+input_data2 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_tcn["part_of_data"])
+input_data3 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_tcn["part_of_data"])
 
-input_data = torch.cat((input_data1, input_data2))
+input_data = torch.cat((input_data1, input_data2, input_data3))
 print(input_data.size())
 
 #Split data into train and test sets
