@@ -50,7 +50,7 @@ params_tcn =    {
                         "window_size" : 30,
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
-                        "percentage_of_data" : 0.8,
+                        "percentage_of_data" : 0.9,
                         "cut_off_timesteps" : 100,
                         "part_of_data" : 0,
                         "epochs" : 1000,
@@ -79,8 +79,9 @@ dropout = params_tcn["dropout"]
 model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
 # Generate input data (the data is normalized and some timesteps are cut off)
-input_data1 = get_data(path = "data_fs/training_data_full_system_100.csv", num_inits=params_tcn["part_of_data"])
-input_data2 = get_data(path = "data_fs/training_data_full_system_randomwalks.csv", num_inits=params_tcn["part_of_data"])
+input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_tcn["part_of_data"])
+input_data1 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_tcn["part_of_data"])
+input_data2 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_tcn["part_of_data"])
 
 input_data = torch.cat((input_data1, input_data2))
 print(input_data.size())

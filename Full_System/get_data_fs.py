@@ -91,7 +91,7 @@ def visualise(data, num_inits):
     # else:
     ids = [num_inits]    
     
-    figure , axs = plt.subplots(5, 1, figsize=(16,9))
+    figure , axs = plt.subplots(5, 1, figsize=(9,9))
     figure.tight_layout(pad=2.0) 
     colors=["r","b","g","orange", "purple"]
     for k, id in enumerate(ids):
@@ -104,10 +104,10 @@ def visualise(data, num_inits):
             axs[4].set_ylim(v_min, v_max)
         else:
            for i in range(5):
-              axs[i].set_ylim(0,1)
+              axs[i].set_ylim(-0.1,1.1)
         
-        axs[0].plot(time, data[id,:,0], label="voltage 1", color=colors[0], linewidth=2)
-        axs[1].plot(time, data[id,:,1], label="voltage 2", color=colors[1], linewidth=2)
+        axs[0].plot(time, data[id,:,0], label="NC voltage 1", color=colors[0], linewidth=2)
+        axs[1].plot(time, data[id,:,1], label="NO voltage 2", color=colors[1], linewidth=2)
         axs[2].plot(time, data[id,:,2], label="pressure", color=colors[2], linewidth=2)
         axs[3].plot(time, data[id,:,3], label="position", color=colors[3], linewidth=2)
         axs[4].plot(time, data[id,:,4], label="speed", color=colors[4], linewidth=2)
@@ -122,7 +122,7 @@ def visualise(data, num_inits):
     plt.show()
 
 
-# data = get_data(path=r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system.csv", num_inits=4)
-# visualise(data, num_inits=3)
+data = get_data(path=r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_01_IV2.csv", num_inits=100)
+visualise(data, num_inits=89)
 # visualise(normalize_invert(data), num_inits=3)
 
