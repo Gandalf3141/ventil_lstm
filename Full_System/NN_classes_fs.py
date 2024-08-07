@@ -62,9 +62,9 @@ class OR_LSTM(nn.Module):
         lstm_out, hidden = self.lstm(seq)           
         pred = self.linear(lstm_out)
 
-        return pred, hidden         
-  
-# OR MLP
+        return pred, hidden  
+     
+# OR MLP  
 class OR_MLP(nn.Module):
     
     def __init__(self, input_size=3, hidden_size = 6, l_num=1, output_size=2, act_fn="tanh", act_at_end = None, timesteps=5):
@@ -109,45 +109,29 @@ class OR_MLP(nn.Module):
         
         seq = one_full_traj[:, 0:self.ws, :]
 
-        #inp = torch.cat((seq[:, :self.ws,0], seq[:, :self.ws,1], seq[:, :self.ws,2]), dim=2)
-        inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
-        pred = self.network(inp) 
-        
-        out = one_full_traj[:, self.ws-1:self.ws, 1:] + pred.view(one_full_traj.size(dim=0),1,2)
-        #out = one_full_traj[:, self.ws-1:self.ws, 1:]
-        #print(out.size(),out)
+        inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2], a[:, 3], a[:, 4])) for a in seq])
+        pred = self.network(inp)         
+        out = one_full_traj[:, self.ws-1:self.ws, 2:] + pred.view(one_full_traj.size(dim=0),1,3)
 
         for t in range(1, self.ws): # für RK : range(1, self.ws + 2):
 
 
-            tmp = torch.cat((one_full_traj[:,self.ws+(t-1):self.ws+(t-1)+(out.size(dim=1)), 0:1] , out[:, :, :]), dim=2)
+            tmp = torch.cat((one_full_traj[:,self.ws+(t-1):self.ws+(t-1)+(out.size(dim=1)), 0:2] , out[:, :, :]), dim=2)
             seq = torch.cat((one_full_traj[:, t:self.ws, :], tmp), dim=1)
-
-            inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
+            inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2], a[:, 3], a[:, 4])) for a in seq])
 
             pred = self.network(inp)
-
-            out = torch.cat((out, out[:, -1:, 1:] + pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
+            out = torch.cat((out, out[:, -1:, 2:] + pred.view(one_full_traj.size(dim=0),1,3)), dim=1)
 
         for t in range(self.ws, one_full_traj.size(dim=1) - self.ws):
 
-            seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:1], out[:, t - self.ws : t , :]), dim=2)
-            
-            inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
+            seq = torch.cat((one_full_traj[:, t : t + self.ws, 0:2], out[:, t - self.ws : t , :]), dim=2)
+            inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2], a[:, 3], a[:, 4])) for a in seq])
 
             pred = self.network(inp)
-
-            out = torch.cat((out, out[:, -1:, 1:] + pred.view(one_full_traj.size(dim=0),1,2)), dim=1)
+            out = torch.cat((out, out[:, -1:, 2:] + pred.view(one_full_traj.size(dim=0),1,3)), dim=1)
 
         return out
-
-    def simple_forward(self, seq):
-    
-        #inp = torch.stack([torch.cat((a[:, 0], a[:, 1], a[:, 2])) for a in seq])
-        # seq is already formatted for mlp input
-        pred = self.network(seq) 
-
-        return pred
 
 # OR TCN
 class OR_TCN(nn.Module):
@@ -213,6 +197,8 @@ class OR_TCN(nn.Module):
         pred = self.linear(y1[:, :, -1])
 
         return pred
+
+
 
 
 ### TCN helper classes ###

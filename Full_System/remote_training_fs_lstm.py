@@ -91,7 +91,7 @@ average_traj_err_train_lstm = []
 for e in tqdm(range(params_lstm["epochs"])):
     
     train_error = train_lstm(train_loader_lstm, model_lstm, learning_rate=params_lstm["learning_rate"])
-    if (e+1) % 50:
+    if (e+1) % 50 == 0:
         print("Training error : ", train_error)
 
     # Every few epochs get the error MSE of the true data
