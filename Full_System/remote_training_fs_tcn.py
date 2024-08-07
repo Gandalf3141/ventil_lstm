@@ -112,7 +112,7 @@ for e in tqdm(range(params_tcn["epochs"])):
     # Every few epochs get the error MSE of the true data
     # compared to the network prediction starting from some initial conditions
     if (e+1)%params_tcn["test_every_epochs"] == 0:
-        err_test_tcn = test(test_data.to(device), model_tcn, window_size=params_tcn["window_size"], display_plots=False, numb_of_inits = 10)
+        err_test_tcn = test(test_data.to(device), model_tcn, model_type="tcn", window_size=params_tcn["window_size"], display_plots=False, numb_of_inits = 10)
         average_traj_err_train_tcn.append(err_test_tcn)
         print(f"Average error over full trajectories: test data TCN: {err_test_tcn}")
         
