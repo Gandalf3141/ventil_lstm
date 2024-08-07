@@ -4,6 +4,8 @@ from NN_classes_fs import *
 from dataloader_fs import *
 from test_func_fs import *
 
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 def plot_results(x, pred, rescale=False):
 
     if x.dim() == 3:

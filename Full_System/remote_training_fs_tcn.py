@@ -54,7 +54,7 @@ params_tcn =    {
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
                         "epochs" : 2000,
-                        "test_every_epochs" : 20,
+                        "test_every_epochs" : 100,
 
                         "kernel_size" : 7,
                         "dropout" : 0,
