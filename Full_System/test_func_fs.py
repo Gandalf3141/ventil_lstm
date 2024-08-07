@@ -17,7 +17,7 @@ def plot_results(x, pred, rescale=False):
         x = normalize_invert(x)
         pred = normalize_invert(pred)
 
-    figure , axs = plt.subplots(5,1, figsize=(16,9))
+    figure , axs = plt.subplots(5,1, figsize=(9,9))
     figure.tight_layout(pad=2.0)
 
     stepsize = 2e-5

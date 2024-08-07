@@ -43,15 +43,14 @@ params_lstm =    {
                         "window_size" : 16,
                         "h_size" : 8,
                         "l_num" : 3,
-                        "learning_rate" : 0.0008,
-                        "learning_rate" : 0.0008,
+                        "learning_rate" : 0.001,
                         "batch_size" : 20,
 
                         "percentage_of_data" : 0.9,
                         "cut_off_timesteps" : 0,
-                        "part_of_data" : 10,
-                        "epochs" : 2,
-                        "test_every_epochs" : 1,
+                        "part_of_data" : 0,
+                        "epochs" : 300,
+                        "test_every_epochs" : 50,
                         "experiment_number" : np.random.randint(0,1000)
                     }
 
