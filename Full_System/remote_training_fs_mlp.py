@@ -47,14 +47,12 @@ params_mlp =    {
                         "batch_size" : 20,
                         "act_fn" : "relu",
                         "nonlin_at_out" : None, #None if no nonlinearity at the end
-
                         "percentage_of_data" : 0.9,
-                        "cut_off_timesteps" : 300,
-                        "part_of_data" : 10,
-                        "epochs" : 10,
-                        "test_every_epochs" : 3,
-                        "input_channels" : 5,
-                        "output" : 3,
+                        "cut_off_timesteps" : 0,
+                        "part_of_data" : 0,
+                        "epochs" : 300,
+                        "test_every_epochs" : 50,
+                        
                         "experiment_number" : np.random.randint(0,1000)
                     }
 
