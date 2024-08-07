@@ -13,10 +13,9 @@ print("this device is available : ", device)
 
 # train function
 
-def train_tcn(input_data, model, learning_rate=0.001):
+def train_tcn(input_data, model,  optimizer, lr_scheduler, learning_rate=0.001):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
  
     model.train()
     total_loss = []
@@ -40,6 +39,8 @@ def train_tcn(input_data, model, learning_rate=0.001):
         optimizer.step()
  
         total_loss.append(loss.detach().cpu().numpy())
+
+    lr_scheduler.step()
  
    # return the average error of the next step prediction
     return np.mean(total_loss)
@@ -55,6 +56,7 @@ params_tcn =    {
                         "part_of_data" : 0,
                         "epochs" : 2000,
                         "test_every_epochs" : 100,
+                        "T_max" : 500,
 
                         "kernel_size" : 7,
                         "dropout" : 0,
@@ -82,8 +84,8 @@ model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size
 input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_tcn["part_of_data"])
 input_data2 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_tcn["part_of_data"])
 input_data3 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_tcn["part_of_data"])
-
-input_data = torch.cat((input_data1, input_data2, input_data3))
+input_data4 = get_data(path = "data_fs/training_data_full_system_01_same_u_und_mixed150.csv", num_inits=params_tcn["part_of_data"])
+input_data = torch.cat((input_data1, input_data2, input_data3, input_data4))
 print(input_data.size())
 
 #Split data into train and test sets
@@ -102,10 +104,14 @@ train_loader_tcn = DataLoader(train_set_tcn, batch_size=params_tcn["batch_size"]
 
 average_traj_err_train_tcn = []
 
+# optimizers
+optimizer = torch.optim.AdamW(model_tcn.parameters(), lr = params_tcn["learning_rate"])
+lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = params_tcn["T_max"], eta_min=0, last_epoch=-1, verbose='deprecated')
+
 #Training loop
 for e in tqdm(range(params_tcn["epochs"])):
     
-    train_error = train_tcn(train_loader_tcn, model_tcn, learning_rate= params_tcn["learning_rate"])
+    train_error = train_tcn(train_loader_tcn, model_tcn, optimizer=optimizer, lr_scheduler=lr_scheduler, learning_rate= params_tcn["learning_rate"])
     if (e+1) % 50 == 0:
         print("Training error : ", train_error)
 

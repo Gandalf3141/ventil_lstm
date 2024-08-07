@@ -13,10 +13,9 @@ print("this device is available : ", device)
 
 # train function
 
-def train_lstm(input_data, model, learning_rate=0.001):
+def train_lstm(input_data, model,  optimizer, lr_scheduler, learning_rate=0.001):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
  
     model.train()
     total_loss = []
@@ -35,8 +34,9 @@ def train_lstm(input_data, model, learning_rate=0.001):
         loss = loss_fn(output, y)
         loss.backward()
         optimizer.step()
- 
         total_loss.append(loss.detach().cpu().numpy())
+    lr_scheduler.step()
+
     return np.mean(total_loss)
 
 params_lstm =    {
@@ -49,8 +49,11 @@ params_lstm =    {
                         "percentage_of_data" : 0.9,
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
-                        "epochs" : 300,
-                        "test_every_epochs" : 50,
+                        "epochs" : 2000,
+                        "test_every_epochs" : 100,
+
+                        "T_max" : 500,
+
                         "experiment_number" : np.random.randint(0,1000)
                     }
 
@@ -67,8 +70,8 @@ model_lstm = OR_LSTM(input_size=5, hidden_size=params_lstm["h_size"], out_size=3
 input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_lstm["part_of_data"])
 input_data2 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_lstm["part_of_data"])
 input_data3 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_lstm["part_of_data"])
-
-input_data = torch.cat((input_data1, input_data2, input_data3))
+input_data4 = get_data(path = "data_fs/training_data_full_system_01_same_u_und_mixed150.csv", num_inits=params_lstm["part_of_data"])
+input_data = torch.cat((input_data1, input_data2, input_data3, input_data4))
 print(input_data.size())
 
 #Split data into train and test sets
@@ -87,10 +90,14 @@ train_loader_lstm = DataLoader(train_set_lstm, batch_size=params_lstm["batch_siz
 
 average_traj_err_train_lstm = []
 
+#optimizer
+optimizer = torch.optim.AdamW(model_lstm.parameters(), lr = params_lstm["learning_rate"])
+lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = params_lstm["T_max"], eta_min=0, last_epoch=-1, verbose='deprecated')
+
 #Training loop
 for e in tqdm(range(params_lstm["epochs"])):
     
-    train_error = train_lstm(train_loader_lstm, model_lstm, learning_rate=params_lstm["learning_rate"])
+    train_error = train_lstm(train_loader_lstm, model_lstm, optimizer=optimizer, lr_scheduler=lr_scheduler, learning_rate=params_lstm["learning_rate"])
     if (e+1) % 50 == 0:
         print("Training error : ", train_error)
 

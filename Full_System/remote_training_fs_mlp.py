@@ -12,10 +12,10 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 print("this device is available : ", device)
 
 # train function
-def train_mlp(loader, model, learning_rate=0.001):
+def train_mlp(loader, model,  optimizer, lr_scheduler, learning_rate=0.001):
  
     loss_fn = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
+
  
     model.train()
     total_loss = []
@@ -26,6 +26,8 @@ def train_mlp(loader, model, learning_rate=0.001):
         y = y.to(device)
  
         out = model(x)
+ 
+        #print(output.size())
         # reset the gradient
         optimizer.zero_grad(set_to_none=True)
         
@@ -33,9 +35,14 @@ def train_mlp(loader, model, learning_rate=0.001):
         loss = loss_fn(out, y)
         loss.backward()
         optimizer.step()
- 
         total_loss.append(loss.detach().cpu().numpy())
- 
+         
+    # before_lr = optimizer.param_groups[0]["lr"]
+    lr_scheduler.step()
+    # after_lr = optimizer.param_groups[0]["lr"]
+    # print("SGD lr %.4f -> %.4f" % (before_lr, after_lr))
+    
+
    # return the average error of the next step prediction
     return np.mean(total_loss)
 
@@ -50,9 +57,11 @@ params_mlp =    {
                         "percentage_of_data" : 0.9,
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
-                        "epochs" : 300,
-                        "test_every_epochs" : 50,
-                        
+                        "epochs" : 2000,
+                        "test_every_epochs" : 100,
+
+                        "T_max" : 500,
+
                         "experiment_number" : np.random.randint(0,1000)
                     }
 
@@ -69,8 +78,8 @@ model_mlp = OR_MLP(input_size=5*params_mlp["window_size"], hidden_size=params_ml
 input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_mlp["part_of_data"])
 input_data2 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_mlp["part_of_data"])
 input_data3 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_mlp["part_of_data"])
-
-input_data = torch.cat((input_data1, input_data2, input_data3))
+input_data4 = get_data(path = "data_fs/training_data_full_system_01_same_u_und_mixed150.csv", num_inits=params_mlp["part_of_data"])
+input_data = torch.cat((input_data1, input_data2, input_data3, input_data4))
 print(input_data.size())
 
 #Split data into train and test sets
@@ -89,10 +98,14 @@ train_loader_mlp = DataLoader(train_set_mlp, batch_size=params_mlp["batch_size"]
 
 average_traj_err_train_mlp = []
 
+#optimizers
+optimizer = torch.optim.AdamW(model_mlp.parameters(), lr = params_mlp["learning_rate"])
+lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = params_mlp["T_max"], eta_min=0, last_epoch=-1, verbose='deprecated')
+
 #Training loop
 for e in tqdm(range(params_mlp["epochs"])):
     
-    train_error = train_mlp(train_loader_mlp, model_mlp, learning_rate=params_mlp["learning_rate"])
+    train_error = train_mlp(train_loader_mlp, model_mlp, optimizer=optimizer, lr_scheduler=lr_scheduler, learning_rate=params_mlp["learning_rate"])
     if (e+1) % 50 == 0:
         print("Training error : ", train_error)
 
