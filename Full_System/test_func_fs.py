@@ -57,7 +57,7 @@ def plot_results(x, pred, rescale=False):
     plt.legend()
     plt.show()
 
-def test(data, model, window_size ,display_plots=False, numb_of_inits=1):
+def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb_of_inits=1):
 
     np.random.seed(1234)
     test_inits = data.size(dim=0)
@@ -71,27 +71,49 @@ def test(data, model, window_size ,display_plots=False, numb_of_inits=1):
     for i, x in enumerate(data):
 
         total_loss = 0
+        if model_type == "tcn":
+            with torch.inference_mode():
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))                
+                pred = torch.zeros((timesteps, 5), device=device)
 
-        with torch.inference_mode():
-            x=x.to(device)        
-            x = x.view(1,x.size(dim=0), x.size(dim=1))                
-            pred = torch.zeros((timesteps, 5), device=device)
+                pred[0:window_size, :] = x[0, 0:window_size, :]
+                pred[:, 0] = x[0, :, 0]
 
-            pred[0:window_size, :] = x[0, 0:window_size, :]
-            pred[:, 0] = x[0, :, 0]
+                x_test = x.clone()
+                x_test[:,window_size:,2:] = 0
+                x_test = x_test.to(device)
+                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
 
-            x_test = x.clone()
-            x_test[:,window_size:,2:] = 0
-            x_test = x_test.to(device)
-            #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
+                out = model(x_test.transpose(1,2))
+                
+                pred[window_size:,2:] = out.squeeze(0).transpose(0,1)
 
-            out = model(x_test.transpose(1,2))
-            
-            pred[window_size:,2:] = out.squeeze(0).transpose(0,1)
+                total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
-            total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
+                if display_plots:
+                    plot_results(x, pred, rescale=False)
+        if model_type == "lstm":
+            with torch.inference_mode():
+                x=x.to(device)        
+                x = x.view(1,x.size(dim=0), x.size(dim=1))                
+                pred = torch.zeros((timesteps, 5), device=device)
 
-            if display_plots:
-                plot_results(x, pred, rescale=False)
+                pred[0:window_size, :] = x[0, 0:window_size, :]
+                pred[:, 0] = x[0, :, 0]
+
+                x_test = x.clone()
+                x_test[:,window_size:,2:] = 0
+                x_test = x_test.to(device)
+                #print("Data passed to the model, all 0 after the initial window to prove that the forward pass is correct and doesnt access information it shouldnt.",x_test[:,0:10,:])
+
+                out, _ = model(x_test)
+                
+                pred[window_size:,2:] = out
+
+                total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
+
+                if display_plots:
+                    plot_results(x, pred, rescale=False)
 
     return total_loss
