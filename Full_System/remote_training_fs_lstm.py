@@ -13,7 +13,7 @@ print("this device is available : ", device)
 
 # train function
 
-def train_lstm(input_data, model,  optimizer, lr_scheduler, learning_rate=0.001):
+def train_lstm(input_data, model,  optimizer, lr_scheduler):
  
     loss_fn = nn.MSELoss()
  
@@ -39,7 +39,7 @@ def train_lstm(input_data, model,  optimizer, lr_scheduler, learning_rate=0.001)
 
     return np.mean(total_loss)
 
-params_lstm =    {
+params_lstm_basic =    {
                         "window_size" : 16,
                         "h_size" : 8,
                         "l_num" : 3,
@@ -49,7 +49,7 @@ params_lstm =    {
                         "percentage_of_data" : 0.9,
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
-                        "epochs" : 2000,
+                        "epochs" : 1000,
                         "test_every_epochs" : 100,
 
                         "T_max" : 500,
@@ -57,13 +57,33 @@ params_lstm =    {
                         "experiment_number" : np.random.randint(0,1000)
                     }
 
+
+params_lstm =    {
+                        "window_size" : 32,
+                        "h_size" : 12,
+                        "l_num" : 3,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 40,
+
+                        "percentage_of_data" : 0.9,
+                        "cut_off_timesteps" : 0,
+                        "part_of_data" : 0,
+                        "epochs" : 3000,
+                        "test_every_epochs" : 200,
+
+                        "T_max" : 500,
+
+                        "experiment_number" : np.random.randint(0,1000)
+                    }
+
+
+
 # Configure logging
-log_file = 'training_fullsystem.log'
+log_file = 'training_fullsystem_lstm.log'
 filemode = 'a' if os.path.exists(log_file) else 'w'
 logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize the LSTM model
-
 model_lstm = OR_LSTM(input_size=5, hidden_size=params_lstm["h_size"], out_size=3, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
 
 # Generate input data (the data is normalized and some timesteps are cut off)
@@ -97,7 +117,7 @@ lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max = par
 #Training loop
 for e in tqdm(range(params_lstm["epochs"])):
     
-    train_error = train_lstm(train_loader_lstm, model_lstm, optimizer=optimizer, lr_scheduler=lr_scheduler, learning_rate=params_lstm["learning_rate"])
+    train_error = train_lstm(train_loader_lstm, model_lstm, optimizer=optimizer, lr_scheduler=lr_scheduler)
     if (e+1) % 50 == 0:
         print("Training error : ", train_error)
 

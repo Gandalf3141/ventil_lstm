@@ -54,7 +54,7 @@ params_tcn =    {
                         "percentage_of_data" : 0.9,
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
-                        "epochs" : 2000,
+                        "epochs" : 1000,
                         "test_every_epochs" : 100,
                         "T_max" : 500,
 
@@ -68,7 +68,7 @@ params_tcn =    {
                     }
 
 # Configure logging
-log_file = 'training_fullsystem.log'
+log_file = 'training_fullsystem_tcn.log'
 filemode = 'a' if os.path.exists(log_file) else 'w'
 logging.basicConfig(filename=log_file, filemode=filemode, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
