@@ -110,27 +110,45 @@ def main(parameters, i):
     logging.info("\n")
 
 if __name__ == '__main__':
+    
+    params_lstm_basic =    {
+                        "window_size" : 16,
+                        "h_size" : 8,
+                        "l_num" : 3,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 20,
+                        "T_max" : 100,
+                    }
 
     params_lstm1 =    {  
+                        "window_size" : 16,
+                        "h_size" : 8,
+                        "l_num" : 3,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 20,
+                        "T_max" : 20,
+
+                        "experiment_number" : np.random.randint(0,1000)}
+   
+    params_lstm2 =    {  
                         "window_size" : 24,
                         "h_size" : 30,
                         "l_num" : 1,
                         "learning_rate" : 0.005,
                         "batch_size" : 40,
-                        "T_max" : 1000,
+                        "T_max" : 50,
 
                         "experiment_number" : np.random.randint(0,1000)}
-
    
-    param_list = [params_lstm1]
+    param_list = [params_lstm_basic, params_lstm1, params_lstm2]
 
     for i, parameters in enumerate(param_list):
 
         parameters["percentage_of_data"]  = 0.8
         parameters["cut_off_timesteps"]  = 0
-        parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 3000
-        parameters["test_every_epochs"]  = 200
+        parameters["part_of_data"]  = 100
+        parameters["epochs"]  = 100
+        parameters["test_every_epochs"]  = 50
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
         main(parameters, i)
