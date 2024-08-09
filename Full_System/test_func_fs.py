@@ -62,8 +62,8 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
     if fix_random:
      np.random.seed(1234)
     else:
-        np.random(np.random.randint(1))
- 
+     np.random.seed(seed=None)
+      
     test_inits = data.size(dim=0)
     ids = np.random.choice(test_inits, min([numb_of_inits, test_inits]), replace=False)
     ids = np.unique(ids)
