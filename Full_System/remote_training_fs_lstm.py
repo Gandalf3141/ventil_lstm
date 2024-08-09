@@ -114,9 +114,9 @@ if __name__ == '__main__':
     params_lstm1 =    {  
                         "window_size" : 24,
                         "h_size" : 30,
-                        "l_num" : 1,
+                        "l_num" : 3,
                         "learning_rate" : 0.005,
-                        "batch_size" : 40,
+                        "batch_size" : 30,
                         "T_max" : 1000,
 
                         "experiment_number" : np.random.randint(0,1000)}
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         parameters["percentage_of_data"]  = 0.8
         parameters["cut_off_timesteps"]  = 0
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 3000
+        parameters["epochs"]  = 4000
         parameters["test_every_epochs"]  = 200
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
