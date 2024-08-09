@@ -19,7 +19,9 @@ def train_lstm(input_data, model,  optimizer, lr_scheduler):
  
     model.train()
     total_loss = []
-  
+
+    
+
     for k, (x,y) in enumerate(input_data):  # inp = (u, x) label = x
         
         x = x.to(device)
