@@ -6,6 +6,7 @@ import os
 from tqdm import tqdm
 import logging
 from test_func_fs import *
+from load_data import *
 
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -56,7 +57,7 @@ params_tcn =    {
                         "part_of_data" : 0,
                         "epochs" : 1000,
                         "test_every_epochs" : 100,
-                        "T_max" : 500,
+                        "T_max" : 1000,
 
                         "kernel_size" : 7,
                         "dropout" : 0,
@@ -81,11 +82,8 @@ dropout = params_tcn["dropout"]
 model_tcn = OR_TCN(input_channels, output, num_channels, kernel_size=kernel_size, dropout=dropout, windowsize=params_tcn["window_size"]).to(device)
 
 # Generate input data (the data is normalized and some timesteps are cut off)
-input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_tcn["part_of_data"])
-input_data2 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_tcn["part_of_data"])
-input_data3 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_tcn["part_of_data"])
-input_data4 = get_data(path = "data_fs/training_data_full_system_01_same_u_und_mixed150.csv", num_inits=params_tcn["part_of_data"])
-input_data = torch.cat((input_data1, input_data2, input_data3, input_data4))
+
+input_data = load_data(params_tcn["part_of_data"])
 print(input_data.size())
 
 #Split data into train and test sets

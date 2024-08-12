@@ -119,36 +119,27 @@ def main(parameters, i):
 if __name__ == '__main__':
     
 
-    params_mlp1 =    {
-                        "window_size" : 20,
-                        "h_size" : 24,
-                        "l_num" : 1,
-                        "learning_rate" : 0.01,
-                        "batch_size" : 20,
-                        "act_fn" : "relu",
-                        "nonlin_at_out" : None, #None if no nonlinearity at the end
-                        "T_max" : 50,
-                    }
+
     params_mlp2 =   {
-                        "window_size" : 20,
-                        "h_size" : 24,
-                        "l_num" : 1,
-                        "learning_rate" : 0.001,
-                        "batch_size" : 20,
+                        "window_size" : 30,
+                        "h_size" : 20,
+                        "l_num" : 5,
+                        "learning_rate" : 0.005,
+                        "batch_size" : 30,
                         "act_fn" : "relu",
                         "nonlin_at_out" : None, #None if no nonlinearity at the end
-                        "T_max" : 50,
+                        "T_max" : 1000,
                     }
 
    
-    param_list = [params_mlp1, params_mlp2]
+    param_list = [params_mlp2]
 
     for i, parameters in enumerate(param_list):
 
         parameters["percentage_of_data"]  = 0.8
-        parameters["cut_off_timesteps"]  = 0
-        parameters["part_of_data"]  = 100
-        parameters["epochs"]  = 100
+        parameters["cut_off_timesteps"]  = 100
+        parameters["part_of_data"]  = 0
+        parameters["epochs"]  = 1000
         parameters["test_every_epochs"]  = 50
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
