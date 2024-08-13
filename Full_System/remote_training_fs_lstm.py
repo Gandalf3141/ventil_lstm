@@ -39,6 +39,7 @@ def train_lstm(input_data, model,  optimizer, lr_scheduler):
         optimizer.step()
         total_loss.append(loss.detach().cpu().numpy())
     lr_scheduler.step()
+    #print(lr_scheduler.get_last_lr())
 
     return np.mean(total_loss)
 
@@ -58,8 +59,8 @@ def main(parameters, i):
 
     # Generate input data (the data is normalized and some timesteps are cut off)
 
-    input_data = load_data(params_lstm["percentage_of_data"])
-
+    input_data = load_data(params_lstm["part_of_data"])
+    print(input_data.size())
     train_loader_lstm, test_data = get_dataloader(input_data, params_lstm)
 
     average_traj_err_train_lstm = []
@@ -99,38 +100,29 @@ def main(parameters, i):
 if __name__ == '__main__':
 
 
-    params_lstm1 =    {  
-                        "window_size" : 16,
-                        "h_size" : 8,
-                        "l_num" : 3,
-                        
-                        "learning_rate" : 0.01,
-                        "batch_size" : 50,
-                        "T_max" : 1000,
 
-                        "experiment_number" : np.random.randint(0,1000)}
 
     params_lstm2 =    {  
                         "window_size" : 16,
                         "h_size" : 8,
                         "l_num" : 3,
                         
-                        "learning_rate" : 0.001,
-                        "batch_size" : 20,
+                        "learning_rate" : 0.002,
+                        "batch_size" : 15,
                         "T_max" : 1000,
 
                         "experiment_number" : np.random.randint(0,1000)}
 
    
-    param_list = [params_lstm1, params_lstm2]
+    param_list = [params_lstm2]
 
     for i, parameters in enumerate(param_list):
 
         parameters["percentage_of_data"]  = 0.8
-        parameters["cut_off_timesteps"]  = 100
+        parameters["cut_off_timesteps"]  = 150
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 1000
-        parameters["test_every_epochs"]  = 200
+        parameters["epochs"]  = 3000
+        parameters["test_every_epochs"]  = 600
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
         main(parameters, i)
