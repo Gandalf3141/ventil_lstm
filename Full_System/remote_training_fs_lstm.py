@@ -6,6 +6,7 @@ import os
 from tqdm import tqdm
 import logging
 from test_func_fs import *
+from load_data import *
 
 torch.set_default_dtype(torch.float64)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -38,6 +39,7 @@ def train_lstm(input_data, model,  optimizer, lr_scheduler):
         optimizer.step()
         total_loss.append(loss.detach().cpu().numpy())
     lr_scheduler.step()
+    #print(lr_scheduler.get_last_lr())
 
     return np.mean(total_loss)
 
@@ -56,26 +58,10 @@ def main(parameters, i):
     model_lstm = OR_LSTM(input_size=5, hidden_size=params_lstm["h_size"], out_size=3, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
 
     # Generate input data (the data is normalized and some timesteps are cut off)
-    input_data1 = get_data(path = "data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=params_lstm["part_of_data"])
-    input_data2 = get_data(path = "data_fs/training_data_full_system_01_randomwalk.csv", num_inits=params_lstm["part_of_data"])
-    input_data3 = get_data(path = "data_fs/training_data_full_system_01_IV2.csv", num_inits=params_lstm["part_of_data"])
-    input_data4 = get_data(path = "data_fs/training_data_full_system_01_same_u_und_mixed150.csv", num_inits=params_lstm["part_of_data"])
-    input_data = torch.cat((input_data1, input_data2, input_data3, input_data4))
+
+    input_data = load_data(params_lstm["part_of_data"])
     print(input_data.size())
-
-    #Split data into train and test sets
-    np.random.seed(1234)
-    num_of_inits_train = int(len(input_data)*params_lstm["percentage_of_data"])
-    train_inits = np.random.choice(np.arange(len(input_data)),num_of_inits_train,replace=False)
-    test_inits = np.array([x for x in range(len(input_data)) if x not in train_inits])
-    np.random.shuffle(train_inits)
-    np.random.shuffle(test_inits)
-    train_data = input_data[train_inits,:input_data.size(dim=1)-params_lstm["cut_off_timesteps"],:]
-    test_data = input_data[test_inits,:,:]
-
-    # dataloader for batching during training
-    train_set_lstm = custom_simple_dataset(train_data, window_size=params_lstm["window_size"])
-    train_loader_lstm = DataLoader(train_set_lstm, batch_size=params_lstm["batch_size"], pin_memory=True)
+    train_loader_lstm, test_data = get_dataloader(input_data, params_lstm)
 
     average_traj_err_train_lstm = []
 
@@ -113,26 +99,30 @@ def main(parameters, i):
 
 if __name__ == '__main__':
 
-    params_lstm1 =    {  
-                        "window_size" : 24,
-                        "h_size" : 30,
+
+
+
+    params_lstm2 =    {  
+                        "window_size" : 16,
+                        "h_size" : 8,
                         "l_num" : 3,
-                        "learning_rate" : 0.005,
-                        "batch_size" : 30,
+                        
+                        "learning_rate" : 0.002,
+                        "batch_size" : 15,
                         "T_max" : 1000,
 
                         "experiment_number" : np.random.randint(0,1000)}
 
    
-    param_list = [params_lstm1]
+    param_list = [params_lstm2]
 
     for i, parameters in enumerate(param_list):
 
         parameters["percentage_of_data"]  = 0.8
-        parameters["cut_off_timesteps"]  = 0
+        parameters["cut_off_timesteps"]  = 150
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 4000
-        parameters["test_every_epochs"]  = 200
+        parameters["epochs"]  = 3000
+        parameters["test_every_epochs"]  = 600
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
         main(parameters, i)

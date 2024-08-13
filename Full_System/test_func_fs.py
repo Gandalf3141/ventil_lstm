@@ -67,6 +67,7 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
     test_inits = data.size(dim=0)
     ids = np.random.choice(test_inits, min([numb_of_inits, test_inits]), replace=False)
     ids = np.unique(ids)
+
     data = data[ids,:, :]
 
     loss_fn = nn.MSELoss()
