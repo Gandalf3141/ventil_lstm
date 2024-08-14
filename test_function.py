@@ -7,7 +7,6 @@ import numpy as np
 import torchcde
 import time
 
-
 def plot_results(x, pred, pred_next_step=None, physics_rescaling=None, additional_data=None):
 
     if x.dim() == 3:
