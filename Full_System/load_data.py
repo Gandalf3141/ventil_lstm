@@ -12,15 +12,17 @@ def load_data(num_inits):
         input_data3 = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_01_randomwalk.csv", num_inits=num_inits)
         input_data4 = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_01_same_u_und_mixed150.csv", num_inits=num_inits)
         input_data5 = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_01_randomwalk_stationary_mix.csv", num_inits=num_inits)
+        input_data6 = get_data(path = r"C:\Users\strasserp\Documents\ventil_lstm\data_fs\training_data_full_system_train_mixed_constant.csv", num_inits=num_inits)
     else:
         input_data1 = get_data(path = r"/home/rdpusr/Documents/ventil_lstm/data_fs/training_data_full_system_01_IV_sprung.csv", num_inits=num_inits)
         input_data2 = get_data(path = r"/home/rdpusr/Documents/ventil_lstm/data_fs/training_data_full_system_01_IV2.csv", num_inits=num_inits)
         input_data3 = get_data(path = r"/home/rdpusr/Documents/ventil_lstm/data_fs/training_data_full_system_01_randomwalk_stationary_mix.csv", num_inits=num_inits)
         input_data4 = get_data(path = r"/home/rdpusr/Documents/ventil_lstm/data_fs/training_data_full_system_01_randomwalk.csv", num_inits=num_inits)
         input_data5 = get_data(path = r"/home/rdpusr/Documents/ventil_lstm/data_fs/training_data_full_system_01_same_u_und_mixed150.csv", num_inits=num_inits)
+        input_data6 = get_data(path = r"/home/rdpusr/Documents/ventil_lstm/data_fs/training_data_full_system_train_mixed_constant.csv", num_inits=num_inits)
 
    
-    input_data = torch.cat((input_data1, input_data2, input_data3, input_data4, input_data5))
+    input_data = torch.cat((input_data1, input_data2, input_data3, input_data4, input_data5, input_data6))
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     
     #input_data = input_data.to(device)
