@@ -7,15 +7,17 @@ from test_func_fs import *
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def plot_results(x, pred, rescale=False):
+    
+    if rescale:
+        x = normalize_invert(x)
+        pred = normalize_invert(pred)
 
     if x.dim() == 3:
         x = x.view(x.size(dim=1), x.size(dim=2))
     if pred.dim() == 3:
         pred = pred.view(pred.size(dim=1), pred.size(dim=2))
 
-    if rescale:
-        x = normalize_invert(x)
-        pred = normalize_invert(pred)
+
 
     figure , axs = plt.subplots(5,1, figsize=(9,9))
     figure.tight_layout(pad=2.0)
@@ -47,6 +49,23 @@ def plot_results(x, pred, rescale=False):
     axs[4].set_ylabel("[m/s]")
     axs[4].set_xlabel(f"time [s]")
 
+    if rescale:
+        u1_max = 200  #Spannung in [V]              ... [0, 200]
+        u1_min = 0
+        u2_max = 200
+        u2_min = 0
+        p_max = 3.5*1e5 #Druck in [bar]             ... [1, 3.5]
+        p_min = 1.0*1e5 #Umgebungsdruck in [bar]
+        s_max = 0.605*1e-3     #Position [m]          ... [0, 0.0006]
+        s_min = 0.0
+        v_max = 0.6     #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]
+        v_min = -0.6    #Geschwindigkeit in [m/s]   ... [-1.7, 1.7]   
+        axs[0].set_ylim(u1_min-10, u1_max+10)
+        axs[1].set_ylim(u2_min-10, u2_max+10)
+        axs[2].set_ylim(p_min-0.1*p_max, p_max+0.1*p_max)
+        axs[3].set_ylim(s_min-+0.1*s_max, s_max+0.1*s_max)
+        axs[4].set_ylim(v_min, v_max)
+
     for i in range(5):
         axs[i].grid(True)
         axs[i].legend()
@@ -57,7 +76,7 @@ def plot_results(x, pred, rescale=False):
     plt.legend()
     plt.show()
 
-def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb_of_inits=1, fix_random=True):
+def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb_of_inits=1, fix_random=True, rescale=False):
 
     if fix_random:
      np.random.seed(1234)
@@ -98,7 +117,7 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=False)
+                    plot_results(x, pred, rescale=rescale)
 
             if model_type == "lstm":
                 x=x.to(device)        
@@ -118,7 +137,7 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=False)
+                    plot_results(x, pred, rescale=rescale)
 
             if model_type == "mlp":
                 x=x.to(device)        
@@ -138,6 +157,6 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=False)
+                    plot_results(x, pred, rescale=rescale)
 
     return total_loss
