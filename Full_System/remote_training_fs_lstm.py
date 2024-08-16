@@ -107,9 +107,9 @@ if __name__ == '__main__':
                         "h_size" : 8,
                         "l_num" : 3,
                         
-                        "learning_rate" : 0.002,
-                        "batch_size" : 15,
-                        "T_max" : 1000,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 20,
+                        "T_max" : 4000,
 
                         "experiment_number" : np.random.randint(0,1000)}
 
@@ -121,8 +121,8 @@ if __name__ == '__main__':
         parameters["percentage_of_data"]  = 0.8
         parameters["cut_off_timesteps"]  = 150
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 3000
-        parameters["test_every_epochs"]  = 600
+        parameters["epochs"]  = 4000
+        parameters["test_every_epochs"]  = 500
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
         main(parameters, i)
