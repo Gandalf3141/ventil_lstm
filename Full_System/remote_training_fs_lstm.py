@@ -103,13 +103,13 @@ if __name__ == '__main__':
 
 
     params_lstm2 =    {  
-                        "window_size" : 16,
-                        "h_size" : 8,
-                        "l_num" : 3,
+                        "window_size" : 25,
+                        "h_size" : 12,
+                        "l_num" : 4,
                         
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
-                        "T_max" : 4000,
+                        "T_max" : 500,
 
                         "experiment_number" : np.random.randint(0,1000)}
 
