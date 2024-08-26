@@ -6,7 +6,7 @@ from test_func_fs import *
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-def plot_results(x, pred, rescale=False):
+def plot_results(x, pred, rescale=False, window_size=1):
     
     if rescale:
         x = normalize_invert(x)
@@ -35,6 +35,7 @@ def plot_results(x, pred, rescale=False):
 
     axs[2].plot(time, pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
     axs[2].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="data", linestyle="dashed")
+    axs[2].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="data", linestyle="dashed")
     axs[2].set_title("pressure")
     axs[2].set_ylabel("[Pa]")
 
@@ -48,6 +49,10 @@ def plot_results(x, pred, rescale=False):
     axs[4].set_title("velocity")
     axs[4].set_ylabel("[m/s]")
     axs[4].set_xlabel(f"time [s]")
+
+    axs[2].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
+    axs[3].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
+    axs[4].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
 
     if rescale:
         u1_max = 200  #Spannung in [V]              ... [0, 200]
@@ -92,9 +97,10 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
     loss_fn = nn.MSELoss()
     timesteps = data.size(dim=1)
 
+    total_loss = 0
     for i, x in enumerate(data):
 
-        total_loss = 0
+       
         with torch.inference_mode():
             if model_type == "tcn":
                 
@@ -117,7 +123,7 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=rescale)
+                    plot_results(x, pred, rescale=rescale, window_size=window_size)
 
             if model_type == "lstm":
                 x=x.to(device)        
@@ -137,7 +143,7 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=rescale)
+                    plot_results(x, pred, rescale=rescale, window_size=window_size)
 
             if model_type == "mlp":
                 x=x.to(device)        
@@ -157,6 +163,6 @@ def test(data, model, model_type="tcn", window_size=1 ,display_plots=False, numb
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=rescale)
+                    plot_results(x, pred, rescale=rescale, window_size=window_size)
 
-    return total_loss
+    return total_loss/data.size(0)
