@@ -103,23 +103,35 @@ if __name__ == '__main__':
 
 
     params_lstm2 =    {  
-                        "window_size" : 25,
-                        "h_size" : 12,
-                        "l_num" : 4,
+                        "window_size" : 16,
+                        "h_size" : 8,
+                        "l_num" : 3,
                         
-                        "learning_rate" : 0.001,
-                        "batch_size" : 20,
-                        "T_max" : 500,
+                        "learning_rate" : 0.003,
+                        "batch_size" : 30,
+                        "T_max" : 4000,
+
+                        "experiment_number" : np.random.randint(0,1000)}
+    
+    
+    params_lstm3  =    {  
+                        "window_size" : 32,
+                        "h_size" : 12,
+                        "l_num" : 1,
+                        
+                        "learning_rate" : 0.003,
+                        "batch_size" : 30,
+                        "T_max" : 1000,
 
                         "experiment_number" : np.random.randint(0,1000)}
 
    
-    param_list = [params_lstm2]
+    param_list = [params_lstm2, params_lstm3]
 
     for i, parameters in enumerate(param_list):
 
         parameters["percentage_of_data"]  = 0.8
-        parameters["cut_off_timesteps"]  = 150
+        parameters["cut_off_timesteps"]  = 50
         parameters["part_of_data"]  = 0
         parameters["epochs"]  = 4000
         parameters["test_every_epochs"]  = 500
