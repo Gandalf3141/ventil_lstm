@@ -107,21 +107,21 @@ if __name__ == '__main__':
                         "h_size" : 8,
                         "l_num" : 3,
                         
-                        "learning_rate" : 0.003,
-                        "batch_size" : 30,
+                        "learning_rate" : 0.01,
+                        "batch_size" : 20,
                         "T_max" : 4000,
 
                         "experiment_number" : np.random.randint(0,1000)}
     
     
     params_lstm3  =    {  
-                        "window_size" : 32,
+                        "window_size" : 25,
                         "h_size" : 12,
-                        "l_num" : 1,
+                        "l_num" : 3,
                         
                         "learning_rate" : 0.003,
                         "batch_size" : 30,
-                        "T_max" : 1000,
+                        "T_max" : 2000,
 
                         "experiment_number" : np.random.randint(0,1000)}
 
