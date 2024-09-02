@@ -49,20 +49,20 @@ def train_tcn(input_data, model,  optimizer, lr_scheduler, learning_rate=0.001):
 # main (set parameters, logging, save model) 
 
 params_tcn =    {
-                        "window_size" : 30,
-                        "learning_rate" : 0.001,
+                        "window_size" : 20,
+                        "learning_rate" : 0.005,
                         "batch_size" : 20,
-                        "percentage_of_data" : 0.9,
-                        "cut_off_timesteps" : 0,
+                        "percentage_of_data" : 0.7,
+                        "cut_off_timesteps" : 100,
                         "part_of_data" : 0,
-                        "epochs" : 1000,
-                        "test_every_epochs" : 100,
-                        "T_max" : 1000,
+                        "epochs" : 2000,
+                        "test_every_epochs" : 200,
+                        "T_max" : 4000,
 
-                        "kernel_size" : 7,
+                        "kernel_size" : 4,
                         "dropout" : 0,
-                        "n_hidden" : 5,
-                        "levels" : 4,
+                        "n_hidden" : 3,
+                        "levels" : 3,
                         "input_channels" : 5,
                         "output" : 3,
                         "experiment_number" : np.random.randint(0,1000)
