@@ -55,18 +55,6 @@ def get_data(path = "ventil_lstm\save_data_test.csv", timesteps_from_data=100, s
         s_min = 0.0
         w_min = -1.7
 
-        # alt 
-        # p_max = np.max(df[pb_cols].to_numpy())
-        # p_min = np.min(df[pb_cols].to_numpy())
-
-        # s_max = np.max(df[sb_cols].to_numpy())
-        # s_min = np.min(df[sb_cols].to_numpy())
-
-        # w_max = np.max(df[wb_cols].to_numpy())
-        # w_min = np.min(df[wb_cols].to_numpy())
-        # PSW_max = [p_max, s_max, w_max, p_min, s_min, w_min]
-        # print(PSW_max)
-
         df[pb_cols]=(df[pb_cols] - p_min) / (p_max - p_min)
         df[sb_cols]=(df[sb_cols] - s_min) / (s_max - s_min)
         df[wb_cols]=(df[wb_cols] - w_min) / (w_max - w_min)     
