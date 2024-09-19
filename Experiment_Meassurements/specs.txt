@@ -1,0 +1,156 @@
+Python 3.12.4
+
+ame: torch
+Version: 2.3.1
+
+Name: numpy
+Version: 1.26.4
+
+
+Cuda compilation tools, release 11.5, V11.5.119
+Build cuda_11.5.r11.5/compiler.30672275_0
+
+
+===== Packages - INFORMATION =====
+===== SYSTEM INFORMATION =====
+System: Linux
+Node Name: l1cds17
+Release: 6.5.0-41-generic
+Version: #41~22.04.2-Ubuntu SMP PREEMPT_DYNAMIC Mon Jun  3 11:32:55 UTC 2
+Machine: x86_64
+Processor: x86_64
+Python Version: 3.12.4
+Architecture: 64bit ELF
+Hostname: l1cds17
+
+===== CPU INFORMATION =====
+Physical cores: 8
+Total cores: 16
+Max Frequency: 4500.00Mhz
+Min Frequency: 1200.00Mhz
+Current Frequency: 4277.28Mhz
+CPU Usage Per Core: [6.3, 5.9, 6.4, 9.5, 13.5, 27.0, 15.3, 5.6, 10.8, 4.5, 7.7, 3.9, 8.4, 22.1, 12.1, 7.8]
+Total CPU Usage: 10.4%
+
+===== MEMORY INFORMATION =====
+Memory Percentage: 70.1%
+
+===== DISK INFORMATION =====
+Device: /dev/sdd1
+  Mountpoint: /
+  File system type: ext4
+  Percentage: 14.8%
+Device: /dev/loop1
+  Mountpoint: /snap/bare/5
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop0
+  Mountpoint: /snap/core18/2823
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop2
+  Mountpoint: /snap/core18/2829
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop5
+  Mountpoint: /snap/core20/2318
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop9
+  Mountpoint: /snap/gnome-3-28-1804/198
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop10
+  Mountpoint: /snap/gnome-3-38-2004/140
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop11
+  Mountpoint: /snap/gnome-3-38-2004/143
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop12
+  Mountpoint: /snap/gnome-42-2204/172
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop13
+  Mountpoint: /snap/gnome-42-2204/176
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop14
+  Mountpoint: /snap/gtk-common-themes/1535
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop15
+  Mountpoint: /snap/snap-store/1113
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop16
+  Mountpoint: /snap/snap-store/959
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop17
+  Mountpoint: /snap/snapd/21465
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop18
+  Mountpoint: /snap/snapd/21759
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop19
+  Mountpoint: /snap/snapd-desktop-integration/157
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/sdd1
+  Mountpoint: /var/snap/firefox/common/host-hunspell
+  File system type: ext4
+  Percentage: 14.8%
+Device: /dev/sda1
+  Mountpoint: /boot/efi
+  File system type: vfat
+  Percentage: 10.7%
+Device: /dev/loop8
+  Mountpoint: /snap/code/164
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop4
+  Mountpoint: /snap/code/167
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop7
+  Mountpoint: /snap/snapd-desktop-integration/178
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop20
+  Mountpoint: /snap/firefox/4793
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop21
+  Mountpoint: /snap/core22/1586
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop28
+  Mountpoint: /snap/teams-for-linux/667
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop26
+  Mountpoint: /snap/teams-for-linux/671
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop27
+  Mountpoint: /snap/core22/1612
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop22
+  Mountpoint: /snap/firefox/4955
+  File system type: squashfs
+  Percentage: 100.0%
+Device: /dev/loop29
+  Mountpoint: /snap/core20/2379
+  File system type: squashfs
+  Percentage: 100.0%
+
+===== GPU INFORMATION =====
+GPU Name: NVIDIA GeForce RTX 2080 Ti
+GPU Load: 93.0%
+GPU Temperature: 62.0 °C
+GPU Driver Version: 535.183.01
