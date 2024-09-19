@@ -65,8 +65,12 @@ def main(parameters, i):
     #input_data = load_data(params_lstm["part_of_data"])
     #print(input_data.size())
 
-    path_train_data=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\Messungen\messdaten_900traj_500steps.csv"
-    train_loader_lstm, test_data = get_dataloader(get_data(path_train_data,num_inits=0), params_lstm)
+    if os.name == "nt":
+        path_train_data=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\Messungen\messdaten_900traj_500steps.csv"
+    else:
+        path_train_data=r"/home/rdpusr/Documents/ventil_lstm/Experiment_Meassurements/Messungen/messdaten_900traj_500steps.csv"
+
+    train_loader_lstm, test_data = get_dataloader(get_data(path_train_data,num_inits=params_lstm["part_of_data"]), params_lstm)
 
     average_traj_err_train_lstm = []
 
@@ -131,8 +135,9 @@ if __name__ == '__main__':
 
         parameters["percentage_of_data"]  = 0.9
         parameters["cut_off_timesteps"]  = 0
-        parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 1000
+        parameters["part_of_data"]  = 10
+
+        parameters["epochs"]  = 4
         parameters["test_every_epochs"]  = 100
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
