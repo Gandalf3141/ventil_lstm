@@ -15,7 +15,7 @@ u1_min = 0
 u2_max = 200
 u2_min = 0
 p_max = 3.5#3.5*1e5 #Druck in [bar]             ... [1, 3.5]
-p_min = 1.0#1.0*1e5 #Umgebungsdruck in [bar]
+p_min = 1.0#1.0*1e5 #Umgebungsdruck in [bar]a
 
 # !!! Position is already between 0 and 1 !!!
 s_max = 1#0.605*1e-3     #Position [m]          ... [0, 0.0006]
