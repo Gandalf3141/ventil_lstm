@@ -6,7 +6,7 @@ from meas_test_func_fs import *
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-def plot_results(x, pred, rescale=False, window_size=1):
+def plot_results(x, pred, rescale=False, window_size=1, sim_data_index=0):
     
     if rescale:
         x = normalize_invert(x)
@@ -25,16 +25,15 @@ def plot_results(x, pred, rescale=False, window_size=1):
     stepsize = 2 * 2e-5 
     time = np.linspace(0,x.size(dim=0)* stepsize, x.size(dim=0))
 
-    axs[0].plot(time, x.detach().cpu().numpy()[:, 0], color="blue", label="data")
+    axs[0].plot(time, x.detach().cpu().numpy()[:, 0], color="darkgreen", label="data")
     axs[0].set_title("NC : Input Voltage 1")
     axs[0].set_ylabel("[V]")
 
-    axs[1].plot(time, x.detach().cpu().numpy()[:, 1], color="blue", label="data")
+    axs[1].plot(time, x.detach().cpu().numpy()[:, 1], color="darkgreen", label="data")
     axs[1].set_title("NO : Input Voltage 2")
     axs[1].set_ylabel("[V]")
 
     axs[2].plot(time, pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
-    axs[2].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="data", linestyle="dashed")
     axs[2].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="data", linestyle="dashed")
     axs[2].set_title("pressure")
     axs[2].set_ylabel("[Pa]")
@@ -47,6 +46,15 @@ def plot_results(x, pred, rescale=False, window_size=1):
 
     axs[2].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
     axs[3].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
+
+
+    if sim_data_index >= 0:
+        path_test_data_simulink = r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\Messungen\Messdaten_Simulink_Vergleich.csv"
+        test_data_simulink = get_data(path_test_data_simulink, num_inits=0)
+        #test_data_simulink[id,:,2]
+        axs[2].plot(time, test_data_simulink[sim_data_index,:,2], color="orange", label="pressure_simulink")
+        axs[3].plot(time, test_data_simulink[sim_data_index,:,3], color="orange", label="position_simulink")
+
 
     if rescale:
         u1_max = 200  #Spannung in [V]              ... [0, 200]
@@ -73,7 +81,7 @@ def plot_results(x, pred, rescale=False, window_size=1):
     plt.legend()
     plt.show()
 
-def test(data, model, model_type="lstm", window_size=1 ,display_plots=False, numb_of_inits=1, fix_random=True, rescale=False):
+def test(data, model, model_type="lstm", window_size=1 ,display_plots=False, numb_of_inits=1, fix_random=True, rescale=False, specific_index=-1):
 
     if fix_random:
      np.random.seed(1234)
@@ -84,8 +92,12 @@ def test(data, model, model_type="lstm", window_size=1 ,display_plots=False, num
     ids = np.random.choice(test_inits, min([numb_of_inits, test_inits]), replace=False)
     ids = np.unique(ids)
 
-    data = data[ids,:, :]
+    
 
+    if specific_index >= 0:
+        data = data[specific_index:specific_index+1,:, :]
+    else :
+        data = data[ids,:, :]   
     loss_fn = nn.MSELoss()
     timesteps = data.size(dim=1)
 
@@ -111,9 +123,9 @@ def test(data, model, model_type="lstm", window_size=1 ,display_plots=False, num
                 total_loss += loss_fn(pred[window_size:, 2:], x[0, window_size:, 2:]).detach().cpu().numpy()
 
                 if display_plots:
-                    plot_results(x, pred, rescale=rescale, window_size=window_size)
-
-                if display_plots:
-                    plot_results(x, pred, rescale=rescale, window_size=window_size)
+                    if specific_index>=0:
+                        plot_results(x, pred, rescale=rescale, window_size=window_size, sim_data_index=specific_index)
+                    else:
+                        plot_results(x, pred, rescale=rescale, window_size=window_size, sim_data_index=ids[i])
 
     return total_loss/data.size(0)
