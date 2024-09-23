@@ -123,7 +123,7 @@ if __name__ == '__main__':
                         "epochs" : 1000,
                         "test_every_epochs" : 2,
 
-                        "T_max" : 500,
+                        "T_max" : 1000,
 
                         "experiment_number" : np.random.randint(0,1000)
                         }
@@ -136,7 +136,7 @@ if __name__ == '__main__':
         parameters["percentage_of_data"]  = 0.9
         parameters["cut_off_timesteps"]  = 0
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 2000
+        parameters["epochs"]  = 4000
         parameters["test_every_epochs"]  = 100
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
