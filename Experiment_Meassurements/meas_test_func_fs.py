@@ -118,8 +118,8 @@ def plot_histogramm(error_position : list,
     ax2.hist(error_pressure, bins=bins, alpha=0.5, label='pressure neural net', color='red', edgecolor = "black", hatch = "//", linewidth=2)
     ax2.hist(error_pressure_simulink, bins=bins, alpha=0.3, label='pressure simulink', color='green', edgecolor = "black", hatch = "||", linewidth=2)
 
-    ax2.axvline(np.array(error_pressure).mean(), color='orange', linewidth=2, label=f"Mean {np.round(np.array(error_position).mean(),5)}: MSE pressure")
-    ax2.axvline(np.array(error_pressure_simulink).mean(), color='blue', linewidth=2, label=f"Mean {np.round(np.array(error_position_simulink).mean(),5)}: MSE pressure simulink")
+    ax2.axvline(np.array(error_pressure).mean(), color='orange', linewidth=2, label=f"Mean {np.round(np.array(error_pressure).mean(),5)}: MSE pressure")
+    ax2.axvline(np.array(error_pressure_simulink).mean(), color='blue', linewidth=2, label=f"Mean {np.round(np.array(error_pressure_simulink).mean(),5)}: MSE pressure simulink")
     
     ax2.set_xlabel('MSE pressure')
     ax2.legend()
