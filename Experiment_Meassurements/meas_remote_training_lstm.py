@@ -60,17 +60,32 @@ def main(parameters, i):
     # Initialize the LSTM model
     model_lstm = OR_LSTM(input_size=4, hidden_size=params_lstm["h_size"], out_size=2, layers=params_lstm["l_num"], window_size=params_lstm["window_size"]).to(device)
 
-    # Generate input data (the data is normalized and some timesteps are cut off)
+    #load pretrained model : # check device!!!
+    if os.name == "nt":
+        path_lstm=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\or_lstm_0_126.pth"
+    else:
+        path_lstm=r"/home/rdpusr/Documents/ventil_lstm/Experiment_Meassurements/Messungen/messdaten_900traj_500steps.csv"
+    path_lstm=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\or_lstm_0_126.pth" #new best , error vs old best: 0.004 0.0017
+    model_lstm.load_state_dict(torch.load(path_lstm, map_location=torch.device(device)))
 
-    #input_data = load_data(params_lstm["part_of_data"])
-    #print(input_data.size())
+    # Generate input data (the data is normalized and some timesteps are cut off)
 
     if os.name == "nt":
         path_train_data=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\Messungen\messdaten_900traj_500steps.csv"
+        path_train_data_festo=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\Messungen\FESTO_traindata.csv"
     else:
         path_train_data=r"/home/rdpusr/Documents/ventil_lstm/Experiment_Meassurements/Messungen/messdaten_900traj_500steps.csv"
+        path_train_data_festo=r"C:\Users\strasserp\Documents\ventil_lstm\Experiment_Meassurements\Messungen\FESTO_traindata.csv"
 
-    train_loader_lstm, test_data = get_dataloader(get_data(path_train_data,num_inits=params_lstm["part_of_data"]), params_lstm)
+
+    train_data = get_data(path_train_data,num_inits=params_lstm["part_of_data"])
+    train_data_festo = get_data(path_train_data_festo,num_inits=params_lstm["part_of_data"])
+
+    #                   !!! 2/3 of the regular training data is dropped!!!
+    train_data_combined = torch.concatenate([train_data[::3,:,:], train_data_festo], dim=0)
+    print("combined traindata:", train_data_combined.size())
+    train_loader_lstm, test_data = get_dataloader(train_data_combined, params_lstm)
+    #train_loader_lstm, test_data = get_dataloader(get_data(path_train_data,num_inits=params_lstm["part_of_data"]), params_lstm)
 
     average_traj_err_train_lstm = []
 
@@ -84,16 +99,9 @@ def main(parameters, i):
         train_error = train_lstm(train_loader_lstm, model_lstm, optimizer=optimizer, lr_scheduler=lr_scheduler)
         if (e+1) % 50 == 0:
             print("Training error : ", train_error)
-
-        # Every few epochs get the error MSE of the true data
-        # compared to the network prediction starting from some initial conditions
-        # if (e+1)%params_lstm["test_every_epochs"] == 0:
-        #     err_test_lstm = test(test_data.to(device), model_lstm, model_type="lstm", window_size=params_lstm["window_size"], display_plots=True, numb_of_inits = 1)
-        #     average_traj_err_train_lstm.append(err_test_lstm)
-        #     print(f"Average error over full trajectories: test data LSTM: {err_test_lstm}")
-            
+        
     # Save trained model
-    path_lstm = f'Experiment_Meassurements/or_lstm_{i}_{params_lstm["experiment_number"]}.pth'
+    path_lstm = f'Experiment_Meassurements/pretrained_or_lstm_{i}_{params_lstm["experiment_number"]}.pth'
 
     torch.save(model_lstm.state_dict(), path_lstm)
 
@@ -116,13 +124,11 @@ if __name__ == '__main__':
                         "l_num" : 3,
                         "learning_rate" : 0.001,
                         "batch_size" : 20,
-
                         "percentage_of_data" : 0.8,
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
                         "epochs" : 1000,
                         "test_every_epochs" : 2,
-
                         "T_max" : 1000,
 
                         "experiment_number" : np.random.randint(0,1000)
@@ -136,7 +142,7 @@ if __name__ == '__main__':
         parameters["percentage_of_data"]  = 0.9
         parameters["cut_off_timesteps"]  = 0
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 4000
+        parameters["epochs"]  = 1
         parameters["test_every_epochs"]  = 100
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
