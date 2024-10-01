@@ -8,6 +8,18 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 def plot_results(x, pred, rescale=False, window_size=1):
     
+    SMALL_SIZE = 15
+    MEDIUM_SIZE = 25
+    plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+    plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+    plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=15)    # legend fontsiz
+
+    params = {'axes.titlesize': 20}
+    plt.rcParams.update(params)
+    
     if rescale:
         x = normalize_invert(x)
         pred = normalize_invert(pred)
@@ -20,39 +32,42 @@ def plot_results(x, pred, rescale=False, window_size=1):
 
 
     figure , axs = plt.subplots(5,1, figsize=(9,9))
-    figure.tight_layout(pad=2.0)
+    figure.tight_layout(pad=1.0)
 
-    stepsize = 2e-5
+    stepsize = 2 * 2e-5 
     time = np.linspace(0,x.size(dim=0)* stepsize, x.size(dim=0))
 
-    axs[0].plot(time, x.detach().cpu().numpy()[:, 0], color="blue", label="data")
-    axs[0].set_title("NC : Input Voltage 1")
-    axs[0].set_ylabel("[V]")
+    axs[0].plot(time, x.detach().cpu().numpy()[:, 0], color="darkgreen", label="$u_{NC}$")
+    #axs[0].set_title("NC : Input Voltage 1")
+    axs[0].set_ylabel("voltage in V")
 
-    axs[1].plot(time, x.detach().cpu().numpy()[:, 1], color="blue", label="data")
-    axs[1].set_title("NO : Input Voltage 2")
-    axs[1].set_ylabel("[V]")
+    axs[1].plot(time, x.detach().cpu().numpy()[:, 1], color="darkgreen", label="$u_{NO}$")
+    #axs[1].set_title("NO : Input Voltage 2")
+    axs[1].set_ylabel("voltage in V")
 
-    axs[2].plot(time, pred.detach().cpu().numpy()[:, 2], color="red", label="pred")
+    axs[2].plot(time, pred.detach().cpu().numpy()[:, 2], color="red", label="neural network")
     axs[2].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="data", linestyle="dashed")
-    axs[2].plot(time, x.detach().cpu().numpy()[:, 2], color="blue", label="data", linestyle="dashed")
-    axs[2].set_title("pressure")
-    axs[2].set_ylabel("[Pa]")
+    #axs[2].set_title("pressure")
+    axs[2].set_ylabel("pressure in bar")
 
-    axs[3].plot(time, pred.detach().cpu().numpy()[:, 3], color="red", label="pred")
+    axs[3].plot(time, pred.detach().cpu().numpy()[:, 3], color="red", label="neural network")
     axs[3].plot(time, x.detach().cpu().numpy()[:, 3], color="blue", label="data", linestyle="dashed")
-    axs[3].set_title("position")
-    axs[3].set_ylabel("[m]")
+    #axs[3].set_title("position")
+    axs[3].set_ylabel("position in m")
+    axs[3].set_xlabel(f"time [s]")
 
-    axs[4].plot(time, pred.detach().cpu().numpy()[:, 4], color="red", label="pred")
+    axs[2].axvline(x=time[window_size], color='black', linestyle="dotted", label='start of prediction')
+    axs[3].axvline(x=time[window_size], color='black', linestyle="dotted", label='start of prediction')
+
+    axs[4].plot(time, pred.detach().cpu().numpy()[:, 4], color="red", label="neural network")
     axs[4].plot(time, x.detach().cpu().numpy()[:, 4], color="blue", label="data", linestyle="dashed")
     axs[4].set_title("velocity")
     axs[4].set_ylabel("[m/s]")
     axs[4].set_xlabel(f"time [s]")
 
-    axs[2].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
-    axs[3].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
-    axs[4].axvline(x=time[window_size], color='black', linestyle='--', label='start of prediction')
+    axs[2].axvline(x=time[window_size], color='black', linestyle='dotted', label='start of prediction')
+    axs[3].axvline(x=time[window_size], color='black', linestyle='dotted', label='start of prediction')
+    axs[4].axvline(x=time[window_size], color='black', linestyle='dotted', label='start of prediction')
 
     if rescale:
         u1_max = 200  #Spannung in [V]              ... [0, 200]
