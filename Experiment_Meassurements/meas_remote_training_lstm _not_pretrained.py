@@ -70,11 +70,12 @@ def main(parameters, i):
         path_train_data_festo=r"/home/rdpusr/Documents/ventil_lstm/Experiment_Meassurements/Messungen/FESTO_traindata.csv"
 
 
-    train_data = get_data(path_train_data,num_inits=params_lstm["part_of_data"])
+    #train_data = get_data(path_train_data,num_inits=params_lstm["part_of_data"])
     train_data_festo = get_data(path_train_data_festo,num_inits=params_lstm["part_of_data"])
 
     #                   !!! 2/3 of the regular training data is dropped!!!
-    train_data_combined = torch.concatenate([train_data, train_data_festo], dim=0)
+    #train_data_combined = torch.concatenate([train_data, train_data_festo], dim=0)
+    train_data_combined = train_data_festo
     print("combined traindata:", train_data_combined.size())
     train_loader_lstm, test_data = get_dataloader(train_data_combined, params_lstm)
     #train_loader_lstm, test_data = get_dataloader(get_data(path_train_data,num_inits=params_lstm["part_of_data"]), params_lstm)
@@ -127,14 +128,31 @@ if __name__ == '__main__':
                         }
     
     
-    param_list = [params_lstm2]
+    params_lstm3 =    {
+                        "window_size" : 100,
+                        "h_size" : 8,
+                        "l_num" : 3,
+                        "learning_rate" : 0.001,
+                        "batch_size" : 50,
+                        "percentage_of_data" : 0.8,
+                        "cut_off_timesteps" : 0,
+                        "part_of_data" : 0,
+                        "epochs" : 3000,
+                        "test_every_epochs" : 2,
+                        "T_max" : 2000,
+
+                        "experiment_number" : np.random.randint(0,1000)
+                        }
+
+    
+    param_list = [params_lstm3]
 
     for i, parameters in enumerate(param_list):
 
         parameters["percentage_of_data"]  = 0.9
         parameters["cut_off_timesteps"]  = 0
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 4000
+        parameters["epochs"]  = 2000
         parameters["test_every_epochs"]  = 100
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
