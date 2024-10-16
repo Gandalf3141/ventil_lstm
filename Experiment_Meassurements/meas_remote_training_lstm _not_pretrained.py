@@ -129,19 +129,19 @@ if __name__ == '__main__':
     
     
     params_lstm3 =    {
-                        "window_size" : 100,
+                        "window_size" : 80,
                         "h_size" : 8,
                         "l_num" : 3,
                         "learning_rate" : 0.001,
-                        "batch_size" : 50,
+                        "batch_size" : 40,
                         "percentage_of_data" : 0.8,
                         "cut_off_timesteps" : 0,
                         "part_of_data" : 0,
                         "epochs" : 3000,
                         "test_every_epochs" : 2,
-                        "T_max" : 2000,
-
+                        "T_max" : 4000,
                         "experiment_number" : np.random.randint(0,1000)
+                        
                         }
 
     
@@ -152,7 +152,7 @@ if __name__ == '__main__':
         parameters["percentage_of_data"]  = 0.9
         parameters["cut_off_timesteps"]  = 0
         parameters["part_of_data"]  = 0
-        parameters["epochs"]  = 2000
+        parameters["epochs"]  = 4000
         parameters["test_every_epochs"]  = 100
         parameters["experiment_number"]  = np.random.randint(0,1000)
 
